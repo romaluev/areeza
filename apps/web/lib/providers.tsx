@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 import { Toaster } from "@areeza/ui/components/sonner";
 import { TooltipProvider } from "@areeza/ui/components/tooltip";
 import { AppPrefsBridge } from "@/lib/app-prefs-bridge";
+import { LocaleBridge } from "@/lib/locale-bridge";
 import { MockFailBridge } from "@/lib/mock-fail-bridge";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={300}>
           <AppPrefsBridge />
+          <LocaleBridge />
           <Suspense fallback={null}>
             <MockFailBridge />
           </Suspense>

@@ -21,7 +21,16 @@ export type StreamingSectionState = {
   done: boolean;
 };
 
-export function useDocumentStream(caseId: string, docId: string) {
+export function useDocumentStream(
+  caseId: string,
+  docId: string,
+  options?: { onComplete?: (doc: GeneratedDocument) => void },
+) {
+  const onCompleteRef = useRef(options?.onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = options?.onComplete;
+  }, [options?.onComplete]);
   const pathname = usePathname();
   const [streaming, setStreaming] = useState(false);
   const [sections, setSections] = useState<StreamingSectionState[]>([]);
@@ -55,6 +64,7 @@ export function useDocumentStream(caseId: string, docId: string) {
           setSections,
           setActiveSectionId,
           setCompletedDoc,
+          onComplete: (doc) => onCompleteRef.current?.(doc),
         });
       }
     } catch (err) {
@@ -96,6 +106,7 @@ function applyStreamEvent(
     setSections: Dispatch<SetStateAction<StreamingSectionState[]>>;
     setActiveSectionId: Dispatch<SetStateAction<string | null>>;
     setCompletedDoc: Dispatch<SetStateAction<GeneratedDocument | null>>;
+    onComplete?: (doc: GeneratedDocument) => void;
   },
 ) {
   switch (event.type) {
@@ -135,6 +146,7 @@ function applyStreamEvent(
       break;
     case "done":
       ctx.setCompletedDoc(event.document);
+      ctx.onComplete?.(event.document);
       break;
     default:
       break;

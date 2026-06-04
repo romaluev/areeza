@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@areeza/core/api";
 import { CATEGORIES, getCategoryLabel } from "@areeza/core/legal";
@@ -241,10 +241,10 @@ export function CasesHome() {
   const isLoading = casesLoading || countsLoading;
   const isError = casesError || countsError;
 
-  const refetchAll = () => {
+  const refetchAll = useCallback(() => {
     void refetchCases();
     void refetchCounts();
-  };
+  }, [refetchCases, refetchCounts]);
 
   useEffect(() => {
     if (!isError) return;

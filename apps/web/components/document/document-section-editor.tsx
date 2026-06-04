@@ -24,7 +24,9 @@ export function DocumentSectionEditor({
   const lastEmittedRef = useRef<string | null>(null);
   const defaultHtml = sectionToHtml(section);
 
-  onChangeRef.current = onContentChange;
+  useEffect(() => {
+    onChangeRef.current = onContentChange;
+  }, [onContentChange]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -63,7 +65,7 @@ export function DocumentSectionEditor({
     if (editor.isFocused) return;
     editor.commands.setContent(sectionToHtml(section));
     lastEmittedRef.current = section.content;
-  }, [editor, section.content, section.id]);
+  }, [editor, section]);
 
   if (!editor) return null;
 

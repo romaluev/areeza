@@ -52,31 +52,98 @@ export function DocumentPanel({
     [documentList, caseId],
   );
 
-  const [activeDocId, setActiveDocId] = useState(
-    () => documentList[0]?.id ?? `${caseId}-davo`,
+  const [pickedDocId, setPickedDocId] = useState<string | null>(null);
+  const activeDocId = useMemo(() => {
+    const preferred = pickedDocId ?? documentList[0]?.id ?? `${caseId}-davo`;
+    return documentList.some((d) => d.id === preferred) ? preferred : defaultDocId;
+  }, [pickedDocId, documentList, defaultDocId, caseId]);
+  const baseDoc = useMemo(
+    () =>
+      documentList.find((d) => d.id === activeDocId) ??
+      documentList.find((d) => d.id === defaultDocId) ??
+      documentList[0] ??
+      null,
+    [documentList, activeDocId, defaultDocId],
   );
 
-  useEffect(() => {
-    if (documentList.some((d) => d.id === activeDocId)) return;
-    setActiveDocId(defaultDocId);
-  }, [documentList, activeDocId, defaultDocId]);
-  const [localDoc, setLocalDoc] = useState<GeneratedDocument | null>(
-    () => documentList.find((d) => d.id === defaultDocId) ?? documentList[0] ?? null,
+  return (
+    <DocumentPanelBody
+      key={activeDocId}
+      caseId={caseId}
+      activeDocId={activeDocId}
+      baseDoc={baseDoc}
+      documentList={documentList}
+      hasRoute={hasRoute}
+      onUpdated={onUpdated}
+      onGenerateStart={onGenerateStart}
+      onSelectDoc={setPickedDocId}
+    />
   );
-  const generatedBaselineRef = useRef<GeneratedDocument | null>(null);
+}
+
+function DocumentPanelBody({
+  caseId,
+  activeDocId,
+  baseDoc,
+  documentList,
+  hasRoute,
+  onUpdated,
+  onGenerateStart,
+  onSelectDoc,
+}: {
+  caseId: string;
+  activeDocId: string;
+  baseDoc: GeneratedDocument | null;
+  documentList: GeneratedDocument[];
+  hasRoute: boolean;
+  onUpdated: () => void;
+  onGenerateStart?: () => void;
+  onSelectDoc: (id: string) => void;
+}) {
+  const docDraftKey = documentDraftKey(caseId, activeDocId);
+  const initialDoc = useMemo(() => {
+    const draft = readStorageJson<DocumentDraft>(docDraftKey);
+    if (
+      draft?.document &&
+      baseDoc &&
+      (baseDoc.status === "draft" || baseDoc.status === "final")
+    ) {
+      return { doc: draft.document, restored: true as const };
+    }
+    return { doc: baseDoc, restored: false as const };
+  }, [docDraftKey, baseDoc]);
+
+  const [localDoc, setLocalDoc] = useState<GeneratedDocument | null>(initialDoc.doc);
+  const [generatedBaseline, setGeneratedBaseline] = useState<GeneratedDocument | null>(
+    () =>
+      baseDoc && (baseDoc.status === "draft" || baseDoc.status === "final")
+        ? structuredClone(baseDoc)
+        : null,
+  );
   const saveDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const draftToastShownRef = useRef(initialDoc.restored);
 
   const [regenOpen, setRegenOpen] = useState(false);
   const [regenSectionId, setRegenSectionId] = useState<string | null>(null);
   const [regenStreamText, setRegenStreamText] = useState("");
   const [regenStreaming, setRegenStreaming] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
-  const docDraftRestoredRef = useRef(false);
   const { run: runIdempotent } = useIdempotentAction();
 
-  const stream = useDocumentStream(caseId, activeDocId);
+  const handleStreamComplete = useCallback(
+    (doc: GeneratedDocument) => {
+      setLocalDoc(doc);
+      setGeneratedBaseline(structuredClone(doc));
+      onUpdated();
+      toast.success("Hujjat tayyorlandi");
+    },
+    [onUpdated],
+  );
 
-  const docDraftKey = documentDraftKey(caseId, activeDocId);
+  const stream = useDocumentStream(caseId, activeDocId, {
+    onComplete: handleStreamComplete,
+  });
+
   const docDirty =
     !!localDoc &&
     (localDoc.status === "draft" || localDoc.status === "final") &&
@@ -93,49 +160,12 @@ export function DocumentPanel({
   });
 
   useEffect(() => {
-    docDraftRestoredRef.current = false;
-    stream.cancel();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cancel only when switching documents
-  }, [activeDocId]);
-
-  useEffect(() => {
-    const next =
-      documentList.find((d) => d.id === activeDocId) ??
-      documentList.find((d) => d.id === defaultDocId) ??
-      documentList[0] ??
-      null;
-
-    const draft = readStorageJson<DocumentDraft>(docDraftKey);
-    if (
-      draft?.document &&
-      !docDraftRestoredRef.current &&
-      next &&
-      (next.status === "draft" || next.status === "final")
-    ) {
-      docDraftRestoredRef.current = true;
-      setLocalDoc(draft.document);
-      generatedBaselineRef.current = structuredClone(next);
-      toast.message("Hujjat qoralamasi tiklandi", {
-        description: "Saqlangan tahrirlar qo'llanildi.",
-      });
-      return;
-    }
-
-    docDraftRestoredRef.current = false;
-    setLocalDoc(next);
-    if (next && (next.status === "draft" || next.status === "final")) {
-      generatedBaselineRef.current = structuredClone(next);
-    }
-  }, [documentList, activeDocId, defaultDocId, docDraftKey]);
-
-  useEffect(() => {
-    if (stream.completedDoc) {
-      setLocalDoc(stream.completedDoc);
-      generatedBaselineRef.current = structuredClone(stream.completedDoc);
-      onUpdated();
-      toast.success("Hujjat tayyorlandi");
-    }
-  }, [stream.completedDoc, onUpdated]);
+    if (!draftToastShownRef.current) return;
+    draftToastShownRef.current = false;
+    toast.message("Hujjat qoralamasi tiklandi", {
+      description: "Saqlangan tahrirlar qo'llanildi.",
+    });
+  }, []);
 
   useEffect(() => {
     if (stream.error) toast.error(stream.error);
@@ -187,7 +217,7 @@ export function DocumentPanel({
     },
     onSuccess: (doc) => {
       setLocalDoc(doc);
-      generatedBaselineRef.current = structuredClone(doc);
+      setGeneratedBaseline(structuredClone(doc));
       setRegenStreaming(false);
       setRegenOpen(false);
       onUpdated();
@@ -231,12 +261,12 @@ export function DocumentPanel({
 
   const handleGenerate = () => {
     onGenerateStart?.();
-    generatedBaselineRef.current = null;
+    setGeneratedBaseline(null);
     stream.start();
   };
 
   const performReset = () => {
-    const baseline = generatedBaselineRef.current;
+    const baseline = generatedBaseline;
     if (!baseline) {
       toast.message("Asl nusxa saqlanmagan");
       return;
@@ -290,7 +320,7 @@ export function DocumentPanel({
               if (stream.streaming) {
                 stream.cancel();
               }
-              setActiveDocId(id);
+              onSelectDoc(id);
             }}
             disabled={stream.streaming}
           />
@@ -356,7 +386,7 @@ export function DocumentPanel({
                   size="sm"
                   className="gap-1.5"
                   onClick={() => setResetConfirmOpen(true)}
-                  disabled={!generatedBaselineRef.current || saveMutation.isPending}
+                  disabled={!generatedBaseline || saveMutation.isPending}
                 >
                   Asl holatiga qaytarish
                 </Button>

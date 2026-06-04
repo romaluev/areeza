@@ -123,6 +123,20 @@ export function Button({
   const Comp = asChild ? Slot : "button";
   const isDisabled = disabled || loading;
 
+  if (asChild) {
+    return (
+      <Comp
+        data-slot="button"
+        data-variant={resolved}
+        className={cn(buttonVariants({ variant: resolved, size, className }))}
+        style={{ borderRadius: radius, ...style }}
+        {...props}
+      >
+        {children}
+      </Comp>
+    );
+  }
+
   return (
     <Comp
       data-slot="button"

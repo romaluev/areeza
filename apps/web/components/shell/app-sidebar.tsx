@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useSyncExternalStore, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon, type IconName } from "@areeza/ui/icons";
 import { useTheme } from "next-themes";
@@ -37,32 +37,83 @@ const mainNav: NavItem[] = [
   },
 ];
 
+const sidebarListeners = new Set<() => void>();
+
 function readCollapsed(): boolean {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
 }
 
-export function AppSidebar() {
+function subscribeSidebarCollapsed(onChange: () => void) {
+  sidebarListeners.add(onChange);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === SIDEBAR_COLLAPSED_KEY) onChange();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    sidebarListeners.delete(onChange);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function persistSidebarCollapsed(next: boolean) {
+  window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+  sidebarListeners.forEach((listener) => listener());
+}
+
+function useSidebarCollapsed() {
+  return useSyncExternalStore(subscribeSidebarCollapsed, readCollapsed, () => false);
+}
+
+function useSidebarMounted() {
+  return useSyncExternalStore(() => () => {}, () => true, () => false);
+}
+
+export function AppSidebar({ className }: { className?: string }) {
+  const collapsed = useSidebarCollapsed();
+  const mounted = useSidebarMounted();
+  const surfaceStyle = useSurfaceStyle(0);
+  const navTransition = useMotionTransition("moderate");
+  const persistCollapsed = useCallback((next: boolean) => persistSidebarCollapsed(next), []);
+
+  return (
+    <SidebarPanel
+      className={className}
+      collapsed={collapsed}
+      mounted={mounted}
+      surfaceStyle={surfaceStyle}
+      navTransition={navTransition}
+      onToggleCollapsed={() => persistCollapsed(!collapsed)}
+      onPersistCollapsed={persistCollapsed}
+    />
+  );
+}
+
+export function SidebarPanel({
+  className,
+  collapsed,
+  mounted,
+  surfaceStyle,
+  navTransition,
+  onToggleCollapsed,
+  onPersistCollapsed,
+  showCollapseControl = true,
+}: {
+  className?: string;
+  collapsed: boolean;
+  mounted: boolean;
+  surfaceStyle: React.CSSProperties;
+  navTransition: ReturnType<typeof useMotionTransition>;
+  onToggleCollapsed: () => void;
+  onPersistCollapsed: (next: boolean) => void;
+  showCollapseControl?: boolean;
+}) {
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
   const setThemePref = useAppStore((s) => s.setTheme);
-  const [collapsed, setCollapsed] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const surfaceStyle = useSurfaceStyle(0);
-  const navTransition = useMotionTransition("moderate");
 
   useProximityHover(navRef, { enabled: !collapsed });
-
-  useEffect(() => {
-    setCollapsed(readCollapsed());
-    setMounted(true);
-  }, []);
-
-  const persistCollapsed = useCallback((next: boolean) => {
-    setCollapsed(next);
-    window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-  }, []);
 
   const toggleTheme = () => {
     const next = resolvedTheme === "dark" ? "light" : "dark";
@@ -77,8 +128,9 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "relative flex h-dvh shrink-0 flex-col border-r border-sidebar-border transition-[width] duration-200 ease-out",
+        "relative flex h-full min-h-0 shrink-0 flex-col border-r border-sidebar-border transition-[width] duration-200 ease-out",
         mounted ? "opacity-100" : "opacity-0",
+        className,
       )}
       style={{ ...surfaceStyle, width: widthVar }}
       data-collapsed={collapsed ? "" : undefined}
@@ -106,26 +158,28 @@ export function AppSidebar() {
             </span>
           )}
         </Link>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0 text-muted-foreground"
-              aria-label={collapsed ? "Panelni kengaytirish" : "Panelni yig'ish"}
-              onClick={() => persistCollapsed(!collapsed)}
-            >
-              <Icon
-                name={collapsed ? "sidebarExpand" : "sidebarCollapse"}
-                size="sm"
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {collapsed ? "Kengaytirish" : "Yig'ish"}
-          </TooltipContent>
-        </Tooltip>
+        {showCollapseControl ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0 text-muted-foreground"
+                aria-label={collapsed ? "Panelni kengaytirish" : "Panelni yig'ish"}
+                onClick={onToggleCollapsed}
+              >
+                <Icon
+                  name={collapsed ? "sidebarExpand" : "sidebarCollapse"}
+                  size="sm"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {collapsed ? "Kengaytirish" : "Yig'ish"}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
       </header>
 
       <div className={cn("px-3 pt-4", collapsed && "px-2")}>

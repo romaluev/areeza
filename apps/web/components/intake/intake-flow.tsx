@@ -78,29 +78,31 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
     const draft = readStorageJson<IntakeDraft>(INTAKE_DRAFT_KEY);
     if (!draft?.messages?.length) return;
     draftRestoredRef.current = true;
-    useIntakeStore.setState({
-      locale: draft.locale,
-      messages: draft.messages,
-      facts: draft.facts,
-      classification: draft.classification,
-      assistantBuffer: "",
-      streaming: false,
+    queueMicrotask(() => {
+      useIntakeStore.setState({
+        locale: draft.locale,
+        messages: draft.messages,
+        facts: draft.facts,
+        classification: draft.classification,
+        assistantBuffer: "",
+        streaming: false,
+      });
+      setInput(draft.input ?? "");
+      setPendingCaseId(draft.pendingCaseId);
+      if (draft.classification?.needsCategoryPick || draft.pendingCaseId) {
+        setAwaitingCategory(true);
+      }
+      toast.message(
+        draft.locale === "ru" ? "Черновик восстановлен" : "Qoralama tiklandi",
+        {
+          description:
+            draft.locale === "ru"
+              ? "Можно продолжить с того же места."
+              : "Oxirgi holatdan davom etishingiz mumkin.",
+        },
+      );
     });
-    setInput(draft.input ?? "");
-    setPendingCaseId(draft.pendingCaseId);
-    if (draft.classification?.needsCategoryPick || draft.pendingCaseId) {
-      setAwaitingCategory(true);
-    }
-    toast.message(
-      locale === "ru" ? "Черновик восстановлен" : "Qoralama tiklandi",
-      {
-        description:
-          locale === "ru"
-            ? "Можно продолжить с того же места."
-            : "Oxirgi holatdan davom etishingiz mumkin.",
-      },
-    );
-  }, [locale, messages.length]);
+  }, [messages.length]);
 
   useEffect(() => {
     return () => {

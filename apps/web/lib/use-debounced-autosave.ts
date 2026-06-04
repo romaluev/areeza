@@ -20,7 +20,10 @@ export function useDebouncedAutosave<T>({
 }) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const valueRef = useRef(value);
-  valueRef.current = value;
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   const flush = useCallback(() => {
     if (!enabled || !dirty) return;
