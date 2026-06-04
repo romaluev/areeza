@@ -2,10 +2,11 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Toaster } from "@areeza/ui/components/sonner";
 import { TooltipProvider } from "@areeza/ui/components/tooltip";
 import { AppPrefsBridge } from "@/lib/app-prefs-bridge";
+import { MockFailBridge } from "@/lib/mock-fail-bridge";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -22,6 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={300}>
           <AppPrefsBridge />
+          <Suspense fallback={null}>
+            <MockFailBridge />
+          </Suspense>
           {children}
           <Toaster richColors position="top-center" />
         </TooltipProvider>

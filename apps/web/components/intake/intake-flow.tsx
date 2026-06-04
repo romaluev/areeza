@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { api, persistIntakeSession } from "@areeza/core/api";
+import { api, isMockFailureError, persistIntakeSession } from "@areeza/core/api";
 import { CATEGORIES } from "@areeza/core/legal";
 import type { CategoryCode } from "@areeza/core/types";
 import { withConfidenceLevel } from "@areeza/core/types";
@@ -18,15 +18,22 @@ import {
   validateIntakeInput,
   INTAKE_MAX_CHARS,
 } from "@/lib/intake-guards";
+import { INTAKE_DRAFT_KEY, type IntakeDraft } from "@/lib/intake-draft";
+import { readStorageJson, removeStorage } from "@/lib/storage";
+import { useDebouncedAutosave } from "@/lib/use-debounced-autosave";
+import { showRetryToast } from "@/lib/retry-toast";
 
 export function IntakeFlow({ seedText }: { seedText?: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [input, setInput] = useState(seedText ?? "");
   const [guardHint, setGuardHint] = useState<string | null>(null);
   const [awaitingCategory, setAwaitingCategory] = useState(false);
   const [pendingCaseId, setPendingCaseId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const submittingRef = useRef(false);
+  const lastRunTextRef = useRef<string | null>(null);
+  const draftRestoredRef = useRef(false);
 
   const {
     locale,
@@ -45,6 +52,62 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
     reset,
   } = useIntakeStore();
 
+  const draftDirty =
+    messages.length > 0 ||
+    facts.length > 0 ||
+    input.trim().length > 0 ||
+    streaming;
+
+  const { clear: clearIntakeDraft } = useDebouncedAutosave<IntakeDraft>({
+    storageKey: INTAKE_DRAFT_KEY,
+    enabled: true,
+    dirty: draftDirty,
+    value: {
+      locale,
+      messages,
+      facts,
+      classification,
+      input,
+      pendingCaseId,
+      savedAt: new Date().toISOString(),
+    },
+  });
+
+  useEffect(() => {
+    if (draftRestoredRef.current || messages.length > 0) return;
+    const draft = readStorageJson<IntakeDraft>(INTAKE_DRAFT_KEY);
+    if (!draft?.messages?.length) return;
+    draftRestoredRef.current = true;
+    useIntakeStore.setState({
+      locale: draft.locale,
+      messages: draft.messages,
+      facts: draft.facts,
+      classification: draft.classification,
+      assistantBuffer: "",
+      streaming: false,
+    });
+    setInput(draft.input ?? "");
+    setPendingCaseId(draft.pendingCaseId);
+    if (draft.classification?.needsCategoryPick || draft.pendingCaseId) {
+      setAwaitingCategory(true);
+    }
+    toast.message(
+      locale === "ru" ? "Черновик восстановлен" : "Qoralama tiklandi",
+      {
+        description:
+          locale === "ru"
+            ? "Можно продолжить с того же места."
+            : "Oxirgi holatdan davom etishingiz mumkin.",
+      },
+    );
+  }, [locale, messages.length]);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [pathname]);
+
   const finishCase = useCallback(
     (caseId: string) => {
       const cls = useIntakeStore.getState().classification;
@@ -56,12 +119,15 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
           cls,
         );
       }
+      clearIntakeDraft();
+      removeStorage(INTAKE_DRAFT_KEY);
+      abortRef.current?.abort();
       toast.success(
         locale === "ru" ? "Классификация завершена" : "Tasniflash yakunlandi",
       );
       router.push(`/cases/${caseId}?from=intake`);
     },
-    [locale, router],
+    [clearIntakeDraft, locale, router],
   );
 
   const runIntake = useCallback(
@@ -71,6 +137,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
       setGuardHint(null);
       setAwaitingCategory(false);
       setPendingCaseId(null);
+      lastRunTextRef.current = text;
 
       reset();
       setStreaming(true);
@@ -127,10 +194,13 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
           }
         }
       } catch (e) {
-        if ((e as Error).message !== "Aborted") {
-          toast.error(
-            locale === "ru" ? "Ошибка при приёме" : "Murojaatda xatolik",
-          );
+        if ((e as Error).message === "Aborted") return;
+        const msg =
+          locale === "ru" ? "Ошибка при приёме" : "Murojaatda xatolik";
+        if (isMockFailureError(e) && lastRunTextRef.current) {
+          showRetryToast(msg, () => runIntake(lastRunTextRef.current!), undefined);
+        } else {
+          toast.error(msg);
         }
       } finally {
         setStreaming(false);

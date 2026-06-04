@@ -48,6 +48,10 @@ export const api = {
     return getMode() === "mock" ? mock.getCase(id) : notImplemented();
   },
 
+  deleteCase(id: string): Promise<void> {
+    return getMode() === "mock" ? mock.deleteCase(id) : notImplemented();
+  },
+
   streamIntake(
     caseId: string | undefined,
     initialText: string,

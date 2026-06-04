@@ -8,7 +8,10 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { usePathname } from "next/navigation";
 import { api } from "@areeza/core/api";
+import { isMockFailureError } from "@areeza/core/api";
+import { showRetryToast } from "@/lib/retry-toast";
 import type { DraftStreamEvent, GeneratedDocument } from "@areeza/core/types";
 
 export type StreamingSectionState = {
@@ -19,6 +22,7 @@ export type StreamingSectionState = {
 };
 
 export function useDocumentStream(caseId: string, docId: string) {
+  const pathname = usePathname();
   const [streaming, setStreaming] = useState(false);
   const [sections, setSections] = useState<StreamingSectionState[]>([]);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
@@ -55,7 +59,11 @@ export function useDocumentStream(caseId: string, docId: string) {
       }
     } catch (err) {
       if (controller.signal.aborted) return;
-      setError(err instanceof Error ? err.message : "Hujjat yaratilmadi");
+      const message = err instanceof Error ? err.message : "Hujjat yaratilmadi";
+      setError(message);
+      if (isMockFailureError(err)) {
+        showRetryToast("Hujjat yaratilmadi", () => void start());
+      }
     } finally {
       if (!controller.signal.aborted) {
         setStreaming(false);
@@ -66,6 +74,10 @@ export function useDocumentStream(caseId: string, docId: string) {
   }, [caseId, docId, cancel]);
 
   useEffect(() => () => cancel(), [cancel]);
+
+  useEffect(() => {
+    return () => cancel();
+  }, [pathname, cancel]);
 
   return {
     streaming,

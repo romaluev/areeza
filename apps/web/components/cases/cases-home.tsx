@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@areeza/core/api";
 import { CATEGORIES, getCategoryLabel } from "@areeza/core/legal";
@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@areeza/ui/components/select";
 import { STATUS_LABELS } from "@/lib/copy";
+import { isMockFailureError } from "@areeza/core/api";
+import { showRetryToast } from "@/lib/retry-toast";
 
 type ViewMode = "list" | "grid" | "grouped";
 type SortKey = "updated-desc" | "updated-asc" | "title-asc" | "title-desc";
@@ -243,6 +245,16 @@ export function CasesHome() {
     void refetchCases();
     void refetchCounts();
   };
+
+  useEffect(() => {
+    if (!isError) return;
+    if (casesError && isMockFailureError(casesError)) {
+      showRetryToast("Ro'yxat yuklanmadi", refetchAll);
+    }
+    if (countsError && isMockFailureError(countsError)) {
+      showRetryToast("Statistika yuklanmadi", () => void refetchCounts());
+    }
+  }, [isError, casesError, countsError, refetchAll, refetchCounts]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

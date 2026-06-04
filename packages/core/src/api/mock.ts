@@ -32,6 +32,9 @@ import {
   normalizeCaseDetail,
 } from "./fixtures";
 import { validate as zodValidate } from "./validate";
+import { maybeThrowMockFailure } from "./mock-failure";
+
+const deletedCaseIds = new Set<string>();
 
 function seedRuntimeCases(): Record<string, CaseDetail> {
   const store: Record<string, CaseDetail> = {};
@@ -191,6 +194,7 @@ export async function* streamIntake(
   initialText: string,
   signal?: AbortSignal,
 ): AsyncGenerator<IntakeEvent> {
+  maybeThrowMockFailure("streamIntake");
   if (!initialText.trim()) {
     initialText = DEMO_PROMPT_UZ;
   }
@@ -204,8 +208,17 @@ export async function* streamIntake(
 }
 
 export async function listCases(): Promise<Case[]> {
+  maybeThrowMockFailure("listCases");
   await delay(300);
-  return zodValidate.caseList(CASE_LIST);
+  const visible = CASE_LIST.filter((c) => !deletedCaseIds.has(c.id));
+  return zodValidate.caseList(visible);
+}
+
+export async function deleteCase(id: string): Promise<void> {
+  maybeThrowMockFailure("deleteCase");
+  await delay(250);
+  deletedCaseIds.add(id);
+  delete runtimeCases[id];
 }
 
 export function computeCaseSummaryCounts(cases: Case[]): CaseSummaryCounts {
@@ -232,12 +245,16 @@ export function computeCaseSummaryCounts(cases: Case[]): CaseSummaryCounts {
 }
 
 export async function getCaseSummaryCounts(): Promise<CaseSummaryCounts> {
+  maybeThrowMockFailure("getCaseSummaryCounts");
   await delay(150);
-  return computeCaseSummaryCounts(CASE_LIST);
+  const visible = CASE_LIST.filter((c) => !deletedCaseIds.has(c.id));
+  return computeCaseSummaryCounts(visible);
 }
 
 export async function getCase(id: string): Promise<CaseDetail | null> {
+  maybeThrowMockFailure("getCase");
   await delay(200);
+  if (deletedCaseIds.has(id)) return null;
   const detail = runtimeCases[id] ?? getCaseDetail(id);
   if (detail) return zodValidate.caseDetail(structuredClone(normalizeCaseDetail(detail)));
   if (id === DEMO_CASE_ID) return zodValidate.caseDetail(structuredClone(ensureCase(DEMO_CASE_ID)));
@@ -547,6 +564,7 @@ export async function regenerateSection(
 }
 
 export async function updateDocument(req: UpdateDocumentRequest): Promise<GeneratedDocument> {
+  maybeThrowMockFailure("updateDocument");
   await delay(200);
   const validated = zodValidate.document(req.document);
   const c = ensureCase(req.caseId);
@@ -588,6 +606,7 @@ export async function validate(
   caseId: string,
   _documentId: string,
 ): Promise<ValidationResult> {
+  maybeThrowMockFailure("validate");
   await delay(600);
   const c = ensureCase(caseId);
   c.validation = zodValidate.validation(DEMO_VALIDATION);
@@ -608,6 +627,7 @@ export async function validate(
 }
 
 export async function exportPackage(caseId: string): Promise<ExportResponse> {
+  maybeThrowMockFailure("exportPackage");
   await delay(500);
   return zodValidate.export({
     pdfUrl: `/api/mock-export/${caseId}.pdf`,

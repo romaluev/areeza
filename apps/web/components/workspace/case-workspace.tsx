@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { notFound, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@areeza/ui/components/tabs";
 import { Skeleton } from "@areeza/ui/components/skeleton";
 import { Button } from "@areeza/ui/components/button";
-import { api } from "@areeza/core/api";
+import { api, isMockFailureError } from "@areeza/core/api";
 import type { CaseDetail } from "@areeza/core/types";
 import { primaryDocument } from "@areeza/core/types";
 import { MessageList } from "@/components/intake/message-list";
@@ -20,17 +21,28 @@ import { useIntakeStore } from "@/lib/use-intake-store";
 import { COMPLIANCE_NOTE } from "@/lib/copy";
 import { StepProgress } from "./step-progress";
 import { TrackingPanel } from "./tracking-panel";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { showRetryToast } from "@/lib/retry-toast";
+import { useIdempotentAction } from "@/lib/use-idempotent-action";
 
 const WORKSPACE_TABS_LAYOUT = "areeza-workspace-tabs";
 
 export function CaseWorkspace({ caseId }: { caseId: string }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("route");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const { run: runIdempotent } = useIdempotentAction();
 
-  const { data: caseData, isLoading, isError, refetch } = useQuery({
+  const { data: caseData, isLoading, isError, refetch, isFetched } = useQuery({
     queryKey: ["case", caseId],
     queryFn: () => api.getCase(caseId),
   });
+
+  useEffect(() => {
+    if (!isFetched || isLoading) return;
+    if (!caseData) notFound();
+  }, [isFetched, isLoading, caseData]);
 
   const validateMutation = useMutation({
     mutationFn: async () => {
@@ -42,6 +54,13 @@ export function CaseWorkspace({ caseId }: { caseId: string }) {
       await queryClient.invalidateQueries({ queryKey: ["case", caseId] });
       setTab("validation");
       toast.success("Tekshiruv yakunlandi");
+    },
+    onError: (err) => {
+      if (isMockFailureError(err)) {
+        showRetryToast("Tekshiruv bajarilmadi", () => validateMutation.mutate());
+      } else {
+        toast.error("Tekshiruv bajarilmadi");
+      }
     },
   });
 
@@ -61,6 +80,30 @@ export function CaseWorkspace({ caseId }: { caseId: string }) {
       await queryClient.invalidateQueries({ queryKey: ["case", caseId] });
       toast.success("Marshrut tayyor");
     },
+    onError: (err) => {
+      if (isMockFailureError(err)) {
+        showRetryToast("Marshrut yuklanmadi", () => routeMutation.mutate());
+      } else {
+        toast.error("Marshrut yuklanmadi");
+      }
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.deleteCase(caseId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["cases"] });
+      await queryClient.invalidateQueries({ queryKey: ["case-summary"] });
+      toast.success("Ish o'chirildi");
+      router.push("/cases");
+    },
+    onError: (err) => {
+      if (isMockFailureError(err)) {
+        showRetryToast("Ishni o'chirib bo'lmadi", () => deleteMutation.mutate());
+      } else {
+        toast.error("Ishni o'chirib bo'lmadi");
+      }
+    },
   });
 
   if (isLoading) {
@@ -72,31 +115,47 @@ export function CaseWorkspace({ caseId }: { caseId: string }) {
     );
   }
 
-  if (isError || !caseData) {
+  if (isError) {
     return (
-      <div className="p-6 text-center">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 px-6 py-12 text-center">
         <p className="text-[var(--danger)]">Ish yuklanmadi.</p>
-        <button
-          type="button"
-          className="mt-2 text-sm text-[var(--primary)] underline"
-          onClick={() => refetch()}
-        >
+        <Button type="button" variant="outline" onClick={() => void refetch()}>
           Qayta urinish
-        </button>
+        </Button>
       </div>
     );
   }
 
+  if (!caseData) return null;
+
   return (
-    <CaseWorkspaceInner
-      caseData={caseData}
-      tab={tab}
-      onTabChange={setTab}
-      onRoute={() => routeMutation.mutate()}
-      onOpenDocument={() => setTab("document")}
-      onValidate={() => validateMutation.mutate()}
-      loadingValidate={validateMutation.isPending}
-    />
+    <>
+      <CaseWorkspaceInner
+        caseData={caseData}
+        tab={tab}
+        onTabChange={setTab}
+        onRoute={() => routeMutation.mutate()}
+        onOpenDocument={() => setTab("document")}
+        onValidate={() => validateMutation.mutate()}
+        loadingValidate={validateMutation.isPending}
+        onRequestDelete={() => setDeleteOpen(true)}
+      />
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Ishni o'chirish"
+        description="Bu ish va uning hujjatlari demo rejimida o'chiriladi. Davom etasizmi?"
+        confirmLabel="O'chirish"
+        variant="destructive"
+        loading={deleteMutation.isPending}
+        onConfirm={() =>
+          void runIdempotent(async () => {
+            await deleteMutation.mutateAsync();
+            setDeleteOpen(false);
+          })
+        }
+      />
+    </>
   );
 }
 
@@ -108,6 +167,7 @@ function CaseWorkspaceInner({
   onOpenDocument,
   onValidate,
   loadingValidate,
+  onRequestDelete,
 }: {
   caseData: CaseDetail;
   tab: string;
@@ -116,6 +176,7 @@ function CaseWorkspaceInner({
   onOpenDocument: () => void;
   onValidate: () => void;
   loadingValidate: boolean;
+  onRequestDelete: () => void;
 }) {
   const queryClient = useQueryClient();
   const locale = useIntakeStore((s) => s.locale);
@@ -129,9 +190,20 @@ function CaseWorkspaceInner({
   return (
     <div className="flex h-[calc(100dvh-0px)] flex-col">
       <header className="border-b border-[var(--border)] bg-[var(--background)] px-4 py-4 sm:px-6">
-        <h1 className="text-lg font-semibold tracking-tight text-[var(--foreground)]">
-          {caseData.title}
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-lg font-semibold tracking-tight text-[var(--foreground)]">
+            {caseData.title}
+          </h1>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-[var(--danger)]"
+            onClick={onRequestDelete}
+          >
+            Ishni o&apos;chirish
+          </Button>
+        </div>
         <div className="mt-2">
           <StepProgress current={caseData.step} />
         </div>

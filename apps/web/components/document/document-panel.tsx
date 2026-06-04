@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { api } from "@areeza/core/api";
+import { api, isMockFailureError } from "@areeza/core/api";
 import type { GeneratedDocument } from "@areeza/core/types";
 import { Badge } from "@areeza/ui/components/badge";
 import { Button } from "@areeza/ui/components/button";
@@ -20,6 +20,12 @@ import {
   resolveDocumentList,
 } from "./document-utils";
 import { useDocumentStream } from "./use-document-stream";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { documentDraftKey, type DocumentDraft } from "@/lib/document-draft";
+import { readStorageJson, removeStorage } from "@/lib/storage";
+import { useDebouncedAutosave } from "@/lib/use-debounced-autosave";
+import { useIdempotentAction } from "@/lib/use-idempotent-action";
+import { showRetryToast } from "@/lib/retry-toast";
 
 export function DocumentPanel({
   caseId,
@@ -64,10 +70,30 @@ export function DocumentPanel({
   const [regenSectionId, setRegenSectionId] = useState<string | null>(null);
   const [regenStreamText, setRegenStreamText] = useState("");
   const [regenStreaming, setRegenStreaming] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const docDraftRestoredRef = useRef(false);
+  const { run: runIdempotent } = useIdempotentAction();
 
   const stream = useDocumentStream(caseId, activeDocId);
 
+  const docDraftKey = documentDraftKey(caseId, activeDocId);
+  const docDirty =
+    !!localDoc &&
+    (localDoc.status === "draft" || localDoc.status === "final") &&
+    !stream.streaming;
+
+  const { clear: clearDocDraft } = useDebouncedAutosave<DocumentDraft>({
+    storageKey: docDraftKey,
+    enabled: !!localDoc,
+    dirty: docDirty,
+    value: {
+      document: localDoc!,
+      savedAt: new Date().toISOString(),
+    },
+  });
+
   useEffect(() => {
+    docDraftRestoredRef.current = false;
     stream.cancel();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- cancel only when switching documents
   }, [activeDocId]);
@@ -78,11 +104,29 @@ export function DocumentPanel({
       documentList.find((d) => d.id === defaultDocId) ??
       documentList[0] ??
       null;
+
+    const draft = readStorageJson<DocumentDraft>(docDraftKey);
+    if (
+      draft?.document &&
+      !docDraftRestoredRef.current &&
+      next &&
+      (next.status === "draft" || next.status === "final")
+    ) {
+      docDraftRestoredRef.current = true;
+      setLocalDoc(draft.document);
+      generatedBaselineRef.current = structuredClone(next);
+      toast.message("Hujjat qoralamasi tiklandi", {
+        description: "Saqlangan tahrirlar qo'llanildi.",
+      });
+      return;
+    }
+
+    docDraftRestoredRef.current = false;
     setLocalDoc(next);
     if (next && (next.status === "draft" || next.status === "final")) {
       generatedBaselineRef.current = structuredClone(next);
     }
-  }, [documentList, activeDocId, defaultDocId]);
+  }, [documentList, activeDocId, defaultDocId, docDraftKey]);
 
   useEffect(() => {
     if (stream.completedDoc) {
@@ -100,7 +144,19 @@ export function DocumentPanel({
   const saveMutation = useMutation({
     mutationFn: (doc: GeneratedDocument) =>
       api.updateDocument({ caseId, document: { ...doc, status: "draft" } }),
-    onSuccess: () => onUpdated(),
+    onSuccess: (_data, doc) => {
+      clearDocDraft();
+      removeStorage(documentDraftKey(caseId, doc.id));
+      onUpdated();
+    },
+    onError: (err, doc) => {
+      const retry = () => saveMutation.mutate(doc);
+      if (isMockFailureError(err)) {
+        showRetryToast("Saqlab bo'lmadi", retry);
+      } else {
+        toast.error("Saqlab bo'lmadi");
+      }
+    },
   });
 
   const regenerateMutation = useMutation({
@@ -179,16 +235,19 @@ export function DocumentPanel({
     stream.start();
   };
 
-  const handleReset = () => {
+  const performReset = () => {
     const baseline = generatedBaselineRef.current;
     if (!baseline) {
       toast.message("Asl nusxa saqlanmagan");
       return;
     }
-    const restored = structuredClone(baseline);
-    setLocalDoc(restored);
-    saveMutation.mutate(restored);
-    toast.success("Asl matnga qaytarildi");
+    void runIdempotent(async () => {
+      const restored = structuredClone(baseline);
+      setLocalDoc(restored);
+      await saveMutation.mutateAsync(restored);
+      setResetConfirmOpen(false);
+      toast.success("Asl matnga qaytarildi");
+    });
   };
 
   const handleRegenerate = (instruction?: string) => {
@@ -296,11 +355,21 @@ export function DocumentPanel({
                   variant="ghost"
                   size="sm"
                   className="gap-1.5"
-                  onClick={handleReset}
+                  onClick={() => setResetConfirmOpen(true)}
                   disabled={!generatedBaselineRef.current || saveMutation.isPending}
                 >
                   Asl holatiga qaytarish
                 </Button>
+                <ConfirmDialog
+                  open={resetConfirmOpen}
+                  onOpenChange={setResetConfirmOpen}
+                  title="Asl matnga qaytarilsinmi?"
+                  description="Barcha qo'lda kiritilgan o'zgarishlar yo'qoladi. Bu amalni bekor qilib bo'lmaydi."
+                  confirmLabel="Qaytarish"
+                  variant="destructive"
+                  loading={saveMutation.isPending}
+                  onConfirm={performReset}
+                />
               </>
             ) : null}
             {isGenerating ? (

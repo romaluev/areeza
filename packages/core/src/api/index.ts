@@ -1,5 +1,6 @@
 export { api, type ApiMode } from "./client";
-export { persistIntakeSession } from "./mock";
+export { persistIntakeSession, deleteCase } from "./mock";
+export { armMockFailures, clearMockFailures, isMockFailureError } from "./mock-failure";
 export {
   DEMO_CASE_ID,
   DEMO_PROMPT_UZ,

@@ -5,7 +5,7 @@ import { Icon } from "@areeza/ui/icons";
 import { toast } from "sonner";
 import { Button } from "@areeza/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@areeza/ui/components/card";
-import { api } from "@areeza/core/api";
+import { api, isMockFailureError } from "@areeza/core/api";
 import type {
   GeneratedDocument,
   LegalRoute,
@@ -13,6 +13,7 @@ import type {
 } from "@areeza/core/types";
 import { downloadBlob, safeExportFilename } from "./download";
 import { getExportReadiness } from "./export-readiness";
+import { showRetryToast } from "@/lib/retry-toast";
 
 const FILING_STEPS = [
   {
@@ -65,10 +66,14 @@ export function ExportPanel({
     setBusy(kind);
     try {
       await work();
-    } catch {
-      toast.error("Yuklab olishda xatolik", {
-        description: "Brauzer bloklagan bo'lishi mumkin — «Chop etish» ni sinab ko'ring.",
-      });
+    } catch (err) {
+      if (isMockFailureError(err)) {
+        showRetryToast("Yuklab olishda xatolik", () => void withGuard(kind, work));
+      } else {
+        toast.error("Yuklab olishda xatolik", {
+          description: "Brauzer bloklagan bo'lishi mumkin — «Chop etish» ni sinab ko'ring.",
+        });
+      }
     } finally {
       busyRef.current = false;
       setBusy(null);
