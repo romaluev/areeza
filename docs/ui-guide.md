@@ -1,85 +1,124 @@
-# Areeza — UI Guide (design system + reuse map)
+# Areeza — UI Guide (notiky-ported design system)
 
-> For the **frontend engineer** and anyone building UI. The UI is **adapted from `notiky-app`** (primitives in `packages/ui`, chat/editor/workspace in `packages/views`) — you have it locally, so adapt directly. Everything below is also described by name + library so it can be rebuilt fresh without the repo.
-> Sources of taste: **notiky-app UI** (patterns below) + **Fluid Functionalism** (motion principles, https://fluidfunctionalism.com). Pairs with [conventions.md](conventions.md) and [development-plan.md](development-plan.md) (Track B).
+> Product UI is ported from **notiky-app** presentational layers into `@areeza/ui` + `apps/web`, wired to `@areeza/core` types only. Legal documents still use **EB Garamond** (`--font-legal` / `--font-serif`).
 
 ## 1. Product feel
 
-Clean, modern, **trustworthy** (govtech/justice — not a flashy consumer app). Calm surfaces, confident type, gold used sparingly as the "justice" accent. Motion is **functional** (it explains state changes), never decorative. Fully keyboard-accessible and dark-mode ready.
+Warm cream light / neutral gray-violet dark. **Forest-green brand** (`--brand` / `--primary`) for CTAs. Calm surfaces, hairline borders, one obvious primary action per screen. Motion is functional (nav pill glide, step crossfade, thinking shimmer), never decorative. `defaultTheme="system"` in `apps/web/lib/providers.tsx`.
 
-## 2. Libraries (install these — the stack)
+## 2. Token layers (`packages/ui/src/styles/`)
 
-`next@16` · `react@19` · `tailwindcss@4` · **shadcn/ui** (Radix primitives) · `@hugeicons/react` + `@areeza/ui/icons` (icons) · `sonner` (toasts) · `framer-motion` (motion) · `@tanstack/react-query@5` (server state) · `zustand@5` (local UI state) · `@tiptap/react@3` + `@tiptap/starter-kit` (document editor) · `react-markdown` + `remark-gfm` (assistant markdown) · `clsx` + `tailwind-merge` (the `cn()` helper). Backend-side (Dev 1): `ai` + `@ai-sdk/anthropic`, `zod`, `@supabase/supabase-js`.
+| File | Role |
+|---|---|
+| `tokens.css` | Light `:root` — OKLCH palette, 8-step `--surface-*`, layout vars (`--control-h`, `--layout-dialog-popover-width`), semantic `--danger`/`--warn`/`--success*` |
+| `dark-tokens.css` | `.dark { … }` overrides (kept separate for Turbopack) |
+| `base.css` | Shiki dual-theme hooks, sidebar/sonner base rules |
+| `prose.css` | `.rich-text-editor` typography (chat markdown + editors) |
+| `fluid-shimmer.css` | `@utility shimmer-text` for `ThinkingIndicator` |
 
-> shadcn/ui is Radix-based → keyboard + ARIA for free, which is exactly Fluid Functionalism's "accessible by default." Add primitives with `pnpm dlx shadcn@latest add button card input ...`.
+**Semantics (common bug):**
 
-## 3. Design tokens (define in `packages/ui` as CSS vars + Tailwind theme)
+- `--muted` / `bg-muted` → **fill** (chip/track background)
+- `--muted-foreground` / `text-muted-foreground` → **secondary text** (never use `text-muted` for body copy)
 
-**Light (default)**
-| Token | Hex | Use |
-|---|---|---|
-| `--bg` | `#FFFFFF` | page background |
-| `--surface` | `#F5F7FA` | cards, panels |
-| `--border` | `#E2E8F0` | hairlines |
-| `--ink` (foreground) | `#0E1B33` | primary text |
-| `--muted` | `#64748B` | secondary text |
-| `--primary` | `#15315C` | primary actions, links (deep navy-blue = trust) |
-| `--accent` (gold) | `#C9A227` | sparse justice accent, highlights |
-| `--success` | `#2E8B57` | validation pass |
-| `--warn` | `#B7791F` | validation warning |
-| `--danger` | `#B23B3B` | validation fail / destructive |
+**Brand:** `--brand` forest green · `--brand-foreground` cream · `--brand-gold` warning accent.
 
-**Dark**: `--bg #0B1426` · `--surface #13233F` · `--border #22324F` · `--ink #E8EEF7` · `--muted #93A4BE` · `--primary #4F86C6` · `--accent #E0BE54` (semantic colors lighten ~10%).
+**Legal:** `--font-serif: var(--font-legal)` in `@theme`; `.legal-paper` / `bg-legal-paper` in `apps/web/app/globals.css`.
 
-**Type:** UI = `Inter` (or system sans). **Legal document view = a serif** (`Lora`/`Georgia`) so it reads official. Requisites/numbers = `ui-monospace`. Scale: display 28–34, h1 22, h2 18, body 15, small 13.
-**Radius:** cards 10px (`--radius`), inputs/buttons 8px. **Shadow:** subtle only (`shadow-sm`); elevation via surface + border, not heavy shadows.
-**Spacing:** Tailwind 4px base; generous whitespace (min `p-4` in cards, `gap-3`+ between blocks).
+**App bridge:** `apps/web/app/globals.css` imports all token files + `@theme inline` bridge (`--color-danger`, `--color-warn`, surfaces). Utilities: `shellPanel`, `elevatedCard`, `raisedSurface`, `floatingSurface`, `bg-overlay-scrim`, `bg-legal-paper`.
 
-## 4. Motion (Fluid Functionalism — motion = information)
+**Raw `[var(--…)]` policy:** primitives use semantic Tailwind (`border-input`, `bg-card`, `text-muted-foreground`, etc.). Residual raw vars in `@areeza/ui` are mostly layout `length:` tokens (progress, table, sonner). **`apps/web/components` should use semantic classes only** — verified zero `[var(--…)]` in app components after visual QA detox pass.
 
-- Use **framer-motion spring**: `{ type: "spring", stiffness: 300, damping: 30 }`. Speeds: fast 150ms (hover/press), base ~250ms (enter/exit).
-- **Animate state changes, not decoration:** new chat message slides+fades in; validation items **stagger** in as checks resolve; the route card expands when classification lands; the generated document fades in section by section.
-- **Font-weight shift** (not just color) for nav/hover emphasis. Subtle **proximity/hover** feedback on interactive cards.
-- Always respect `prefers-reduced-motion` (drop to instant). Loading = a calm `ThinkingIndicator`, never a jarring spinner.
+## 3. Primitives (`@areeza/ui`)
 
-## 5. Reuse map — notiky patterns to rebuild (you don't need the repo)
+| Export | Notes |
+|---|---|
+| `components/button` | `variant="brand"` / `brand-outline` for sole primary CTA; `aria-invalid` + `xs`/`icon-lg`; unified `focus-visible:ring-3` |
+| `components/card` | `rounded-xl border bg-card shadow-sm`; optional `elevated` |
+| `components/sidebar` | shadcn sidebar (cookie collapse, icon mode, tooltips); **`SidebarProvider` required** |
+| `components/fluid/nav-menu-group` | `NavMenuGroup` + `NavMenuHighlight` (`layoutId` sliding pill) |
+| `hooks/use-nav-proximity` | Optional proximity emphasis for dense nav |
+| `markdown/*` | `Markdown`, `StreamingMarkdown`, `CodeBlock` (Shiki + GFM + sanitize) |
+| `components/fluid/thinking-indicator` | Morphing SVG + shimmer cycling words (single loader — do not duplicate in app) |
+| `layout/page-layout-primitives` | `PagePaneRoot`, `ScrollArea`, `ChatScrollArea` |
+| `components/empty-state` | `variant` `page` \| `list` \| `dashed`; neutral icon well |
+| `list-row`, `status-pill` | Row density via `--density-row-*`; `navRowTransition` |
 
-Recreate these with shadcn + the libs above, guided by the descriptions. (notiky's originals are coupled to its monorepo — use them as a *spec*, not a copy.)
+Icons: `@areeza/ui/icons` — HugeIcons catalog only (no lucide in product code).
 
-| Areeza component (build in) | notiky reference (pattern) | What it does | Built with |
-|---|---|---|---|
-| `MessageList` (`components/intake`) | `copilot/message-list` | Scrollable transcript, auto-scroll to newest, groups by role, stall recovery | div + scroll, framer-motion |
-| `MessageBubble` | `copilot/message-bubble` | User/assistant turn; assistant streams text + renders markdown | react-markdown + remark-gfm |
-| `PromptBox` | `copilot/prompt-box` | Textarea input, send button, **UZ/RU locale toggle**, Enter-to-send, attach (optional) | shadcn Textarea/Button |
-| `ThinkingIndicator` | `common/chat-wait-indicator` + FF `ThinkingSteps` | Calm "Areeza tayyorlamoqda…" with step hints | framer-motion |
-| `DocumentView` | `editor/content-editor` (+ `bubble-menu`) | Renders `GeneratedDocument` as a real court `da'vo arizasi` (serif, centered headings, requisites block, `Ilova` list); read + edit modes | TipTap 3 StarterKit (edit) / styled render (read) |
-| `CaseWorkspace` | `layout/*` two-pane resizable | Left = chat + facts, right = route/document/validation tabs | shadcn Tabs + resizable panels |
-| `AppSidebar` | `layout/sidebar` | Case list, "New case", workspace header | shadcn + `@areeza/ui/icons` |
-| `ToolConfirm` / question wizard | `copilot/question-block-panel`, `tool-confirm-panel` | Inline structured prompts ("Confirm employer name?") | shadcn Card + Buttons |
+Focus ring everywhere: `focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none`.
 
-shadcn primitives to add now: `button card input textarea label badge dialog sheet tabs tooltip select checkbox skeleton scroll-area separator sonner` (+ `command` for ⌘K later).
+## 4. App shell (`apps/web/components/shell/`)
 
-## 6. Components unique to Areeza (build in `packages/ui` or `components/*`)
+| Piece | Behavior |
+|---|---|
+| `app-shell.tsx` | Single **`SidebarProvider`** (`defaultOpen`, `--sidebar-width: var(--layout-app-sidebar-width)`). Desktop sidebar + rounded `main`. **`TopBarSlot`** above main (md+). Mobile header: menu + **`useShellPageTitle`** + brand **Yangi holat** → `/situations/new`. Skip link + labelled `main`. One **`TooltipProvider`** in `lib/providers.tsx` only. |
+| `app-sidebar.tsx` | Presentation-only `Sidebar` (`variant="inset"`, `collapsible="icon"`). `NavMenuGroup` highlights + `aria-current="page"`. `LocaleToggle`, theme toggle (`useSyncExternalStore` hydration guard). Nav hrefs: `/situations`, `/situations/new`. |
+| `top-bar.tsx` / `top-bar-slot.tsx` / `use-top-bar.ts` | Pages publish title via `useTopBar({ title })` on `/situations`, `/situations/new`, and loaded workspace (situation name). Slot falls back to `resolveShellPageTitle(pathname)` for redirects and unmapped routes. |
+| `route-error-panel.tsx` / `route-not-found-panel.tsx` | Shared segment error / 404 chrome with `EmptyState`. |
 
-- **`RouteCard`** — shows the legal route: court (`tuman/shahar fuqarolik sudi`), application type (`da'vo arizasi` / court order), **state-fee exemption** badge, limitation period, law refs (CPC 188/189/191), and the required-documents checklist. Source: `LegalRoute` contract.
-- **`FactsPanel`** — the structured `CaseFacts` extracted during intake; **missing required facts highlighted** in `--warn`.
-- **`ValidationPanel`** — the `ValidationResult` checklist: each item `✓` (success) / `!` (warn) / `✗` (fail) + an inline one-line `fix`. Stagger-animate in.
-- **`StepProgress`** — the pipeline indicator: Tasvirlang → Tasniflang → Yo'naltiring → Tayyorlang → Tekshiring → Topshiring.
-- **`ExportPanel`** — "Download filing package" + step-by-step e-sud (`my.sud.uz` / `cabinet.sud.uz`) guide.
+## 5. Intake / conversation (`apps/web/components/intake/`)
 
-## 7. Screens (routes)
+| Component | Behavior |
+|---|---|
+| `intake-flow.tsx` | Hero new-case flow; **no `reset()` on each turn**; success → `/situations/${id}` |
+| `situation-intake-rail.tsx` | Per-situation intake via `situationIntakeSurface(id)` |
+| `use-intake-store.ts` | Scoped stores per surface; `syncAllIntakeLocales` for app-wide locale |
+| `prompt-box.tsx` | `raisedSurface`, `focus-within:ring-3`, `maxLength`, `aria-label`, stop when streaming |
+| `message-list.tsx` | `ChatScrollArea` + single `ThinkingIndicator` |
+| `message-bubble.tsx` | User accent; assistant `Markdown` / `StreamingMarkdown` + copy when done |
+| `first-run-onboarding.tsx` | 2-step dialog on `/situations/new` (`localStorage` gate) |
 
-- `/(marketing)/` — landing: problem → solution → demo CTA (on-message with [pitch.md](pitch.md)).
-- `/(app)/cases` — case list (cards: title, category, status).
-- `/(app)/cases/new` — intake chat (`MessageList` + `PromptBox`); on first classify, route to the workspace.
-- `/(app)/cases/[id]` — **the workspace** (`CaseWorkspace`): chat + `FactsPanel` left; `RouteCard` / `DocumentView` / `ValidationPanel` tabs right; `ExportPanel`.
+Document stream in workspace uses legal paper / section streaming — **not** chat markdown.
 
-## 8. Document authenticity (the Domain-lens moment)
+## 6. Guided workspace (`situation-workspace.tsx`)
 
-`DocumentView` must look like a **real Uzbek court document** — this is what the Oliy Sud mentor reads. Mirror [legal-domain.md](legal-domain.md) §4 exactly: court name top, `Daʼvogar`/`Javobgar` blocks with requisites, centered `DAʼVO ARIZASI` + subtitle, `Daʼvo bahosi`, body, `SO'RAYMAN:`, numbered `Ilova:`, date + signature line. Serif font, A4-ish column, print-clean. Provide a **Print/PDF** affordance.
+Single-focus flow (not 4-column grid):
 
-## 9. Accessibility & states (non-negotiable)
+```
+header: title + WorkspaceStepProgress (numbered steps, layoutId pill, aria-current="step", completed steps clickable)
+main:   AnimatePresence crossfade between step panels (reduced-motion: instant)
+footer: Orqaga (ghost) | one brand primary CTA (export download only here — not duplicated in panel)
+```
 
-- Every interactive element: keyboard reachable, visible focus ring, ARIA via Radix.
-- Every async view has **loading (skeleton), empty, and error** states. No dead spinners.
-- Color is never the only signal (icons + text on validation). Test light **and** dark.
+| Step | Panel |
+|---|---|
+| Suhbat | `SituationIntakeRail` |
+| Hujjatlar | `SituationDocumentsPanel` (horizontal `ListRow` doc nav on mobile) |
+| Tekshirish | `IssuesPanel` + `review-readiness`; issue → linked doc / `ValidationPanel`; optional Tafsilotlar (`EmptyState variant="list"`) |
+| Topshirish | `SituationExportPanel` + `situation-export-blockers.ts`; footer brand ZIP CTA |
+
+Advisories: inline callout (top 2 open). `advisory-panel.tsx` removed.
+
+Document paper: `bg-legal-paper`. Streaming: `resetOnChange: false` while chunks arrive; typewriter after `section_done` only.
+
+## 7. Lists, routes, locale, onboarding
+
+**Home:** `situations-home.tsx` — `EmptyState` + `ListRowGroup`; multi-row skeleton; `isError` + retry; row `aria-label` with `updatedAt`; `situationStatusLabel` in `lib/copy.ts`.
+
+**Routes (canonical):**
+
+| Path | Purpose |
+|---|---|
+| `/situations` | List |
+| `/situations/new` | Intake hero + onboarding |
+| `/situations/[id]` | Guided workspace |
+| `/cases/*` | Server redirects → `/situations/*` equivalents |
+
+Segment errors: `situations/error.tsx`, `situations/[id]/error.tsx`, `situations/new/error.tsx`, `[id]/not-found.tsx` — link back to `/situations`.
+
+**Locale:** `use-app-store` persisted `locale`; `LocaleBridge` + `useAppLocale` sync **all** intake surfaces; `LocaleToggle` in sidebar + landing; `uiCopy` / `LANDING_COPY` uz\|ru (landing sections fully bilingual). Terminology: **holat** (not ish).
+
+**Legacy:** `/cases/*` server redirects only; `cases-home.tsx` thin re-export. `case-workspace.tsx` and `export-panel.tsx` removed.
+
+## 8. Commands
+
+```bash
+pnpm --dir apps/web dev
+pnpm lint && pnpm typecheck
+```
+
+## 9. Deferred / known gaps
+
+- e-sud direct submit integration.
+- Manual light/dark walkthrough on every release (automated screenshot pass covers core routes).
