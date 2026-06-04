@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { Button } from "@areeza/ui/components/button";
+import { uiCopy } from "@/lib/copy";
 
 export default function GlobalError({
   error,
@@ -14,29 +16,21 @@ export default function GlobalError({
     console.error(error);
   }, [error]);
 
+  const copy = uiCopy("uz");
+
   return (
     <html lang="uz">
-      <body className="min-h-dvh bg-[#0a1426] font-sans text-[#f8fafc] antialiased">
+      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
         <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6 py-12 text-center">
-          <h1 className="text-xl font-semibold">Areeza vaqtincha ishlamayapti</h1>
-          <p className="max-w-md text-sm text-[#94a3b8]">
-            Kutilmagan xatolik yuz berdi. Qayta urinib ko&apos;ring yoki bosh sahifaga
-            qayting.
-          </p>
+          <h1 className="text-xl font-semibold">{copy.globalErrorTitle}</h1>
+          <p className="max-w-md text-sm text-muted-foreground">{copy.globalErrorDescription}</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => reset()}
-              className="rounded-full bg-[#2563eb] px-5 py-2.5 text-sm font-medium text-white"
-            >
-              Qayta urinish
-            </button>
-            <Link
-              href="/cases"
-              className="rounded-full border border-[#334155] px-5 py-2.5 text-sm font-medium text-[#e2e8f0]"
-            >
-              Bosh sahifa
-            </Link>
+            <Button type="button" variant="brand" onClick={() => reset()}>
+              {copy.retry}
+            </Button>
+            <Button type="button" variant="outline" asChild>
+              <Link href="/situations">{copy.homeLink}</Link>
+            </Button>
           </div>
         </div>
       </body>

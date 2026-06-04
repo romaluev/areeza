@@ -14,7 +14,9 @@ import {
   SCENARIO_B_ID,
   SCENARIO_C_ID,
 } from "@areeza/core/api";
-import { COMPLIANCE_NOTE } from "@/lib/copy";
+import { COMPLIANCE_NOTE, LANDING_COPY, type LandingCopy } from "@/lib/copy";
+import { useAppLocale } from "@/lib/use-app-locale";
+import { LocaleToggle } from "@/components/shell/locale-toggle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -28,85 +30,11 @@ const stagger = {
   },
 };
 
-const PROOF_STATS = [
-  {
-    label: "Yillik fuqarolik ishlar",
-    value: "2M+",
-    hint: "O'zbekiston sudlarida, +50% o'sish",
-    icon: "scale" as const,
-  },
-  {
-    label: "Protsessual tuzilma",
-    value: "MKPK 189",
-    hint: "Da'vo arizasi shabloni bo'yicha",
-    icon: "file" as const,
-  },
-  {
-    label: "Tekshiruv qadamlari",
-    value: "12+",
-    hint: "Qaytarish xavfini kamaytirish uchun",
-    icon: "fileCheck" as const,
-  },
-  {
-    label: "Maslahat",
-    value: "Oliy sud",
-    hint: "IT muhandislari bilan ishlab chiqilgan",
-    icon: "shield" as const,
-  },
-] as const;
-
-const HOW_IT_WORKS = [
-  {
-    step: "01",
-    title: "Tasvirlang",
-    body: "Oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi va faktlarni yig'adi.",
-    icon: "user" as const,
-  },
-  {
-    step: "02",
-    title: "Tayyorlang",
-    body: "To'g'ri sud, ariza turi va MKPK 189 bo'yicha tuzilgan da'vo arizasi — shablon + faktlar.",
-    icon: "file" as const,
-  },
-  {
-    step: "03",
-    title: "Tekshiring",
-    body: "Majburiy maydonlar, davlat boji, muddat va yurisdiksiya bo'yicha avtomatik tekshiruv.",
-    icon: "fileCheck" as const,
-  },
-  {
-    step: "04",
-    title: "Yuklab oling",
-    body: "Sud formatidagi PDF paketini yuklab oling va e-sud bo'yicha qadam-baqadam yo'riqnoma.",
-    icon: "download" as const,
-  },
-] as const;
-
-const EXAMPLE_SCENARIOS = [
-  {
-    title: "Meni aldashdi",
-    href: "/situations/new?scenario=fraud",
-    openHref: `/situations/${SCENARIO_A_ID}`,
-    body: "Investitsiya, jinoiy shikoyat, korrupsiya, politsiya harakatsizligi — 4 hujjat.",
-  },
-  {
-    title: "Ishdan bo'shatishdi",
-    href: "/situations/new?scenario=workplace",
-    openHref: `/situations/${SCENARIO_B_ID}`,
-    body: "Ish haqi, ishga qaytarish (1 oy muddat!), bezorilik, inspeksiya.",
-  },
-  {
-    title: "Aliment va kvartira",
-    href: "/situations/new?scenario=divorce",
-    openHref: `/situations/${SCENARIO_C_ID}`,
-    body: "Aliment, mulk bo'linishi, shoshilinch ta'minlov.",
-  },
-  {
-    title: "Ish haqi (klassik)",
-    href: "/situations/new?demo=1",
-    openHref: `/situations/${DEMO_SITUATION_ID}`,
-    body: "Bitta masala — to'liq tayyor da'vo arizasi.",
-  },
+const SCENARIO_OPEN_HREFS = [
+  `/situations/${SCENARIO_A_ID}`,
+  `/situations/${SCENARIO_B_ID}`,
+  `/situations/${SCENARIO_C_ID}`,
+  `/situations/${DEMO_SITUATION_ID}`,
 ] as const;
 
 function SectionHeading({
@@ -123,15 +51,11 @@ function SectionHeading({
   return (
     <div className={cn("mx-auto max-w-2xl text-center", className)}>
       {eyebrow ? (
-        <p className="mb-3 text-xs font-medium tracking-widest text-[var(--accent-gold)] uppercase">
-          {eyebrow}
-        </p>
+        <p className="mb-3 text-xs font-medium tracking-widest text-brand uppercase">{eyebrow}</p>
       ) : null}
-      <h2 className="text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-        {title}
-      </h2>
+      <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h2>
       {description ? (
-        <p className="mt-3 text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           {description}
         </p>
       ) : null}
@@ -139,25 +63,26 @@ function SectionHeading({
   );
 }
 
-function LandingHeader() {
+function LandingHeader({ copy }: { copy: LandingCopy }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--background)_92%,transparent)] backdrop-blur-md">
+    <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--navy)] text-[var(--primary-foreground)] shadow-[var(--fx-shadow-sm)]">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-sm">
             <Icon name="scale" size="sm" />
           </span>
-          <span className="font-semibold tracking-tight text-[var(--foreground)]">Areeza</span>
+          <span className="font-semibold tracking-tight text-foreground">Areeza</span>
         </Link>
         <div className="flex items-center gap-2">
+          <LocaleToggle className="hidden sm:flex" />
           <Link href="/situations">
             <Button variant="ghost" size="sm">
-              Kirish
+              {copy.signIn}
             </Button>
           </Link>
-          <Link href="/situations/new?demo=1">
-            <Button size="sm" className="gap-1.5">
-              Demoni ko&apos;rish
+          <Link href={`/situations/${DEMO_SITUATION_ID}`}>
+            <Button variant="brand" size="sm" className="gap-1.5">
+              {copy.demoCta}
               <Icon name="arrowRight" size={14} />
             </Button>
           </Link>
@@ -167,14 +92,20 @@ function LandingHeader() {
   );
 }
 
-function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function HeroSection({
+  reducedMotion,
+  copy,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
 
   return (
     <section className="relative overflow-hidden px-4 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-20">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_oklab,var(--scan-blue)_18%,transparent),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_oklab,var(--scan-blue)_12%,transparent),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent)]"
       />
 
       <motion.div
@@ -187,48 +118,35 @@ function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
           <Badge
             variant="outline"
             shape="pill"
-            className="mb-5 gap-2 border-[color-mix(in_oklab,var(--accent-gold)_35%,var(--border))] bg-[color-mix(in_oklab,var(--accent-gold)_8%,var(--card))] px-3 py-1 text-[var(--foreground)]"
+            className="mb-5 gap-2 border-brand/35 bg-brand/5 px-3 py-1 text-foreground"
           >
-            <Icon name="shield" size={14} className="text-[var(--accent-gold)]" />
-            Oliy sud maslahatchilari bilan ishlab chiqilgan
+            <Icon name="shield" size={14} className="text-brand" />
+            {copy.heroBadge}
           </Badge>
         </motion.div>
 
         <motion.h1
           variants={fadeUp}
           transition={transition}
-          className="max-w-3xl text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]"
+          className="max-w-3xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]"
         >
-          Bir vaziyat —{" "}
-          <span className="text-[var(--scan-blue-deep)] dark:text-[var(--scan-blue)]">
-            ko&apos;p masala, ko&apos;p hujjat, to&apos;g&apos;i forum
-          </span>
-          .
+          {copy.heroTitle}{" "}
+          <span className="text-primary">{copy.heroTitleAccent}</span>.
         </motion.h1>
 
         <motion.p
           variants={fadeUp}
           transition={transition}
-          className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted-foreground)] sm:text-lg"
+          className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg"
         >
-          Firibgarlik, mehnat, oila — bitta suhbatda bir nechta yo&apos;nalish: fuqarolik sudi,
-          prokuratura, agentlik. Areeza marshrutlaydi, hujjat tayyorlaydi, muddatlarni ogohlantiradi.
+          {copy.heroBody}
         </motion.p>
 
-        <motion.div
-          variants={fadeUp}
-          transition={transition}
-          className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
-        >
-          <Link href="/situations/new?scenario=workplace" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full gap-2 sm:w-auto">
+        <motion.div variants={fadeUp} transition={transition} className="mt-8">
+          <Link href={`/situations/${DEMO_SITUATION_ID}`} className="inline-block w-full sm:w-auto">
+            <Button variant="brand" size="lg" className="w-full gap-2 sm:w-auto">
               <Icon name="sparkles" size="sm" />
-              Demoni boshlash
-            </Button>
-          </Link>
-          <Link href={`/situations/${DEMO_SITUATION_ID}`} className="w-full sm:w-auto">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Tayyor holatni ochish
+              {copy.demoCta}
             </Button>
           </Link>
         </motion.div>
@@ -236,15 +154,11 @@ function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
         <motion.ul
           variants={fadeUp}
           transition={transition}
-          className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-[var(--muted-foreground)] sm:text-sm"
+          className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground sm:text-sm"
         >
-          {[
-            "Yuridik maslahat emas — tayyorlash vositasi",
-            "MKPK 189 bo'yicha tuzilma",
-            "Inson nazoratida topshirish",
-          ].map((item) => (
+          {[copy.trust1, copy.trust2, copy.trust3].map((item) => (
             <li key={item} className="flex items-center gap-2">
-              <Icon name="check" size={14} className="text-[var(--accent-gold)]" />
+              <Icon name="check" size={14} className="text-brand" />
               {item}
             </li>
           ))}
@@ -254,16 +168,23 @@ function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
   );
 }
 
-function TransformationSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function TransformationSection({
+  reducedMotion,
+  copy,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
+  const t = copy.transformation;
 
   return (
-    <section className="border-y border-[var(--border)] bg-[var(--surface-2)] px-4 py-16 sm:px-6 sm:py-20">
+    <section className="border-y border-border bg-surface-2 px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
-          eyebrow="O'zgarish"
-          title="Chalkash gapdan — sud hujjatigacha"
-          description="Areeza fuqaroning oddiy tili va sud talab qiladigan protsessual format o'rtasidagi bo'shliqni yopadi."
+          eyebrow={t.eyebrow}
+          title={t.title}
+          description={t.description}
           className="mb-10 sm:mb-14"
         />
 
@@ -273,26 +194,23 @@ function TransformationSection({ reducedMotion }: { reducedMotion: boolean | nul
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={transition}
-            className="flex flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--fx-shadow-card)] sm:p-6"
+            className="flex flex-col rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6"
           >
             <div className="mb-4 flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-md bg-[color-mix(in_oklab,var(--warn)_12%,transparent)] text-[var(--warn)]">
+              <span className="flex size-7 items-center justify-center rounded-md bg-warn/10 text-warn">
                 <Icon name="alert" size="sm" />
               </span>
-              <span className="text-xs font-medium tracking-wide text-[var(--muted-foreground)] uppercase">
-                Oldin
+              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {t.beforeLabel}
               </span>
             </div>
-            <div className="space-y-3 rounded-lg bg-[var(--surface-3)] p-4">
-              <p className="text-sm leading-relaxed text-[var(--foreground)]">
-                &laquo;Ish beruvchi 4 oy ish haqini bermadi. Qayerga murojaat qilishni bilmayman.
-                e-sudda qaysi shaklni tanlash kerak?&raquo;
-              </p>
+            <div className="space-y-3 rounded-lg bg-muted/50 p-4">
+              <p className="text-sm leading-relaxed text-foreground">{t.beforeQuote}</p>
               <div className="flex flex-wrap gap-2">
-                {["Qaysi sud?", "Noto'g'ri shakl", "Qaytarilgan ariza"].map((tag) => (
+                {t.beforeTags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-md border border-[color-mix(in_oklab,var(--warn)_25%,var(--border))] bg-[color-mix(in_oklab,var(--warn)_8%,transparent)] px-2 py-0.5 text-xs text-[var(--warn)]"
+                    className="rounded-md border border-warn/25 bg-warn/10 px-2 py-0.5 text-xs text-warn"
                   >
                     {tag}
                   </span>
@@ -309,8 +227,8 @@ function TransformationSection({ reducedMotion }: { reducedMotion: boolean | nul
             className="flex items-center justify-center py-2 lg:py-0"
             aria-hidden
           >
-            <span className="flex size-11 items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--accent-gold)_40%,var(--border))] bg-[color-mix(in_oklab,var(--accent-gold)_10%,var(--card))] text-[var(--accent-gold)] shadow-[var(--fx-shadow-sm)]">
-              <Icon name="arrowRight" size="lg" className="lg:rotate-0 rotate-90" />
+            <span className="flex size-11 items-center justify-center rounded-full border border-brand/40 bg-brand/10 text-brand shadow-sm">
+              <Icon name="arrowRight" size="lg" className="rotate-90 lg:rotate-0" />
             </span>
           </motion.div>
 
@@ -319,38 +237,30 @@ function TransformationSection({ reducedMotion }: { reducedMotion: boolean | nul
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={transition}
-            className="flex flex-col rounded-xl border border-[color-mix(in_oklab,var(--scan-blue)_25%,var(--border))] bg-[var(--card)] p-5 shadow-[var(--fx-shadow-card)] sm:p-6"
+            className="flex flex-col rounded-xl border border-primary/25 bg-card p-5 shadow-sm sm:p-6"
           >
             <div className="mb-4 flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-md bg-[color-mix(in_oklab,var(--success)_12%,transparent)] text-[var(--success)]">
+              <span className="flex size-7 items-center justify-center rounded-md bg-success/10 text-success">
                 <Icon name="check" size="sm" />
               </span>
-              <span className="text-xs font-medium tracking-wide text-[var(--muted-foreground)] uppercase">
-                Keyin
+              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {t.afterLabel}
               </span>
             </div>
-            <div className="legal-paper flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface-1)] p-4 text-[0.8125rem] leading-relaxed">
-              <p className="text-center text-[0.7rem] font-semibold tracking-wide text-[var(--muted-foreground)] uppercase">
-                Andijon viloyati, Andijon shahar fuqarolik sudi
+            <div className="legal-paper flex-1 rounded-lg border border-border bg-legal-paper p-4 text-[0.8125rem] leading-relaxed">
+              <p className="text-center text-[0.7rem] font-semibold tracking-wide text-muted-foreground uppercase">
+                {t.courtName}
               </p>
-              <p className="mt-3 text-center text-sm font-bold">DA&apos;VO ARIZASI</p>
-              <p className="mt-1 text-center text-[0.7rem] text-[var(--muted-foreground)]">
-                mehnat munosabatlari bo&apos;yicha
-              </p>
+              <p className="mt-3 text-center text-sm font-bold">{t.docTitle}</p>
+              <p className="mt-1 text-center text-[0.7rem] text-muted-foreground">{t.docSubtitle}</p>
               <div className="mt-4 space-y-1.5 text-[0.75rem]">
-                <p>
-                  <span className="font-semibold">Da&apos;vogar:</span> Aliyev A.A.
-                </p>
-                <p>
-                  <span className="font-semibold">Javobgar:</span> &laquo;Oltin tex&raquo; MChJ
-                </p>
-                <p>
-                  <span className="font-semibold">Da&apos;vo bahosi:</span> 12 800 000 so&apos;m
-                </p>
+                <p>{t.plaintiff}</p>
+                <p>{t.defendant}</p>
+                <p>{t.claimAmount}</p>
               </div>
-              <div className="mt-3 flex items-center gap-1.5 text-[0.7rem] text-[var(--success)]">
+              <div className="mt-3 flex items-center gap-1.5 text-[0.7rem] text-success">
                 <Icon name="fileCheck" size={12} />
-                MKPK 189 · tekshirilgan
+                {t.verified}
               </div>
             </div>
           </motion.div>
@@ -360,16 +270,23 @@ function TransformationSection({ reducedMotion }: { reducedMotion: boolean | nul
   );
 }
 
-function StatsSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function StatsSection({
+  reducedMotion,
+  copy,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
+  const s = copy.stats;
 
   return (
     <section className="px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
-          eyebrow="Dalillar"
-          title="Raqamlar va ishonch"
-          description="Sud tizimi o'smoqda — fuqarolar uchun tayyorlash qatlami hali yetishmaydi."
+          eyebrow={s.eyebrow}
+          title={s.title}
+          description={s.description}
           className="mb-10 sm:mb-12"
         />
 
@@ -380,7 +297,7 @@ function StatsSection({ reducedMotion }: { reducedMotion: boolean | null }) {
           variants={stagger}
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {PROOF_STATS.map((stat) => (
+          {s.items.map((stat) => (
             <motion.div key={stat.label} variants={fadeUp} transition={transition}>
               <MetricCard
                 label={stat.label}
@@ -397,16 +314,23 @@ function StatsSection({ reducedMotion }: { reducedMotion: boolean | null }) {
   );
 }
 
-function HowItWorksSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function HowItWorksSection({
+  reducedMotion,
+  copy,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
+  const h = copy.howItWorks;
 
   return (
-    <section className="border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-16 sm:px-6 sm:py-20">
+    <section className="border-t border-border bg-surface-2 px-4 py-16 sm:px-6 sm:py-20">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
-          eyebrow="Jarayon"
-          title="Qanday ishlaydi"
-          description="To'rt qadam: tasvirlang, tayyorlang, tekshiring, yuklab oling."
+          eyebrow={h.eyebrow}
+          title={h.title}
+          description={h.description}
           className="mb-10 sm:mb-12"
         />
 
@@ -417,33 +341,31 @@ function HowItWorksSection({ reducedMotion }: { reducedMotion: boolean | null })
           variants={stagger}
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {HOW_IT_WORKS.map((item, index) => (
+          {h.steps.map((item, index) => (
             <motion.li
               key={item.title}
               variants={fadeUp}
               transition={transition}
-              className="relative list-none rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--fx-shadow-sm)]"
+              className="relative list-none rounded-xl border border-border bg-card p-5 shadow-sm"
             >
-              {index < HOW_IT_WORKS.length - 1 ? (
+              {index < h.steps.length - 1 ? (
                 <span
                   aria-hidden
-                  className="absolute top-1/2 -right-2 hidden size-4 -translate-y-1/2 text-[var(--accent-gold)] lg:block"
+                  className="absolute top-1/2 -right-2 hidden size-4 -translate-y-1/2 text-brand lg:block"
                 >
                   <Icon name="arrowRight" size={16} />
                 </span>
               ) : null}
               <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs font-semibold tabular-nums tracking-widest text-[var(--accent-gold)]">
+                <span className="text-xs font-semibold tabular-nums tracking-widest text-brand">
                   {item.step}
                 </span>
-                <span className="flex size-9 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--scan-blue)_10%,transparent)] text-[var(--scan-blue-deep)] dark:text-[var(--scan-blue)]">
+                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Icon name={item.icon} size="md" />
                 </span>
               </div>
-              <h3 className="font-semibold text-[var(--foreground)]">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                {item.body}
-              </p>
+              <h3 className="font-semibold text-foreground">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
             </motion.li>
           ))}
         </motion.ol>
@@ -452,36 +374,44 @@ function HowItWorksSection({ reducedMotion }: { reducedMotion: boolean | null })
   );
 }
 
-function ExampleScenariosSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function ExampleScenariosSection({
+  reducedMotion,
+  copy,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
+  const sc = copy.scenarios;
+
   return (
-    <section className="border-y border-[var(--border)] bg-[var(--surface-2)] px-4 py-16 sm:px-6">
+    <section className="border-y border-border bg-surface-2 px-4 py-16 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
-          eyebrow="Misol holatlar"
-          title="Har qanday murakkab vaziyat"
-          description="Bir suhbat — bir nechta masala, hujjat va forum."
+          eyebrow={sc.eyebrow}
+          title={sc.title}
+          description={sc.description}
           className="mb-8"
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          {EXAMPLE_SCENARIOS.map((s) => (
+          {sc.items.map((s, index) => (
             <motion.div
               key={s.title}
               initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={transition}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5"
+              className="rounded-xl border border-border bg-card p-5"
             >
-              <h3 className="font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm text-[var(--muted-foreground)]">{s.body}</p>
+              <h3 className="font-semibold text-foreground">{s.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link href={s.href}>
-                  <Button size="sm">Boshlash</Button>
+                  <Button size="sm">{sc.start}</Button>
                 </Link>
-                <Link href={s.openHref}>
+                <Link href={SCENARIO_OPEN_HREFS[index] ?? `/situations/${DEMO_SITUATION_ID}`}>
                   <Button size="sm" variant="outline">
-                    Tayyor holat
+                    {sc.openReady}
                   </Button>
                 </Link>
               </div>
@@ -493,7 +423,13 @@ function ExampleScenariosSection({ reducedMotion }: { reducedMotion: boolean | n
   );
 }
 
-function ComingSoonSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function ComingSoonSection({
+  reducedMotion,
+  copy,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
 
   return (
@@ -503,34 +439,28 @@ function ComingSoonSection({ reducedMotion }: { reducedMotion: boolean | null })
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={transition}
-        className="mx-auto max-w-6xl rounded-2xl border border-[color-mix(in_oklab,var(--scan-blue)_20%,var(--border))] bg-[color-mix(in_oklab,var(--navy)_6%,var(--card))] p-6 sm:p-8"
+        className="mx-auto max-w-6xl rounded-2xl border border-primary/20 bg-brand/5 p-6 sm:p-8"
       >
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-xl space-y-3">
-            <Badge
-              variant="secondary"
-              shape="pill"
-              className="gap-1.5 border-[color-mix(in_oklab,var(--accent-gold)_30%,var(--border))] text-[var(--accent-gold)]"
-            >
+            <Badge variant="secondary" shape="pill" className="gap-1.5 border-brand/30 text-brand">
               <Icon name="sparkles" size={12} />
-              Tez orada
+              {copy.comingSoonBadge}
             </Badge>
-            <h2 className="text-xl font-semibold tracking-tight text-[var(--foreground)] sm:text-2xl">
-              To&apos;g&apos;ridan-to&apos;g&apos;ri e-sud orqali topshirish
+            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              {copy.comingSoonTitle}
             </h2>
-            <p className="text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
-              Hozircha Areeza sudga tayyor PDF paketini tayyorlaydi va my.sud.uz bo&apos;yicha
-              yo&apos;riqnoma beradi. Keyingi bosqichda arizani to&apos;g&apos;ridan-to&apos;g&apos;ri
-              sud kabinetiga yuborish rejalashtirilgan.
+            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+              {copy.comingSoonBody}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-3)] px-4 py-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-[color-mix(in_oklab,var(--scan-blue)_12%,transparent)] text-[var(--scan-blue)]">
+          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-border bg-muted/50 px-4 py-3">
+            <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Icon name="externalLink" size="md" />
             </span>
             <div>
-              <p className="text-sm font-medium text-[var(--foreground)]">my.sud.uz</p>
-              <p className="text-xs text-[var(--muted-foreground)]">Elektron sud kabineti</p>
+              <p className="text-sm font-medium text-foreground">{copy.esudLabel}</p>
+              <p className="text-xs text-muted-foreground">{copy.esudHint}</p>
             </div>
           </div>
         </div>
@@ -539,11 +469,19 @@ function ComingSoonSection({ reducedMotion }: { reducedMotion: boolean | null })
   );
 }
 
-function CtaSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+function CtaSection({
+  reducedMotion,
+  copy,
+  locale,
+}: {
+  reducedMotion: boolean | null;
+  copy: LandingCopy;
+  locale: "uz" | "ru";
+}) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
 
   return (
-    <section className="border-t border-[var(--border)] px-4 py-16 sm:px-6 sm:py-20">
+    <section className="border-t border-border px-4 py-16 sm:px-6 sm:py-20">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -551,28 +489,27 @@ function CtaSection({ reducedMotion }: { reducedMotion: boolean | null }) {
         transition={transition}
         className="mx-auto max-w-6xl text-center"
       >
-        <h2 className="text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-          Birinchi arizangizni tayyorlang
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          {copy.ctaTitle}
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted-foreground)] sm:text-base">
-          To&apos;lanmagan ish haqi bo&apos;yicha demo ishni oching — intake dan PDF eksportgacha
-          butun jarayonni ko&apos;ring.
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {copy.ctaBody}
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/situations/new" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full gap-2 sm:w-auto">
+          <Link href={`/situations/${DEMO_SITUATION_ID}`} className="w-full sm:w-auto">
+            <Button variant="brand" size="lg" className="w-full gap-2 sm:w-auto">
               <Icon name="sparkles" size="sm" />
-              Demoni boshlash
+              {copy.ctaDemo}
             </Button>
           </Link>
           <Link href="/situations" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Mening ishlarim
+              {copy.myCases}
             </Button>
           </Link>
         </div>
-        <p className="mx-auto mt-10 max-w-2xl text-xs leading-relaxed text-[var(--muted-foreground)]">
-          {COMPLIANCE_NOTE}
+        <p className="mx-auto mt-10 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+          {COMPLIANCE_NOTE[locale]}
         </p>
       </motion.div>
     </section>
@@ -581,18 +518,20 @@ function CtaSection({ reducedMotion }: { reducedMotion: boolean | null }) {
 
 export function LandingPageContent() {
   const reducedMotion = useReducedMotion();
+  const { locale } = useAppLocale();
+  const copy = LANDING_COPY[locale];
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <LandingHeader />
-      <main>
-        <HeroSection reducedMotion={reducedMotion} />
-        <TransformationSection reducedMotion={reducedMotion} />
-        <StatsSection reducedMotion={reducedMotion} />
-        <HowItWorksSection reducedMotion={reducedMotion} />
-        <ExampleScenariosSection reducedMotion={reducedMotion} />
-        <ComingSoonSection reducedMotion={reducedMotion} />
-        <CtaSection reducedMotion={reducedMotion} />
+    <div className="min-h-screen bg-background text-foreground">
+      <LandingHeader copy={copy} />
+      <main aria-label={copy.mainAriaLabel}>
+        <HeroSection reducedMotion={reducedMotion} copy={copy} />
+        <TransformationSection reducedMotion={reducedMotion} copy={copy} />
+        <StatsSection reducedMotion={reducedMotion} copy={copy} />
+        <HowItWorksSection reducedMotion={reducedMotion} copy={copy} />
+        <ExampleScenariosSection reducedMotion={reducedMotion} copy={copy} />
+        <ComingSoonSection reducedMotion={reducedMotion} copy={copy} />
+        <CtaSection reducedMotion={reducedMotion} copy={copy} locale={locale} />
       </main>
     </div>
   );

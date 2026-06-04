@@ -1,15 +1,26 @@
 "use client";
 
 import { useEffect } from "react";
-import { useIntakeStore } from "@/lib/use-intake-store";
+import { useAppStore } from "@/lib/use-app-store";
+import { syncAllIntakeLocales, useIntakeStore } from "@/lib/use-intake-store";
 
-/** Keeps `document.documentElement.lang` aligned with intake locale (uz | ru). */
+/** Keeps `document.documentElement.lang` and intake locale aligned with app prefs. */
 export function LocaleBridge() {
-  const locale = useIntakeStore((s) => s.locale);
+  const appLocale = useAppStore((s) => s.locale);
+  const hasHydrated = useAppStore((s) => s._hasHydrated);
+  const intakeLocale = useIntakeStore((s) => s.locale);
 
   useEffect(() => {
-    document.documentElement.lang = locale === "ru" ? "ru" : "uz";
-  }, [locale]);
+    if (!hasHydrated) return;
+    if (intakeLocale !== appLocale) {
+      syncAllIntakeLocales(appLocale);
+    }
+  }, [appLocale, hasHydrated, intakeLocale]);
+
+  useEffect(() => {
+    const lang = (hasHydrated ? appLocale : intakeLocale) === "ru" ? "ru" : "uz";
+    document.documentElement.lang = lang;
+  }, [appLocale, hasHydrated, intakeLocale]);
 
   return null;
 }
