@@ -1,34 +1,14 @@
-# dependencies
-node_modules/
-.pnpm-store/
-
-# builds / framework
-.next/
-.turbo/
-dist/
-out/
-build/
-*.tsbuildinfo
-
-# env & secrets (commit .env.example only)
+node_modules
+.next
+dist
+.turbo
 .env
 .env.local
-.env*.local
-
-# os / editor
+*.log
 .DS_Store
-*.swp
-.idea/
-.vscode/
-
-# local agent config (each dev keeps their own)
+*.tsbuildinfo
+.env*.local
+.cursor/
 .claude/
-
-# scratch & tooling (not part of the product)
 .deck/
 .prototype/
-
-# render artifacts
-*.pdf
-slide-*.jpg
-slide-*.png

@@ -7,20 +7,20 @@
 - **Node 22+** and **pnpm 10** (`corepack enable` then `corepack prepare pnpm@latest --activate`)
 - **git** with SSH access to `git@github.com:romaluev/areeza.git`
 - An AI coding agent (Cursor / Claude Code) — point it at [CLAUDE.md](../CLAUDE.md)
-- **ANTHROPIC_API_KEY** (Dev 1 / anyone running the AI routes)
-- A **Supabase** project (Dev 1 / Roma) — URL + anon + service-role keys
+- **Go 1.22+** and **Docker** (backend track — `make dev`)
+- **ANTHROPIC_API_KEY** only when pointing the web at the real Go API or running AI routes locally
 
-## 2. First run
+## 2. First run (frontend — mock, no backend)
 
 ```bash
 git clone git@github.com:romaluev/areeza.git
 cd areeza
 pnpm install
-cp .env.example .env.local        # fill the keys you have
-pnpm dev                          # web → http://localhost:3000
+cp .env.example apps/web/.env.local   # NEXT_PUBLIC_API_MODE=mock by default
+pnpm dev                              # web → http://localhost:3000
 ```
 
-Frontend works **with no keys**: `.env.local` defaults to `NEXT_PUBLIC_API_MODE=mock`, so the whole UI runs on fixtures. Set it to `real` once Dev 1's routes are live.
+Frontend works **with no keys**: `NEXT_PUBLIC_API_MODE=mock` runs the full demo (intake stream → workspace → da'vo arizasi → validation → export) on fixtures. Set `NEXT_PUBLIC_API_MODE=real` and `NEXT_PUBLIC_API_URL` once the Go API is live.
 
 ## 3. Commands
 
@@ -29,7 +29,8 @@ pnpm dev          # run the web app
 pnpm build        # turbo build all
 pnpm lint         # eslint across the workspace
 pnpm typecheck    # tsc --noEmit across the workspace
-pnpm db:push      # apply the Supabase schema (Dev 1)
+make dev          # Go API + Postgres (backend track)
+make migrate      # apply DB migrations
 ```
 
 Run `pnpm typecheck && pnpm lint` **before every push** (see [conventions.md](conventions.md) §4).
@@ -37,13 +38,12 @@ Run `pnpm typecheck && pnpm lint` **before every push** (see [conventions.md](co
 ## 4. Repo map (where things live)
 
 ```
-apps/web            # the app — Dev 2 owns app/(marketing|app) + components; Dev 1 owns app/api/{intake,classify,route,draft,validate}
-packages/ui         # @areeza/ui — design system & components (Dev 2)
-packages/core/types # the CONTRACTS — zod + types (Roma; shared)
-packages/core/api   # client + mock + real + fixtures (Dev 2)
-packages/core/ai    # prompts, schemas, Claude wrappers (Dev 1)
-packages/core/legal # the route engine (Dev 1)
-packages/core/db    # supabase (Dev 1)
+apps/web            # Next.js 16 app — (marketing) landing + (app) cases/intake/workspace
+packages/ui         # @areeza/ui — design tokens + Radix/shadcn primitives
+packages/core/types # zod contracts (shared)
+packages/core/api   # typed client + mock + fixtures
+packages/core/legal # route/category data (mirrors legal-domain.md; Go engine is canonical in server/)
+server/             # Go backend (separate track)
 docs/               # the product brain — start here
 ```
 
