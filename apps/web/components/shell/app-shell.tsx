@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ShapeProvider } from "@areeza/ui/lib/shape-context";
 import { SurfaceProvider } from "@areeza/ui/lib/surface-context";
@@ -9,60 +10,84 @@ import {
   SheetContent,
   SheetTitle,
 } from "@areeza/ui/components/sheet";
+import { SidebarProvider } from "@areeza/ui/components/sidebar";
 import { Icon } from "@areeza/ui/icons";
+import { uiCopy } from "@/lib/copy";
+import { useAppLocale } from "@/lib/use-app-locale";
 import { useAppStore } from "@/lib/use-app-store";
-import { AppSidebar, SidebarPanel } from "./app-sidebar";
-import { useMotionTransition } from "@areeza/ui/hooks/use-reduced-motion";
-import { useSurfaceStyle } from "@areeza/ui/lib/surface-context";
+import { AppSidebar } from "./app-sidebar";
+import { TopBarSlot } from "./top-bar-slot";
+import { useShellPageTitle } from "./use-shell-page-title";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const density = useAppStore((s) => s.density);
   const shape = useAppStore((s) => s.shape);
+  const { locale } = useAppLocale();
+  const copy = uiCopy(locale);
+  const pageTitle = useShellPageTitle();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const surfaceStyle = useSurfaceStyle(0);
-  const navTransition = useMotionTransition("moderate");
 
   return (
     <SurfaceProvider level={1}>
       <ShapeProvider density={density === "compact" ? "tight" : "default"} preset={shape}>
-        <div className="flex min-h-dvh bg-background">
-          <AppSidebar className="hidden h-dvh lg:flex" />
-          <div
-            className="flex min-w-0 flex-1 flex-col"
-            data-density={density}
+        <SidebarProvider
+          defaultOpen
+          style={
+            {
+              "--sidebar-width": "var(--layout-app-sidebar-width)",
+            } as React.CSSProperties
+          }
+        >
+          <a
+            href="#app-main"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-card focus:px-3 focus:py-2 focus:text-sm focus:shadow-md"
           >
-            <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[var(--border)] px-3 lg:hidden">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-9 shrink-0"
-                aria-label="Navigatsiyani ochish"
-                onClick={() => setMobileNavOpen(true)}
-              >
-                <Icon name="sidebarExpand" size="sm" />
-              </Button>
-              <span className="text-sm font-semibold tracking-tight">Areeza</span>
-            </header>
-            {children}
-          </div>
-        </div>
+            {copy.skipLink}
+          </a>
+          <div className="flex h-dvh overflow-hidden bg-background p-2 gap-2">
+            <div className="hidden shrink-0 md:block">
+              <AppSidebar />
+            </div>
 
-        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-          <SheetContent side="left" className="p-0" showClose>
-            <SheetTitle className="sr-only">Navigatsiya</SheetTitle>
-            <SidebarPanel
-              className="h-dvh w-full border-0"
-              collapsed={false}
-              mounted
-              surfaceStyle={surfaceStyle}
-              navTransition={navTransition}
-              onToggleCollapsed={() => setMobileNavOpen(false)}
-              onPersistCollapsed={() => setMobileNavOpen(false)}
-              showCollapseControl={false}
-            />
-          </SheetContent>
-        </Sheet>
+            <div className="flex min-w-0 flex-1 flex-col gap-2" data-density={density}>
+              <header className="flex h-12 shrink-0 items-center gap-2 px-2 md:hidden">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-9 shrink-0"
+                  aria-label="Navigatsiyani ochish"
+                  onClick={() => setMobileNavOpen(true)}
+                >
+                  <Icon name="sidebarExpand" size="sm" />
+                </Button>
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold tracking-tight">
+                  {pageTitle}
+                </span>
+                <Button asChild variant="brand" size="sm" className="shrink-0">
+                  <Link href="/situations/new">{copy.newSituation}</Link>
+                </Button>
+              </header>
+
+              <TopBarSlot />
+
+              <main
+                id="app-main"
+                aria-label={copy.situationsHomeTitle}
+                className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/40 bg-card shadow-sm"
+              >
+                {children}
+              </main>
+            </div>
+          </div>
+
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+            <SheetContent side="left" className="w-(--layout-app-sidebar-width) p-0" showClose={false}>
+              <SheetTitle className="sr-only">Navigatsiya</SheetTitle>
+              <AppSidebar mobile onNavigate={() => setMobileNavOpen(false)} />
+            </SheetContent>
+          </Sheet>
+        </SidebarProvider>
       </ShapeProvider>
     </SurfaceProvider>
   );

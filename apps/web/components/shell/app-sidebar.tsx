@@ -2,122 +2,118 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useRef, useSyncExternalStore, useState } from "react";
-import { motion } from "framer-motion";
-import { Icon, type IconName } from "@areeza/ui/icons";
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
+import { Icon, type IconName } from "@areeza/ui/icons";
 import { Button } from "@areeza/ui/components/button";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@areeza/ui/components/tooltip";
-import { useProximityHover, PROXIMITY_ID_ATTR } from "@areeza/ui/hooks/use-proximity-hover";
-import { useMotionTransition } from "@areeza/ui/hooks/use-reduced-motion";
-import { navLabelWeight } from "@areeza/ui/lib/font-weight";
-import { useSurfaceStyle } from "@areeza/ui/lib/surface-context";
+  NavMenuGroup,
+  NavMenuHighlight,
+} from "@areeza/ui/components/fluid/nav-menu-group";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@areeza/ui/components/sidebar";
+import { navLabelWeight } from "@areeza/ui/lib/nav-motion";
 import { cn } from "@areeza/ui/lib/utils";
+import { uiCopy } from "@/lib/copy";
+import { useAppLocale } from "@/lib/use-app-locale";
 import { useAppStore } from "@/lib/use-app-store";
-
-const SIDEBAR_COLLAPSED_KEY = "areeza-sidebar-collapsed";
+import { LocaleToggle } from "./locale-toggle";
 
 type NavItem = {
+  id: string;
   href: string;
   label: string;
   icon: IconName;
   match?: (pathname: string) => boolean;
 };
 
-const mainNav: NavItem[] = [
-  {
-    href: "/situations",
-    label: "Holatlarim",
-    icon: "folder",
-    match: (p) =>
-      p === "/situations" ||
-      (p.startsWith("/situations/") && !p.startsWith("/situations/new")) ||
-      p === "/cases" ||
-      (p.startsWith("/cases/") && !p.startsWith("/cases/new")),
-  },
-];
+function buildNav(copy: ReturnType<typeof uiCopy>) {
+  const mainNav: NavItem[] = [
+    {
+      id: "situations",
+      href: "/situations",
+      label: copy.homeLink,
+      icon: "folder",
+      match: (p) =>
+        p === "/situations" ||
+        (p.startsWith("/situations/") && !p.startsWith("/situations/new")),
+    },
+  ];
 
-const sidebarListeners = new Set<() => void>();
-
-function readCollapsed(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
-}
-
-function subscribeSidebarCollapsed(onChange: () => void) {
-  sidebarListeners.add(onChange);
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === SIDEBAR_COLLAPSED_KEY) onChange();
+  const newCaseNav: NavItem = {
+    id: "new-case",
+    href: "/situations/new",
+    label: copy.newSituation,
+    icon: "add",
+    match: (p) => p === "/situations/new" || p === "/cases/new",
   };
-  window.addEventListener("storage", onStorage);
-  return () => {
-    sidebarListeners.delete(onChange);
-    window.removeEventListener("storage", onStorage);
-  };
+
+  return { mainNav, newCaseNav };
 }
 
-function persistSidebarCollapsed(next: boolean) {
-  window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
-  sidebarListeners.forEach((listener) => listener());
-}
-
-function useSidebarCollapsed() {
-  return useSyncExternalStore(subscribeSidebarCollapsed, readCollapsed, () => false);
-}
-
-function useSidebarMounted() {
-  return useSyncExternalStore(() => () => {}, () => true, () => false);
-}
-
-export function AppSidebar({ className }: { className?: string }) {
-  const collapsed = useSidebarCollapsed();
-  const mounted = useSidebarMounted();
-  const surfaceStyle = useSurfaceStyle(0);
-  const navTransition = useMotionTransition("moderate");
-  const persistCollapsed = useCallback((next: boolean) => persistSidebarCollapsed(next), []);
-
+function NavRow({
+  item,
+  active,
+  onNavigate,
+  buttonVariant = "nav",
+}: {
+  item: NavItem;
+  active: boolean;
+  onNavigate?: () => void;
+  buttonVariant?: "nav" | "default";
+}) {
   return (
-    <SidebarPanel
-      className={className}
-      collapsed={collapsed}
-      mounted={mounted}
-      surfaceStyle={surfaceStyle}
-      navTransition={navTransition}
-      onToggleCollapsed={() => persistCollapsed(!collapsed)}
-      onPersistCollapsed={persistCollapsed}
-    />
+    <SidebarMenuItem
+      data-nav-highlight-id={item.id}
+      {...(active ? { "data-active": "" } : {})}
+    >
+      <NavMenuHighlight id={item.id} />
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        variant={buttonVariant}
+        tooltip={item.label}
+      >
+        <Link
+          href={item.href}
+          onClick={onNavigate}
+          aria-current={active ? "page" : undefined}
+        >
+          <Icon name={item.icon} size="sm" />
+          <span className={navLabelWeight}>{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
-export function SidebarPanel({
-  className,
-  collapsed,
-  mounted,
-  surfaceStyle,
-  navTransition,
-  onToggleCollapsed,
-  onPersistCollapsed,
-  showCollapseControl = true,
+export function AppSidebar({
+  mobile,
+  onNavigate,
 }: {
-  className?: string;
-  collapsed: boolean;
-  mounted: boolean;
-  surfaceStyle: React.CSSProperties;
-  navTransition: ReturnType<typeof useMotionTransition>;
-  onToggleCollapsed: () => void;
-  onPersistCollapsed: (next: boolean) => void;
-  showCollapseControl?: boolean;
+  mobile?: boolean;
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const navRef = useRef<HTMLElement>(null);
+  const { locale } = useAppLocale();
+  const copy = uiCopy(locale);
   const { resolvedTheme, setTheme } = useTheme();
   const setThemePref = useAppStore((s) => s.setTheme);
-
-  useProximityHover(navRef, { enabled: !collapsed });
+  const themeMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const toggleTheme = () => {
     const next = resolvedTheme === "dark" ? "light" : "dark";
@@ -125,337 +121,105 @@ export function SidebarPanel({
     setTheme(next);
   };
 
-  const widthVar = collapsed
-    ? "var(--layout-app-sidebar-collapsed-width)"
-    : "var(--layout-app-sidebar-width)";
+  const isDark = themeMounted && resolvedTheme === "dark";
+  const themeLabel = isDark ? "Yorug' rejim" : "Qorong'u rejim";
+  const themeIcon = !themeMounted ? "moon" : isDark ? "sun" : "moon";
+
+  const { mainNav, newCaseNav } = buildNav(copy);
+  const isNewCaseActive =
+    newCaseNav.match?.(pathname) ?? pathname.startsWith(newCaseNav.href);
 
   return (
-    <aside
-      className={cn(
-        "relative flex h-full min-h-0 shrink-0 flex-col border-r border-sidebar-border transition-[width] duration-200 ease-out",
-        mounted ? "opacity-100" : "opacity-0",
-        className,
-      )}
-      style={{ ...surfaceStyle, width: widthVar }}
-      data-collapsed={collapsed ? "" : undefined}
+    <Sidebar
+      collapsible={mobile ? "none" : "icon"}
+      variant="inset"
+      className={cn(!mobile && "shellPanel h-full w-full border-0")}
     >
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-sidebar-border px-3">
+      <SidebarHeader className="border-b border-sidebar-border">
         <Link
-          href="/cases"
-          className={cn(
-            "flex min-w-0 flex-1 items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            collapsed && "justify-center",
-          )}
-          aria-label="Areeza — ishlarim"
+          href="/situations"
+          className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={onNavigate}
+          aria-label="Bosh sahifa — Holatlarim"
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-primary text-primary-foreground shadow-[var(--shadow-2)]">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-sm">
             <Icon name="scale" size="sm" />
           </span>
-          {!collapsed && (
-            <span className="min-w-0 truncate">
-              <span className="block text-sm font-semibold tracking-tight text-sidebar-foreground">
-                Areeza
-              </span>
-              <span className="block text-[10px] leading-tight text-muted-foreground">
-                Sud hujjatlari
-              </span>
-            </span>
-          )}
+          <span className="min-w-0 truncate group-data-[collapsible=icon]:hidden">
+            <span className="block text-sm font-semibold tracking-tight">Areeza</span>
+            <span className="block text-[10px] text-muted-foreground">Sud hujjatlari</span>
+          </span>
         </Link>
-        {showCollapseControl ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="size-8 shrink-0 text-muted-foreground"
-                aria-label={collapsed ? "Panelni kengaytirish" : "Panelni yig'ish"}
-                onClick={onToggleCollapsed}
-              >
-                <Icon
-                  name={collapsed ? "sidebarExpand" : "sidebarCollapse"}
-                  size="sm"
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Asosiy</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <NavMenuGroup layoutId="sidebar-main">
+              <SidebarMenu>
+                {mainNav.map((item) => {
+                const active = item.match?.(pathname) ?? pathname.startsWith(item.href);
+                  return (
+                    <NavRow
+                      key={item.id}
+                      item={item}
+                      active={active}
+                      onNavigate={onNavigate}
+                    />
+                  );
+                })}
+              </SidebarMenu>
+            </NavMenuGroup>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>{copy.newSituation}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <NavMenuGroup layoutId="sidebar-new-case">
+              <SidebarMenu>
+                <NavRow
+                  item={newCaseNav}
+                  active={isNewCaseActive}
+                  onNavigate={onNavigate}
+                  buttonVariant="default"
                 />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {collapsed ? "Kengaytirish" : "Yig'ish"}
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
-      </header>
+              </SidebarMenu>
+            </NavMenuGroup>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-      <div className={cn("px-3 pt-4", collapsed && "px-2")}>
-        <NewCaseCta collapsed={collapsed} />
-      </div>
-
-      <nav
-        ref={navRef}
-        className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4"
-        aria-label="Asosiy navigatsiya"
-      >
-        <NavSection title="Asosiy" collapsed={collapsed}>
-          {mainNav.map((item) => (
-            <SidebarNavLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              collapsed={collapsed}
-              transition={navTransition}
-            />
-          ))}
-        </NavSection>
-
-        <NavSection title="Tez orada" collapsed={collapsed}>
-          <SidebarNavLink
-            item={{
-              href: "#",
-              label: "Sozlamalar",
-              icon: "route",
-            }}
-            pathname={pathname}
-            collapsed={collapsed}
-            transition={navTransition}
-            disabled
-          />
-        </NavSection>
-      </nav>
-
-      <footer
-        className={cn(
-          "shrink-0 space-y-2 border-t border-sidebar-border p-3",
-          collapsed && "px-2",
-        )}
-      >
-        <UserTile collapsed={collapsed} />
-        <ThemeToggle
-          collapsed={collapsed}
-          mounted={mounted}
-          resolvedTheme={resolvedTheme}
-          onToggle={toggleTheme}
-        />
-      </footer>
-    </aside>
-  );
-}
-
-function NavSection({
-  title,
-  collapsed,
-  children,
-}: {
-  title: string;
-  collapsed: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      {!collapsed && (
-        <p className="eyebrow px-2 pb-1">{title}</p>
-      )}
-      <ul className="relative flex flex-col gap-0.5">{children}</ul>
-    </div>
-  );
-}
-
-function SidebarNavLink({
-  item,
-  pathname,
-  collapsed,
-  transition,
-  disabled,
-}: {
-  item: NavItem;
-  pathname: string;
-  collapsed: boolean;
-  transition: ReturnType<typeof useMotionTransition>;
-  disabled?: boolean;
-}) {
-  const active = disabled
-    ? false
-    : (item.match?.(pathname) ??
-      (item.href === "/cases"
-        ? pathname === "/cases" ||
-          (pathname.startsWith("/cases/") && pathname !== "/cases/new")
-        : pathname.startsWith(item.href)));
-
-  const linkClass = cn(
-    "relative flex items-center gap-2.5 rounded-[var(--radius-lg)] px-2.5 py-2 text-sm text-muted-foreground outline-none transition-colors duration-150",
-    navLabelWeight,
-    "hover:text-foreground",
-    "data-[proximity]:text-foreground data-[proximity]:font-medium",
-    active && "text-foreground font-medium",
-    disabled && "pointer-events-none opacity-40",
-    collapsed && "justify-center px-2",
-  );
-
-  const inner = (
-    <>
-      {active && !disabled && (
-        <motion.span
-          layoutId="sidebar-active-pill"
-          className="absolute inset-0 rounded-[var(--radius-lg)] bg-sidebar-accent ring-1 ring-sidebar-border"
-          transition={transition}
-          aria-hidden
-        />
-      )}
-      <Icon name={item.icon} size="sm" className="relative z-[1]" />
-      {!collapsed && <span className="relative z-[1] truncate">{item.label}</span>}
-    </>
-  );
-
-  if (disabled) {
-    return (
-      <li>
-        <span
-          className={linkClass}
-          {...{ [PROXIMITY_ID_ATTR]: item.href }}
-          data-active={active ? "" : undefined}
+      <SidebarFooter className="border-t border-sidebar-border">
+        <LocaleToggle className="mb-2 w-full group-data-[collapsible=icon]:hidden" />
+        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/60 px-2 py-2 group-data-[collapsible=icon]:justify-center">
+          <span
+            className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-semibold text-brand"
+            aria-hidden
+          >
+            FL
+          </span>
+          <span className="min-w-0 flex-1 truncate group-data-[collapsible=icon]:hidden">
+            <span className="block text-sm font-medium">Foydalanuvchi</span>
+            <span className="block text-[11px] text-muted-foreground">Demo rejim</span>
+          </span>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-2 w-full justify-start gap-2 text-muted-foreground group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
+          onClick={toggleTheme}
+          disabled={!themeMounted}
+          aria-label={themeMounted ? themeLabel : "Mavzuni almashtirish"}
         >
-          {inner}
-        </span>
-      </li>
-    );
-  }
-
-  const link = (
-    <Link
-      href={item.href}
-      className={linkClass}
-      {...{ [PROXIMITY_ID_ATTR]: item.href }}
-      data-active={active ? "" : undefined}
-      aria-current={active ? "page" : undefined}
-    >
-      {inner}
-    </Link>
-  );
-
-  if (collapsed) {
-    return (
-      <li>
-        <Tooltip>
-          <TooltipTrigger asChild>{link}</TooltipTrigger>
-          <TooltipContent side="right">{item.label}</TooltipContent>
-        </Tooltip>
-      </li>
-    );
-  }
-
-  return <li>{link}</li>;
-}
-
-function NewCaseCta({ collapsed }: { collapsed: boolean }) {
-  const cta = (
-    <Button
-      asChild
-      className={cn(
-        "w-full gap-2 shadow-[var(--shadow-2)]",
-        collapsed && "size-10 px-0",
-      )}
-      size={collapsed ? "icon" : "default"}
-    >
-      <Link href="/situations/new" aria-label="Yangi holat">
-        <Icon name="add" size="sm" />
-        {!collapsed && <span>Yangi ish</span>}
-      </Link>
-    </Button>
-  );
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{cta}</TooltipTrigger>
-        <TooltipContent side="right">Yangi ish</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return cta;
-}
-
-function UserTile({ collapsed }: { collapsed: boolean }) {
-  const tile = (
-    <div
-      className={cn(
-        "flex items-center gap-2.5 rounded-[var(--radius-lg)] bg-sidebar-accent/60 px-2.5 py-2 ring-1 ring-sidebar-border",
-        collapsed && "justify-center px-2",
-      )}
-    >
-      <span
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary"
-        aria-hidden
-      >
-        FL
-      </span>
-      {!collapsed && (
-        <span className="min-w-0 flex-1 truncate">
-          <span className="block text-sm font-medium text-sidebar-foreground">
-            Foydalanuvchi
+          <Icon name={themeIcon} size="sm" />
+          <span className="group-data-[collapsible=icon]:hidden">
+            {themeMounted ? themeLabel : "Mavzu"}
           </span>
-          <span className="block text-[11px] text-muted-foreground">
-            Demo rejim
-          </span>
-        </span>
-      )}
-    </div>
+        </Button>
+      </SidebarFooter>
+    </Sidebar>
   );
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button type="button" className="w-full outline-none" aria-label="Foydalanuvchi">
-            {tile}
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">Foydalanuvchi · Demo</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return tile;
-}
-
-function ThemeToggle({
-  collapsed,
-  mounted,
-  resolvedTheme,
-  onToggle,
-}: {
-  collapsed: boolean;
-  mounted: boolean;
-  resolvedTheme?: string;
-  onToggle: () => void;
-}) {
-  const isDark = mounted && resolvedTheme === "dark";
-  const label = isDark ? "Yorug' rejim" : "Qorong'u rejim";
-
-  const control = (
-    <Button
-      type="button"
-      variant="ghost"
-      size={collapsed ? "icon" : "sm"}
-      className={cn(
-        "w-full text-muted-foreground hover:text-foreground",
-        !collapsed && "justify-start gap-2.5",
-      )}
-      onClick={onToggle}
-      aria-label={label}
-    >
-      <Icon name={isDark ? "sun" : "moon"} size="sm" />
-      {!collapsed && <span>{label}</span>}
-    </Button>
-  );
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{control}</TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return control;
 }

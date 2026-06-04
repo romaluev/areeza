@@ -21,14 +21,14 @@ export function SegmentError({
 
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 px-6 py-12 text-center">
-      <h1 className="text-lg font-semibold text-[var(--foreground)]">{title}</h1>
-      <p className="max-w-md text-sm text-[var(--muted-foreground)]">{description}</p>
+      <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+      <p className="max-w-md text-sm text-muted-foreground">{description}</p>
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Button type="button" onClick={() => reset()}>
           Qayta urinish
         </Button>
         <Button type="button" variant="outline" asChild>
-          <Link href="/cases">Bosh sahifa</Link>
+          <Link href="/situations">Holatlarim</Link>
         </Button>
       </div>
     </div>
