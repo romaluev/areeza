@@ -906,5 +906,26 @@ export function getDocumentTemplate(
   const detail = getCaseDetail(caseId);
   if (!detail) return undefined;
   const docs = detail.documents ?? [];
-  return docs.find((d) => d.id === docId) ?? (detail.document?.id === docId ? detail.document : undefined);
+  const found =
+    docs.find((d) => d.id === docId) ??
+    (detail.document?.id === docId ? detail.document : undefined);
+  if (found) return found;
+
+  if (docId === `${caseId}-davo` || docId.endsWith("-davo")) {
+    return {
+      ...DEMO_DOCUMENT,
+      id: docId,
+      title: "Da'vo arizasi",
+      status: "draft",
+      version: 1,
+    };
+  }
+  if (docId.endsWith("-calc") || docId.includes("calc")) {
+    return { ...DEMO_DOCUMENT_CALCULATION, id: docId, status: "draft", version: 1 };
+  }
+  if (docId.endsWith("-checklist") || docId.includes("checklist")) {
+    return { ...DEMO_DOCUMENT_CHECKLIST, id: docId, status: "draft", version: 1 };
+  }
+
+  return undefined;
 }

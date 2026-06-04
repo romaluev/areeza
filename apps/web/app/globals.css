@@ -273,6 +273,19 @@ html[data-density="compact"] {
   font-size: 0.8125rem;
 }
 
+.legal-paper .legal-chrome {
+  color: color-mix(in oklab, var(--foreground) 92%, var(--muted-foreground));
+}
+
+.legal-paper .legal-slot {
+  color: var(--danger);
+  letter-spacing: 0.02em;
+}
+
+.legal-paper .legal-section-editor .ProseMirror {
+  min-height: 2rem;
+}
+
 @media print {
   body * {
     visibility: hidden;
