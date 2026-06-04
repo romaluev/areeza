@@ -20,7 +20,7 @@ func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (h *Handler) ListCases(w http.ResponseWriter, _ *http.Request) {
-	var list []caseSummary
+	list := make([]caseSummary, 0)
 	for _, raw := range h.Store.List() {
 		s, err := extractSummary(raw)
 		if err != nil {
@@ -33,7 +33,7 @@ func (h *Handler) ListCases(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (h *Handler) CaseSummary(w http.ResponseWriter, _ *http.Request) {
-	var list []caseSummary
+	list := make([]caseSummary, 0)
 	for _, raw := range h.Store.List() {
 		s, err := extractSummary(raw)
 		if err != nil {

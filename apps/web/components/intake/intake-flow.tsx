@@ -182,10 +182,15 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
             case "done": {
               setStreaming(false);
               const cls = useIntakeStore.getState().classification;
-              if (
-                cls &&
-                (cls.needsCategoryPick || cls.confidenceLevel === "low")
-              ) {
+              if (!cls) {
+                toast.error(
+                  locale === "ru"
+                    ? "Не удалось классифицировать — попробуйте переформулировать"
+                    : "Tasniflab bo'lmadi — boshqacharoq yozib ko'ring",
+                );
+                break;
+              }
+              if (cls.needsCategoryPick || cls.confidenceLevel === "low") {
                 setAwaitingCategory(true);
                 setPendingCaseId(event.caseId);
                 break;
@@ -278,8 +283,12 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
         }),
       );
       setAwaitingCategory(false);
+      // Auto-advance: a manual pick is an explicit decision → go straight to the
+      // workspace (mirrors the high-confidence auto-advance). Fixes the dead-end
+      // where, after picking, no Continue button rendered.
+      if (pendingCaseId) finishCase(pendingCaseId);
     },
-    [locale, setClassification],
+    [locale, setClassification, pendingCaseId, finishCase],
   );
 
   const handleContinueAfterPick = useCallback(() => {
@@ -331,6 +340,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
               locale={locale}
               awaitingPick={false}
               onCategoryPick={handleCategoryPick}
+              onContinue={pendingCaseId ? handleContinueAfterPick : undefined}
             />
           ) : null}
 

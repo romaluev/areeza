@@ -3,7 +3,7 @@ module github.com/romaluev/areeza/server
 go 1.26.2
 
 require (
-	github.com/go-chi/chi/v5 v5.3.0 // indirect
-	github.com/go-chi/cors v1.2.2 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/cors v1.2.2
+	github.com/gorilla/websocket v1.5.3
 )

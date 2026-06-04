@@ -80,15 +80,9 @@ export function ClassificationBanner({
         </div>
       ) : null}
 
-      {classification.confidenceLevel === "medium" && !showPicker && onContinue ? (
-        <Button type="button" size="sm" variant="secondary" onClick={onContinue}>
-          {locale === "ru" ? "Подтвердить и продолжить" : "Tasdiqlash va davom etish"}
-        </Button>
-      ) : null}
-
-      {awaitingPick && classification.categoryCode !== "other" ? (
+      {onContinue && !showPicker && classification.categoryCode !== "other" ? (
         <Button type="button" size="sm" onClick={onContinue}>
-          {locale === "ru" ? "Продолжить" : "Davom etish"}
+          {locale === "ru" ? "Подтвердить и продолжить" : "Tasdiqlash va davom etish"}
         </Button>
       ) : null}
     </div>

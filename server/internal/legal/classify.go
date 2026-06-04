@@ -60,22 +60,17 @@ func ClassifyText(text string) Classification {
 		})
 	}
 
-	if gibberishRE.MatchString(normalized) && len(normalized) < 30 {
-		q := "Qaysi turdagi ish bo'yicha murojaat qilmoqchisiz?"
-		return withLevel(Classification{
-			CategoryCode: "other", Label: "Boshqa turdagi murojaat", Confidence: 0.25,
-			Track: "claim", TrackLabel: "Aniqlanmadi", TrackRationale: "Matn tushunarli emas.",
-			ClarifyingQuestion: &q,
-		})
-	}
-
-	if strings.Contains(normalized, "oylik") || strings.Contains(normalized, "ish haq") ||
-		strings.Contains(normalized, "зарплат") || strings.Contains(normalized, "maosh") {
+	// Keyword routing runs FIRST so real (often latin-only) Uzbek phrases are
+	// matched before the gibberish guard. Stems cover possessive softening
+	// (oylik → oyligi/oyligimni) and apostrophe-less typing.
+	if strings.Contains(normalized, "oylik") || strings.Contains(normalized, "oylig") ||
+		strings.Contains(normalized, "ish haq") || strings.Contains(normalized, "maosh") ||
+		strings.Contains(normalized, "zarplat") || strings.Contains(normalized, "зарплат") {
 		return demoWage
 	}
 
 	if strings.Contains(normalized, "ishdan") || strings.Contains(normalized, "bo'shat") ||
-		strings.Contains(normalized, "увол") {
+		strings.Contains(normalized, "boshat") || strings.Contains(normalized, "увол") {
 		return withLevel(Classification{
 			CategoryCode: "labor.reinstatement", Label: "Mehnat nizosi — ishga qaytarish", Confidence: 0.85,
 			Track: "claim", TrackLabel: "Da'vo tartibi", TrackRationale: "Ishdan bo'shatish haqida.",
@@ -90,25 +85,28 @@ func ClassifyText(text string) Classification {
 	}
 
 	if strings.Contains(normalized, "xizmat") || strings.Contains(normalized, "iste'mol") ||
-		strings.Contains(normalized, "remont") {
+		strings.Contains(normalized, "istemol") || strings.Contains(normalized, "remont") ||
+		strings.Contains(normalized, "tovar") || strings.Contains(normalized, "mahsulot") {
 		return withLevel(Classification{
 			CategoryCode: "consumer.dispute", Label: "Iste'molchi nizosi", Confidence: 0.76,
-			Track: "claim", TrackLabel: "Da'vo tartibi", TrackRationale: "Xizmat/yoki mahsulot nizosi.",
+			Track: "claim", TrackLabel: "Da'vo tartibi", TrackRationale: "Xizmat yoki mahsulot nizosi.",
 		})
 	}
 
-	if strings.Contains(normalized, "aliment") || strings.Contains(normalized, "farzand") {
+	if strings.Contains(normalized, "aliment") || strings.Contains(normalized, "farzand") ||
+		strings.Contains(normalized, "nafaqa") {
 		return withLevel(Classification{
 			CategoryCode: "family.child_support", Label: "Oila nizosi — aliment", Confidence: 0.88,
 			Track: "court_order", TrackLabel: "Sud buyrug'i tartibi", TrackRationale: "Aliment bo'yicha.",
 		})
 	}
 
-	if strings.Contains(normalized, "bilmayman") || strings.Contains(normalized, "yoki") {
-		q := "Bu ish haqi, qarz yoki xizmat ko'rsatish nizosimi? Qisqacha tushuntiring."
+	// Only treat as gibberish if it's a short single token with no keyword match.
+	if gibberishRE.MatchString(normalized) && len(normalized) < 30 && !strings.Contains(normalized, " ") {
+		q := "Qaysi turdagi ish bo'yicha murojaat qilmoqchisiz?"
 		return withLevel(Classification{
-			CategoryCode: "debt.recovery", Label: "Qarzni undirish (aniqlanmagan)", Confidence: 0.48,
-			Track: "claim", TrackLabel: "Da'vo tartibi", TrackRationale: "Matnda aniq kategoriya ajratilmadi.",
+			CategoryCode: "other", Label: "Boshqa turdagi murojaat", Confidence: 0.25,
+			Track: "claim", TrackLabel: "Aniqlanmadi", TrackRationale: "Matn tushunarli emas.",
 			ClarifyingQuestion: &q,
 		})
 	}
