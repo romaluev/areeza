@@ -11,10 +11,15 @@ import type {
   LegalRoute,
   RegenerateSectionRequest,
   RouteRequest,
+  Situation,
+  SituationSummaryCounts,
   UpdateDocumentRequest,
+  UploadResponse,
   ValidationResult,
 } from "../types/index";
+import { caseIdToSituationId } from "./situation-fixtures";
 import * as mock from "./mock";
+import * as mockSituation from "./mock-situation";
 import * as real from "./real";
 
 export type ApiMode = "mock" | "real";
@@ -33,53 +38,63 @@ function getMode(): ApiMode {
 export const api = {
   mode: getMode,
 
-  listCases(): Promise<Case[]> {
-    return getMode() === "mock" ? mock.listCases() : real.listCases();
+  listSituations(): Promise<Situation[]> {
+    return getMode() === "mock" ? mockSituation.listSituations() : real.listSituations();
   },
 
-  getCaseSummaryCounts(): Promise<CaseSummaryCounts> {
-    return getMode() === "mock" ? mock.getCaseSummaryCounts() : real.getCaseSummaryCounts();
+  getSituationSummaryCounts(): Promise<SituationSummaryCounts> {
+    return getMode() === "mock"
+      ? mockSituation.getSituationSummaryCounts()
+      : real.getSituationSummaryCounts();
   },
 
-  getCase(id: string): Promise<CaseDetail | null> {
-    return getMode() === "mock" ? mock.getCase(id) : real.getCase(id);
+  getSituation(id: string): Promise<Situation | null> {
+    return getMode() === "mock" ? mockSituation.getSituation(id) : real.getSituation(id);
   },
 
-  deleteCase(id: string): Promise<void> {
-    return getMode() === "mock" ? mock.deleteCase(id) : real.deleteCase(id);
+  deleteSituation(id: string): Promise<void> {
+    return getMode() === "mock" ? mockSituation.deleteSituation(id) : real.deleteSituation(id);
   },
 
   streamIntake(
-    caseId: string | undefined,
+    situationId: string | undefined,
     initialText: string,
     signal?: AbortSignal,
   ): AsyncGenerator<IntakeEvent> {
     return getMode() === "mock"
-      ? mock.streamIntake(caseId, initialText, signal)
-      : real.streamIntake(caseId, initialText, signal);
+      ? mockSituation.streamSituationIntake(situationId, initialText, signal)
+      : real.streamIntake(situationId, initialText, signal);
+  },
+
+  acknowledgeAdvisory(situationId: string, advisoryId: string): Promise<Situation> {
+    return getMode() === "mock"
+      ? mockSituation.acknowledgeAdvisory(situationId, advisoryId)
+      : mockSituation.acknowledgeAdvisory(situationId, advisoryId);
+  },
+
+  uploadFile(fileName: string): Promise<UploadResponse> {
+    return getMode() === "mock" ? mockSituation.uploadStub(fileName) : mockSituation.uploadStub(fileName);
   },
 
   classify(req: ClassifyRequest): Promise<ClassifyResponse> {
-    return getMode() === "mock"
-      ? mock.classify(req.text)
-      : real.classify(req);
+    return getMode() === "mock" ? mock.classify(req.text) : real.classify(req);
   },
 
-  route(req: RouteRequest, caseId?: string): Promise<LegalRoute> {
-    if (getMode() === "mock" && caseId) {
-      return mock.applyRoute(caseId, req);
+  route(req: RouteRequest, situationId?: string): Promise<LegalRoute> {
+    if (getMode() === "mock" && situationId) {
+      return mock.applyRoute(caseIdToSituationId(situationId), req);
     }
-    return getMode() === "mock" ? mock.route(req) : real.route(req, caseId);
+    return getMode() === "mock" ? mock.route(req) : real.route(req, situationId);
   },
 
   streamDraft(
-    caseId: string,
+    situationId: string,
     docId: string,
     signal?: AbortSignal,
   ): AsyncGenerator<DraftStreamEvent> {
     return getMode() === "mock"
-      ? mock.streamDraft(caseId, docId, signal)
-      : real.streamDraft(caseId, docId, signal);
+      ? mock.streamDraft(caseIdToSituationId(situationId), docId, signal)
+      : real.streamDraft(situationId, docId, signal);
   },
 
   regenerateSection(req: RegenerateSectionRequest): Promise<GeneratedDocument> {
@@ -87,22 +102,86 @@ export const api = {
   },
 
   updateDocument(req: UpdateDocumentRequest): Promise<GeneratedDocument> {
-    return getMode() === "mock" ? mock.updateDocument(req) : real.updateDocument(req);
-  },
-
-  draft(caseId: string): Promise<GeneratedDocument> {
-    return getMode() === "mock" ? mock.draft(caseId) : real.draft(caseId);
-  },
-
-  validate(caseId: string, documentId: string): Promise<ValidationResult> {
     return getMode() === "mock"
-      ? mock.validate(caseId, documentId)
-      : real.validate(caseId, documentId);
+      ? mockSituation.updateSituationDocument(req)
+      : real.updateDocument(req);
   },
 
-  exportPackage(caseId: string): Promise<ExportResponse> {
-    return getMode() === "mock" ? mock.exportPackage(caseId) : real.exportPackage(caseId);
+  draft(situationId: string): Promise<GeneratedDocument> {
+    return getMode() === "mock" ? mock.draft(caseIdToSituationId(situationId)) : real.draft(situationId);
+  },
+
+  validate(situationId: string, documentId: string): Promise<ValidationResult> {
+    return getMode() === "mock"
+      ? mockSituation.validateSituationDocument(situationId, documentId)
+      : real.validate(situationId, documentId);
+  },
+
+  exportPackage(situationId: string): Promise<ExportResponse> {
+    return getMode() === "mock"
+      ? mockSituation.exportSituationPackage(situationId)
+      : real.exportPackage(situationId);
+  },
+
+  /** @deprecated Use listSituations */
+  listCases(): Promise<Case[]> {
+    return this.listSituations().then((rows) =>
+      rows.map((s) => ({
+        id: s.id,
+        title: s.title,
+        status: s.status === "in_progress" ? "classified" : (s.status as Case["status"]),
+        step: s.issues[0]?.step ?? "describe",
+        categoryCode: s.issues[0]?.categoryCode,
+        claimAmount: s.claimAmount,
+        currency: s.currency,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+      })),
+    );
+  },
+
+  getCaseSummaryCounts(): Promise<CaseSummaryCounts> {
+    return this.getSituationSummaryCounts();
+  },
+
+  getCase(id: string): Promise<CaseDetail | null> {
+    return this.getSituation(caseIdToSituationId(id)).then((s) => {
+      if (!s) return null;
+      const issue = s.issues[0];
+      return {
+        id: s.id,
+        title: s.title,
+        status: issue?.status ?? "intake",
+        step: issue?.step ?? "describe",
+        categoryCode: issue?.categoryCode,
+        claimAmount: s.claimAmount,
+        currency: s.currency,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+        messages: s.messages,
+        facts: s.facts,
+        classification: issue?.classification,
+        route: issue?.route,
+        documents: s.documents,
+        document: s.documents[0],
+        validation: s.documents[0]?.validation,
+        statusHistory: s.statusHistory,
+      };
+    });
+  },
+
+  deleteCase(id: string): Promise<void> {
+    return this.deleteSituation(caseIdToSituationId(id));
   },
 };
 
+export {
+  DEMO_SITUATION_ID,
+  SCENARIO_A_ID,
+  SCENARIO_B_ID,
+  SCENARIO_C_ID,
+  SCENARIO_A_PROMPT,
+  SCENARIO_B_PROMPT,
+  SCENARIO_C_PROMPT,
+} from "./situation-fixtures";
 export { DEMO_CASE_ID, DEMO_PROMPT_UZ } from "./fixtures";

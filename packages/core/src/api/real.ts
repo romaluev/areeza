@@ -11,6 +11,8 @@ import type {
   LegalRoute,
   RegenerateSectionRequest,
   RouteRequest,
+  Situation,
+  SituationSummaryCounts,
   UpdateDocumentRequest,
   ValidationResult,
 } from "../types/index";
@@ -66,6 +68,35 @@ function openWebSocket(path: string, signal?: AbortSignal): Promise<WebSocket> {
   });
 }
 
+export async function listSituations(): Promise<Situation[]> {
+  try {
+    return fetchJSON<Situation[]>("/api/situations");
+  } catch {
+    return listCases().then(() => [] as Situation[]);
+  }
+}
+
+export async function getSituationSummaryCounts(): Promise<SituationSummaryCounts> {
+  try {
+    return fetchJSON<SituationSummaryCounts>("/api/situations/summary");
+  } catch {
+    return getCaseSummaryCounts();
+  }
+}
+
+export async function getSituation(id: string): Promise<Situation | null> {
+  const res = await fetch(`${apiBase()}/api/situations/${encodeURIComponent(id)}`);
+  if (res.status === 404) {
+    return null;
+  }
+  if (!res.ok) throw new Error(`API ${res.status} getSituation`);
+  return res.json() as Promise<Situation>;
+}
+
+export async function deleteSituation(id: string): Promise<void> {
+  await fetchJSON<void>(`/api/situations/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
 export async function listCases(): Promise<Case[]> {
   return fetchJSON<Case[]>("/api/cases");
 }
@@ -95,7 +126,7 @@ export async function* streamIntake(
   signal?: AbortSignal,
 ): AsyncGenerator<IntakeEvent> {
   const ws = await openWebSocket("/ws/intake", signal);
-  ws.send(JSON.stringify({ caseId, text: initialText }));
+  ws.send(JSON.stringify({ situationId: caseId, caseId, text: initialText }));
 
   const queue: IntakeEvent[] = [];
   let done = false;
@@ -241,6 +272,6 @@ export async function validate(
 export async function exportPackage(caseId: string): Promise<ExportResponse> {
   return fetchJSON<ExportResponse>("/api/export", {
     method: "POST",
-    body: JSON.stringify({ caseId }),
+    body: JSON.stringify({ caseId, situationId: caseId }),
   });
 }

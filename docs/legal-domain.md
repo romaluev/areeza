@@ -118,6 +118,22 @@ Two dispositions: **Return (qaytarish, CPC art 195)** — curable, refile after 
 
 Run **deterministic checks first**, then a Claude soft-pass (unclear claim, weak evidence, inconsistent dates). Output `{ checks:[{id,label,status,fix}], canFile }`.
 
+## 6b. Multi-issue platform routes (demo) — [VERIFY]
+
+| `categoryCode` | Forum | Document kind |
+|---|---|---|
+| `fraud.investment` | civil_court | `davo_arizasi` |
+| `criminal.fraud_complaint` | prosecutor | `prosecutor_complaint` |
+| `criminal.corruption` | anticorruption_agency | `admin_complaint` |
+| `admin.police_inaction` | prosecutor | `admin_complaint` |
+| `labor.harassment` | prosecutor | `prosecutor_complaint` |
+| `admin.labor_complaint` | labor_inspectorate | `admin_complaint` |
+| `family.alimony_enforcement` | family_court | `court_order_petition` |
+| `family.property_division` | civil_court | `davo_arizasi` |
+| `family.injunction` | civil_court | `injunction_petition` |
+
+Go templates: `server/internal/legal/templates/`. Limitation: reinstatement **1 month**, labor **3 months** (engine computes deadline advisories).
+
 ## 7. Advisor verification checklist (give to Oliy Sud advisors)
 
 1. **NEW (2023) Labor Code article numbers** for: wage-payment frequency, delayed-payment liability, fee exemption (old 277), and the 3-mo/1-mo/1-yr limitation periods.

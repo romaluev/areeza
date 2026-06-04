@@ -27,6 +27,10 @@ func NewRouter(st *store.Store) http.Handler {
 	r.Get("/health", h.Health)
 
 	r.Route("/api", func(r chi.Router) {
+		r.Get("/situations", h.ListSituations)
+		r.Get("/situations/summary", h.SituationSummary)
+		r.Get("/situations/{id}", h.GetSituation)
+		r.Delete("/situations/{id}", h.DeleteSituation)
 		r.Get("/cases", h.ListCases)
 		r.Get("/cases/summary", h.CaseSummary)
 		r.Get("/cases/{id}", h.GetCase)

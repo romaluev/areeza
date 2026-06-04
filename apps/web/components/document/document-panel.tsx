@@ -173,7 +173,15 @@ function DocumentPanelBody({
 
   const saveMutation = useMutation({
     mutationFn: (doc: GeneratedDocument) =>
-      api.updateDocument({ caseId, document: { ...doc, status: "draft" } }),
+      api.updateDocument({
+        situationId: caseId,
+        document: {
+          ...doc,
+          status: "draft",
+          issueIds: doc.issueIds ?? [],
+          destination: doc.destination ?? "civil_court",
+        },
+      }),
     onSuccess: (_data, doc) => {
       clearDocDraft();
       removeStorage(documentDraftKey(caseId, doc.id));
@@ -201,7 +209,7 @@ function DocumentPanelBody({
       setRegenStreaming(true);
       setRegenStreamText("");
       const updated = await api.regenerateSection({
-        caseId,
+        situationId: caseId,
         documentId: localDoc.id,
         sectionId,
         instruction,

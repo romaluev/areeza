@@ -1,4 +1,13 @@
 export { api, type ApiMode } from "./client";
+export {
+  DEMO_SITUATION_ID,
+  SCENARIO_A_ID,
+  SCENARIO_B_ID,
+  SCENARIO_C_ID,
+  SCENARIO_A_PROMPT,
+  SCENARIO_B_PROMPT,
+  SCENARIO_C_PROMPT,
+} from "./situation-fixtures";
 export { persistIntakeSession, deleteCase } from "./mock";
 export { armMockFailures, clearMockFailures, isMockFailureError } from "./mock-failure";
 export {

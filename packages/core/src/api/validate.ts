@@ -18,6 +18,8 @@ import {
   type LegalRoute,
   type ValidationResult,
   validationResultSchema,
+  situationSchema,
+  type Situation,
 } from "../types/index";
 
 function parse<T>(schema: z.ZodType<T>, data: unknown, label: string): T {
@@ -44,4 +46,5 @@ export const validate = {
     parse(caseSummaryCountsSchema, data, "summaryCounts"),
   draftStreamEvent: (data: unknown): DraftStreamEvent =>
     parse(draftStreamEventSchema, data, "draftStreamEvent"),
+  situation: (data: unknown): Situation => parse(situationSchema, data, "situation"),
 };

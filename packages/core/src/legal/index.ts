@@ -39,6 +39,24 @@ export const CATEGORIES: CategoryMeta[] = [
     trigger: "aliment to'lamayapti",
   },
   {
+    code: "fraud.investment",
+    labelUz: "Firibgarlik — investitsiya",
+    labelRu: "Мошенничество",
+    trigger: "aldash",
+  },
+  {
+    code: "labor.harassment",
+    labelUz: "Mehnat joyida bezorilik",
+    labelRu: "Домогательства",
+    trigger: "bezorilik",
+  },
+  {
+    code: "family.injunction",
+    labelUz: "Ta'minlov (shoshilinch)",
+    labelRu: "Обеспечительные меры",
+    trigger: "sotmoqchi",
+  },
+  {
     code: "other",
     labelUz: "Boshqa",
     labelRu: "Другое",

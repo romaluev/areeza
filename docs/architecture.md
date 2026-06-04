@@ -21,12 +21,23 @@
 | PDF | server-side render (HTML → PDF) of the court document | print-correct layout |
 | Deploy | Go on Railway/Fly · Postgres managed · web on Vercel | |
 
+## 2b. Situation aggregate (multi-issue)
+
+The workspace unit is a **`Situation`** JSON aggregate (in-memory demo; Postgres `jsonb` later):
+
+- `issues[]` — each with `categoryCode`, `route`, `step`, `status`
+- `documents[]` — each with `issueIds[]`, `destination` (forum), per-doc `validation`
+- `parties[]`, `evidence[]`, `timeline[]`, `advisories[]` — linked via `issueIds[]`
+- Shared `messages[]` intake thread
+
+**AI brain interface:** `server/pkg/ai.Brain` + `server/internal/ai/scripted` (demo). Tools map 1:1 to WebSocket events (`issue_identified`, `document_proposed`, `advisory`, …). Swap scripted → Anthropic without UI changes.
+
 ## 3. System overview
 
 ```
   Next.js web ──REST + WebSocket──▶  Go API
    (chat, workspace, doc viewer)        │
-                                        ├─▶ Postgres + pgvector  (cases, facts, docs, legal_chunks)
+                                        ├─▶ Postgres + pgvector  (situations JSONB aggregate, legal_chunks)
                                         ├─▶ Claude (Anthropic)   (intake loop · draft · soft-validate)
                                         ├─▶ Classifier service   (/classify — the fine-tuned router)
                                         └─▶ Legal engine (in-proc) + RAG (pgvector)  (route · rules · citations)

@@ -184,6 +184,7 @@ const INTAKE_SCRIPT: Array<{
     afterMs: 4500,
     event: {
       type: "done",
+      situationId: DEMO_CASE_ID,
       caseId: DEMO_CASE_ID,
     },
   },
@@ -529,7 +530,7 @@ export async function regenerateSection(
   req: RegenerateSectionRequest,
 ): Promise<GeneratedDocument> {
   await delay(700);
-  const c = ensureCase(req.caseId);
+  const c = ensureCase(req.situationId ?? (req as { caseId?: string }).caseId ?? "");
   const docs = c.documents ?? [];
   const doc = docs.find((d) => d.id === req.documentId) ?? c.document;
   if (!doc) throw new Error("Document not found");
@@ -567,7 +568,7 @@ export async function updateDocument(req: UpdateDocumentRequest): Promise<Genera
   maybeThrowMockFailure("updateDocument");
   await delay(200);
   const validated = zodValidate.document(req.document);
-  const c = ensureCase(req.caseId);
+  const c = ensureCase(req.situationId ?? (req as { caseId?: string }).caseId ?? "");
   const docs = [...(c.documents ?? [])];
   const idx = docs.findIndex((d) => d.id === validated.id);
   if (idx >= 0) docs[idx] = validated;

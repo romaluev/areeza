@@ -14,6 +14,31 @@ type ValidationCheck struct {
 	Fix    string `json:"fix"`
 }
 
+// ValidateForDocumentKind returns deterministic checks per template kind.
+func ValidateForDocumentKind(kind string) ValidationResult {
+	switch kind {
+	case "prosecutor_complaint", "admin_complaint":
+		return ValidationResult{
+			CanFile: true,
+			Checks: []ValidationCheck{
+				{ID: "applicant", Label: "Ariza beruvchi ma'lumotlari", Status: "ok", Ground: "[VERIFY]"},
+				{ID: "facts", Label: "Voqea tavsifi bayon etilgan", Status: "ok", Ground: "[VERIFY]"},
+				{ID: "signature", Label: "Imzo va sana", Status: "ok", Ground: "[VERIFY]"},
+			},
+		}
+	case "injunction_petition":
+		return ValidationResult{
+			CanFile: false,
+			Checks: []ValidationCheck{
+				{ID: "urgency", Label: "Shoshilinchlik asoslangan", Status: "ok", Ground: "FPK ta'minlov [VERIFY]"},
+				{ID: "property", Label: "Mulk hujjatlari ilova qilingan", Status: "warn", Ground: "[VERIFY]", Fix: "Kadastr yoki mulk hujjatini ilova qiling."},
+			},
+		}
+	default:
+		return DefaultWageValidation()
+	}
+}
+
 // DefaultWageValidation is the demo checklist (deterministic; soft-pass later).
 func DefaultWageValidation() ValidationResult {
 	return ValidationResult{

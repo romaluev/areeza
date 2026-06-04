@@ -101,6 +101,39 @@ func ClassifyText(text string) Classification {
 		})
 	}
 
+	if strings.Contains(normalized, "firibgar") || strings.Contains(normalized, "aldash") ||
+		strings.Contains(normalized, "50m") || strings.Contains(normalized, "investitsiya") ||
+		strings.Contains(normalized, "yo'qoldi") {
+		return withLevel(Classification{
+			CategoryCode: "fraud.investment", Label: "Firibgarlik — investitsiya", Confidence: 0.9,
+			Track: "claim", TrackLabel: "Ko'p yo'nalishli", TrackRationale: "Fuqarolik, jinoiy va korrupsiya yo'nalishlari mumkin.",
+		})
+	}
+
+	if strings.Contains(normalized, "korrupsiya") || strings.Contains(normalized, "pora") ||
+		strings.Contains(normalized, "sotib olindi") {
+		return withLevel(Classification{
+			CategoryCode: "criminal.corruption", Label: "Korrupsiya", Confidence: 0.87,
+			Track: "claim", TrackLabel: "Agentlikka ariza", TrackRationale: "Korrupsiyaga qarshi agentlik.",
+		})
+	}
+
+	if strings.Contains(normalized, "tahdid") || strings.Contains(normalized, "jinsiy") ||
+		strings.Contains(normalized, "bezorilik") || strings.Contains(normalized, "harassment") {
+		return withLevel(Classification{
+			CategoryCode: "labor.harassment", Label: "Mehnat joyida bezorilik", Confidence: 0.86,
+			Track: "claim", TrackLabel: "Jinoiy shikoyat", TrackRationale: "Jinoiy va mehnat yo'nalishlari.",
+		})
+	}
+
+	if strings.Contains(normalized, "turmush") || strings.Contains(normalized, "nikoh") ||
+		strings.Contains(normalized, "kvartira") || strings.Contains(normalized, "sotmoqchi") {
+		return withLevel(Classification{
+			CategoryCode: "family.property_division", Label: "Oila — mulk va aliment", Confidence: 0.84,
+			Track: "claim", TrackLabel: "Ko'p hujjat", TrackRationale: "Aliment, mulk bo'linishi, ta'minlov.",
+		})
+	}
+
 	// Only treat as gibberish if it's a short single token with no keyword match.
 	if gibberishRE.MatchString(normalized) && len(normalized) < 30 && !strings.Contains(normalized, " ") {
 		q := "Qaysi turdagi ish bo'yicha murojaat qilmoqchisiz?"

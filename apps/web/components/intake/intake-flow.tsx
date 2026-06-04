@@ -192,10 +192,10 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
               }
               if (cls.needsCategoryPick || cls.confidenceLevel === "low") {
                 setAwaitingCategory(true);
-                setPendingCaseId(event.caseId);
+                setPendingCaseId(event.situationId ?? event.caseId ?? null);
                 break;
               }
-              finishCase(event.caseId);
+              finishCase(event.situationId ?? event.caseId ?? "");
               break;
             }
           }

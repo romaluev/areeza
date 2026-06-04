@@ -1,5 +1,5 @@
-import { CasesHome } from "@/components/cases/cases-home";
+import { redirect } from "next/navigation";
 
-export default function CasesPage() {
-  return <CasesHome />;
+export default function CasesRedirectPage() {
+  redirect("/situations");
 }

@@ -30,10 +30,14 @@ type NavItem = {
 
 const mainNav: NavItem[] = [
   {
-    href: "/cases",
-    label: "Ishlarim",
+    href: "/situations",
+    label: "Holatlarim",
     icon: "folder",
-    match: (p) => p === "/cases" || (p.startsWith("/cases/") && !p.startsWith("/cases/new")),
+    match: (p) =>
+      p === "/situations" ||
+      (p.startsWith("/situations/") && !p.startsWith("/situations/new")) ||
+      p === "/cases" ||
+      (p.startsWith("/cases/") && !p.startsWith("/cases/new")),
   },
 ];
 
@@ -351,7 +355,7 @@ function NewCaseCta({ collapsed }: { collapsed: boolean }) {
       )}
       size={collapsed ? "icon" : "default"}
     >
-      <Link href="/cases/new" aria-label="Yangi ish">
+      <Link href="/situations/new" aria-label="Yangi holat">
         <Icon name="add" size="sm" />
         {!collapsed && <span>Yangi ish</span>}
       </Link>

@@ -8,7 +8,12 @@ import { Button } from "@areeza/ui/components/button";
 import { MetricCard } from "@areeza/ui/components/metric-card";
 import { springTransition } from "@areeza/ui/motion/presets";
 import { cn } from "@areeza/ui/lib/utils";
-import { DEMO_CASE_ID } from "@areeza/core/api";
+import {
+  DEMO_SITUATION_ID,
+  SCENARIO_A_ID,
+  SCENARIO_B_ID,
+  SCENARIO_C_ID,
+} from "@areeza/core/api";
 import { COMPLIANCE_NOTE } from "@/lib/copy";
 
 const fadeUp = {
@@ -77,6 +82,33 @@ const HOW_IT_WORKS = [
   },
 ] as const;
 
+const EXAMPLE_SCENARIOS = [
+  {
+    title: "Meni aldashdi",
+    href: "/situations/new?scenario=fraud",
+    openHref: `/situations/${SCENARIO_A_ID}`,
+    body: "Investitsiya, jinoiy shikoyat, korrupsiya, politsiya harakatsizligi — 4 hujjat.",
+  },
+  {
+    title: "Ishdan bo'shatishdi",
+    href: "/situations/new?scenario=workplace",
+    openHref: `/situations/${SCENARIO_B_ID}`,
+    body: "Ish haqi, ishga qaytarish (1 oy muddat!), bezorilik, inspeksiya.",
+  },
+  {
+    title: "Aliment va kvartira",
+    href: "/situations/new?scenario=divorce",
+    openHref: `/situations/${SCENARIO_C_ID}`,
+    body: "Aliment, mulk bo'linishi, shoshilinch ta'minlov.",
+  },
+  {
+    title: "Ish haqi (klassik)",
+    href: "/situations/new?demo=1",
+    openHref: `/situations/${DEMO_SITUATION_ID}`,
+    body: "Bitta masala — to'liq tayyor da'vo arizasi.",
+  },
+] as const;
+
 function SectionHeading({
   eyebrow,
   title,
@@ -118,12 +150,12 @@ function LandingHeader() {
           <span className="font-semibold tracking-tight text-[var(--foreground)]">Areeza</span>
         </Link>
         <div className="flex items-center gap-2">
-          <Link href="/cases">
+          <Link href="/situations">
             <Button variant="ghost" size="sm">
               Kirish
             </Button>
           </Link>
-          <Link href="/cases/new?demo=1">
+          <Link href="/situations/new?demo=1">
             <Button size="sm" className="gap-1.5">
               Demoni ko&apos;rish
               <Icon name="arrowRight" size={14} />
@@ -167,9 +199,9 @@ function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
           transition={transition}
           className="max-w-3xl text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]"
         >
-          Hayotiy muammodan — sud uchun tayyor{" "}
+          Bir vaziyat —{" "}
           <span className="text-[var(--scan-blue-deep)] dark:text-[var(--scan-blue)]">
-            da&apos;vo arizasigacha
+            ko&apos;p masala, ko&apos;p hujjat, to&apos;g&apos;i forum
           </span>
           .
         </motion.h1>
@@ -179,9 +211,8 @@ function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
           transition={transition}
           className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--muted-foreground)] sm:text-lg"
         >
-          Ko&apos;pchilik e-sud portallaridagi shakllar va yuridik atamalar oldida to&apos;xtab
-          qoladi yoki arizasi qaytariladi. Areeza muammoingizni to&apos;g&apos;ri protsessual
-          yo&apos;lga soladi, hujjatni tayyorlaydi va topshirishdan oldin tekshiradi.
+          Firibgarlik, mehnat, oila — bitta suhbatda bir nechta yo&apos;nalish: fuqarolik sudi,
+          prokuratura, agentlik. Areeza marshrutlaydi, hujjat tayyorlaydi, muddatlarni ogohlantiradi.
         </motion.p>
 
         <motion.div
@@ -189,15 +220,15 @@ function HeroSection({ reducedMotion }: { reducedMotion: boolean | null }) {
           transition={transition}
           className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"
         >
-          <Link href="/cases/new?demo=1" className="w-full sm:w-auto">
+          <Link href="/situations/new?scenario=workplace" className="w-full sm:w-auto">
             <Button size="lg" className="w-full gap-2 sm:w-auto">
               <Icon name="sparkles" size="sm" />
-              Demoni ko&apos;rish — to&apos;lanmagan ish haqi
+              Demoni boshlash
             </Button>
           </Link>
-          <Link href={`/cases/${DEMO_CASE_ID}`} className="w-full sm:w-auto">
+          <Link href={`/situations/${DEMO_SITUATION_ID}`} className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
-              Tayyor ishni ochish
+              Tayyor holatni ochish
             </Button>
           </Link>
         </motion.div>
@@ -421,6 +452,47 @@ function HowItWorksSection({ reducedMotion }: { reducedMotion: boolean | null })
   );
 }
 
+function ExampleScenariosSection({ reducedMotion }: { reducedMotion: boolean | null }) {
+  const transition = reducedMotion ? { duration: 0 } : springTransition;
+  return (
+    <section className="border-y border-[var(--border)] bg-[var(--surface-2)] px-4 py-16 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading
+          eyebrow="Misol holatlar"
+          title="Har qanday murakkab vaziyat"
+          description="Bir suhbat — bir nechta masala, hujjat va forum."
+          className="mb-8"
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {EXAMPLE_SCENARIOS.map((s) => (
+            <motion.div
+              key={s.title}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={transition}
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5"
+            >
+              <h3 className="font-semibold">{s.title}</h3>
+              <p className="mt-2 text-sm text-[var(--muted-foreground)]">{s.body}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href={s.href}>
+                  <Button size="sm">Boshlash</Button>
+                </Link>
+                <Link href={s.openHref}>
+                  <Button size="sm" variant="outline">
+                    Tayyor holat
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ComingSoonSection({ reducedMotion }: { reducedMotion: boolean | null }) {
   const transition = reducedMotion ? { duration: 0 } : springTransition;
 
@@ -487,13 +559,13 @@ function CtaSection({ reducedMotion }: { reducedMotion: boolean | null }) {
           butun jarayonni ko&apos;ring.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/cases/new?demo=1" className="w-full sm:w-auto">
+          <Link href="/situations/new" className="w-full sm:w-auto">
             <Button size="lg" className="w-full gap-2 sm:w-auto">
               <Icon name="sparkles" size="sm" />
               Demoni boshlash
             </Button>
           </Link>
-          <Link href="/cases" className="w-full sm:w-auto">
+          <Link href="/situations" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto">
               Mening ishlarim
             </Button>
@@ -518,6 +590,7 @@ export function LandingPageContent() {
         <TransformationSection reducedMotion={reducedMotion} />
         <StatsSection reducedMotion={reducedMotion} />
         <HowItWorksSection reducedMotion={reducedMotion} />
+        <ExampleScenariosSection reducedMotion={reducedMotion} />
         <ComingSoonSection reducedMotion={reducedMotion} />
         <CtaSection reducedMotion={reducedMotion} />
       </main>
