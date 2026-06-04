@@ -9,7 +9,7 @@ Clean, modern, **trustworthy** (govtech/justice — not a flashy consumer app). 
 
 ## 2. Libraries (install these — the stack)
 
-`next@16` · `react@19` · `tailwindcss@4` · **shadcn/ui** (Radix primitives) · `lucide-react` (icons) · `sonner` (toasts) · `framer-motion` (motion) · `@tanstack/react-query@5` (server state) · `zustand@5` (local UI state) · `@tiptap/react@3` + `@tiptap/starter-kit` (document editor) · `react-markdown` + `remark-gfm` (assistant markdown) · `clsx` + `tailwind-merge` (the `cn()` helper). Backend-side (Dev 1): `ai` + `@ai-sdk/anthropic`, `zod`, `@supabase/supabase-js`.
+`next@16` · `react@19` · `tailwindcss@4` · **shadcn/ui** (Radix primitives) · `@hugeicons/react` + `@areeza/ui/icons` (icons) · `sonner` (toasts) · `framer-motion` (motion) · `@tanstack/react-query@5` (server state) · `zustand@5` (local UI state) · `@tiptap/react@3` + `@tiptap/starter-kit` (document editor) · `react-markdown` + `remark-gfm` (assistant markdown) · `clsx` + `tailwind-merge` (the `cn()` helper). Backend-side (Dev 1): `ai` + `@ai-sdk/anthropic`, `zod`, `@supabase/supabase-js`.
 
 > shadcn/ui is Radix-based → keyboard + ARIA for free, which is exactly Fluid Functionalism's "accessible by default." Add primitives with `pnpm dlx shadcn@latest add button card input ...`.
 
@@ -54,7 +54,7 @@ Recreate these with shadcn + the libs above, guided by the descriptions. (notiky
 | `ThinkingIndicator` | `common/chat-wait-indicator` + FF `ThinkingSteps` | Calm "Areeza tayyorlamoqda…" with step hints | framer-motion |
 | `DocumentView` | `editor/content-editor` (+ `bubble-menu`) | Renders `GeneratedDocument` as a real court `da'vo arizasi` (serif, centered headings, requisites block, `Ilova` list); read + edit modes | TipTap 3 StarterKit (edit) / styled render (read) |
 | `CaseWorkspace` | `layout/*` two-pane resizable | Left = chat + facts, right = route/document/validation tabs | shadcn Tabs + resizable panels |
-| `AppSidebar` | `layout/sidebar` | Case list, "New case", workspace header | shadcn + lucide |
+| `AppSidebar` | `layout/sidebar` | Case list, "New case", workspace header | shadcn + `@areeza/ui/icons` |
 | `ToolConfirm` / question wizard | `copilot/question-block-panel`, `tool-confirm-panel` | Inline structured prompts ("Confirm employer name?") | shadcn Card + Buttons |
 
 shadcn primitives to add now: `button card input textarea label badge dialog sheet tabs tooltip select checkbox skeleton scroll-area separator sonner` (+ `command` for ⌘K later).
