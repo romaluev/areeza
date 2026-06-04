@@ -1,6 +1,6 @@
 # Areeza — UI Guide (design system + reuse map)
 
-> For **Dev 2** (frontend) and anyone building UI. **Self-contained:** you do NOT need the `notiky-app` repo locally — every reusable piece is described here by name, library, and behavior, so you rebuild it fresh with shadcn + the listed libraries.
+> For **Dev 2** (frontend) and anyone building UI. **Dev 2 shares Roma's workspace**, so clone/copy directly from `notiky-app` at `/Users/romalutfullaev/Projects/notiky/notiky-app` — primitives in `packages/ui/components/ui/`, patterns in `packages/views/{copilot,editor,layout,common}/`. Everything below is also described by name + library so Dev 1 / agents without the repo can rebuild it fresh.
 > Sources of taste: **notiky-app UI** (patterns below) + **Fluid Functionalism** (motion principles, https://fluidfunctionalism.com). Pairs with [conventions.md](conventions.md) and [development-plan.md](development-plan.md) (Track B).
 
 ## 1. Product feel

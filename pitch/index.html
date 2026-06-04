@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Areeza — Pitch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* palette — justice navy + gold */
+        --navy: #0e1b33;
+        --navy-deep: #0a1426;
+        --ink: #070c16;
+        --cream: #f4efe2;
+        --gold: #e0b83c;
+        --gold-deep: #c9a227;
+        --coral: #d9614a;
+        --green: #57b894;
+
+        --on-dark: var(--cream);
+        --muted: rgba(244, 239, 226, 0.66);
+        --muted-soft: rgba(244, 239, 226, 0.4);
+        --rule: rgba(244, 239, 226, 0.14);
+        --on-cream: #16223c;
+        --muted-cream: rgba(22, 34, 60, 0.66);
+
+        --pad-x: 130px;
+        --pad-top: 58px;
+        --pad-bottom: 54px;
+
+        --display: "Playfair Display", Georgia, serif;
+        --sans: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: #000; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+      deck-stage { background: #000; }
+      deck-stage:not(:defined) { visibility: hidden; }
+
+      section.slide {
+        width: 1920px; height: 1080px; overflow: hidden;
+        color: var(--on-dark); background: var(--navy);
+        font-family: var(--sans); position: relative;
+      }
+      section.slide.ink { background: var(--ink); }
+      section.slide.cream { background: var(--cream); color: var(--on-cream); }
+
+      .chrome { position: absolute; inset: 0; padding: var(--pad-top) var(--pad-x) var(--pad-bottom); display: flex; flex-direction: column; }
+
+      .bg-grad { position: absolute; inset: 0; background:
+        radial-gradient(ellipse 70% 55% at 50% 32%, rgba(224,184,60,0.10), transparent 70%),
+        radial-gradient(ellipse at 100% 100%, rgba(0,0,0,0.45), transparent 55%),
+        var(--navy); }
+      .bg-noise { position: absolute; inset: 0; opacity: 0.6; background-image: radial-gradient(rgba(244,239,226,0.05) 1px, transparent 1px); background-size: 5px 5px; }
+
+      .topbar { display: flex; align-items: center; justify-content: space-between;
+        font-family: var(--mono); font-size: 15px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-soft); }
+      .brand { display: inline-flex; align-items: center; gap: 14px; color: var(--muted); letter-spacing: 0.2em; }
+      .mark { width: 34px; height: 34px; border: 1.5px solid var(--gold); border-radius: 7px; display: grid; place-items: center;
+        font-family: var(--display); font-style: italic; font-weight: 700; font-size: 22px; color: var(--gold); }
+
+      .footer { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between;
+        font-family: var(--mono); font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-soft); }
+
+      .eyebrow { font-family: var(--mono); font-size: 15px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); }
+      .headline { font-family: var(--display); font-weight: 600; font-size: 60px; line-height: 1.05; letter-spacing: -0.02em; margin: 0; text-wrap: balance; max-width: 1500px; }
+      .headline.sm { font-size: 50px; }
+      .lead { font-family: var(--sans); font-size: 23px; line-height: 1.5; color: var(--muted); max-width: 1200px; margin: 0; }
+      .em { color: var(--gold); font-style: italic; font-weight: 500; }
+      .coral { color: var(--coral); }
+
+      .body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 30px; }
+      .head-wrap { margin-top: 18px; display: flex; flex-direction: column; gap: 18px; }
+
+      /* stats */
+      .stat-row { display: grid; gap: 40px; }
+      .stat-label { font-family: var(--mono); font-size: 15px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-soft); margin-bottom: 14px; }
+      .stat-num { font-family: var(--display); font-weight: 600; font-size: 76px; line-height: 0.95; letter-spacing: -0.03em; }
+      .stat-num.gold { color: var(--gold); }
+      .stat-sub { font-family: var(--sans); font-size: 19px; color: var(--muted); margin-top: 12px; line-height: 1.45; }
+
+      /* generic columns + cards */
+      .cols { display: grid; gap: 32px; }
+      .c2 { grid-template-columns: 1fr 1fr; }
+      .c3 { grid-template-columns: repeat(3, 1fr); }
+      .c4 { grid-template-columns: repeat(4, 1fr); }
+      .card { border: 1px solid var(--rule); border-radius: 6px; padding: 34px 38px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,0.015); }
+      .card.hi { border-color: var(--gold); background: rgba(224,184,60,0.05); }
+      .card-k { font-family: var(--mono); font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-soft); }
+      .card-t { font-family: var(--display); font-size: 30px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+      .card-d { font-size: 19px; line-height: 1.5; color: var(--muted); }
+
+      /* numbered list */
+      .nlist { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 56px; }
+      .nrow { display: flex; gap: 22px; align-items: flex-start; padding-top: 22px; border-top: 1px solid var(--rule); }
+      .nnum { font-family: var(--display); font-style: italic; font-weight: 600; font-size: 38px; color: var(--gold); line-height: 1; width: 46px; flex: none; }
+      .nrow .t { font-family: var(--display); font-size: 26px; font-weight: 600; line-height: 1.15; margin-bottom: 8px; }
+      .nrow .d { font-size: 18px; line-height: 1.5; color: var(--muted); }
+
+      /* flow */
+      .flow { display: flex; align-items: stretch; gap: 0; }
+      .step { flex: 1; text-align: center; padding: 26px 8px; border: 1px solid var(--rule); border-radius: 6px; }
+      .step.key { border-color: var(--gold); background: rgba(224,184,60,0.06); }
+      .step .n { font-family: var(--display); font-style: italic; color: var(--gold); font-size: 26px; }
+      .step .l { font-family: var(--sans); font-weight: 600; font-size: 22px; margin-top: 8px; }
+      .arrow { display: flex; align-items: center; color: var(--gold); font-size: 30px; padding: 0 12px; }
+
+      /* funnel (market) */
+      .funnel { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+      .fbar { display: flex; align-items: center; gap: 26px; border-radius: 8px; padding: 22px 38px; }
+      .fbar .fk { font-family: var(--display); font-weight: 700; font-size: 34px; width: 90px; }
+      .fbar .fd { font-size: 20px; line-height: 1.35; }
+
+      /* matrix table */
+      table.matrix { width: 100%; border-collapse: collapse; font-family: var(--sans); }
+      table.matrix th, table.matrix td { padding: 16px 14px; text-align: center; border-bottom: 1px solid var(--rule); font-size: 21px; }
+      table.matrix th { font-family: var(--mono); font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream); font-weight: 600; }
+      table.matrix td.cap { text-align: left; font-weight: 600; color: var(--cream); }
+      table.matrix .yes { color: var(--green); font-weight: 700; }
+      table.matrix .no { color: var(--coral); font-weight: 700; }
+      table.matrix .mid { color: var(--gold); font-weight: 700; }
+      table.matrix col.us, table.matrix th.us { background: rgba(224,184,60,0.08); }
+      table.matrix td.us { background: rgba(224,184,60,0.06); }
+
+      /* timeline */
+      .tl { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 30px; }
+      .tl::before { content: ""; position: absolute; left: 4%; right: 4%; top: 12px; height: 2px; background: var(--gold); opacity: 0.5; }
+      .tnode { text-align: center; position: relative; padding-top: 40px; }
+      .tnode .dot { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); width: 18px; height: 18px; border-radius: 50%; background: var(--navy); border: 2px solid var(--gold); }
+      .tnode.key .dot { background: var(--gold); width: 24px; height: 24px; top: 1px; }
+      .tnode .tk { font-family: var(--display); font-weight: 600; font-size: 26px; }
+      .tnode.key .tk { color: var(--gold); }
+      .tnode .td { font-size: 16px; color: var(--muted); margin-top: 8px; line-height: 1.35; padding: 0 8px; }
+
+      /* demo doc card */
+      .demo-grid { display: grid; grid-template-columns: 0.85fr 0.12fr 1.15fr; align-items: center; gap: 12px; }
+      .in-card { border: 1px solid var(--gold); border-radius: 10px; background: rgba(255,255,255,0.02); padding: 34px 36px; }
+      .in-card .q { font-family: var(--display); font-style: italic; font-size: 30px; line-height: 1.3; }
+      .doc { background: var(--cream); color: var(--on-cream); border-radius: 8px; padding: 34px 40px; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+      .doc h4 { font-family: var(--display); font-weight: 700; font-size: 26px; text-align: center; margin: 0; letter-spacing: 0.02em; }
+      .doc .sub { text-align: center; font-style: italic; color: var(--muted-cream); font-size: 15px; margin: 4px 0 18px; }
+      .doc .ln { font-size: 17px; color: #2a3850; margin: 5px 0; }
+      .doc .checks { margin-top: 16px; border-top: 1px solid rgba(22,34,60,0.14); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+      .doc .ck { display: flex; gap: 10px; align-items: center; font-size: 16px; }
+      .doc .ck b { font-size: 18px; }
+      .ok { color: #2e8b57; } .warn { color: #b7791f; }
+
+      /* title */
+      .t-center { margin: auto 0; display: flex; flex-direction: column; align-items: flex-start; gap: 30px; }
+      .byline { font-family: var(--mono); font-size: 16px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); }
+      .wordmark { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 168px; line-height: 0.9; letter-spacing: -0.04em; color: var(--cream); }
+      .wordmark .dot { color: var(--gold); }
+      .tagline { font-family: var(--display); font-weight: 400; font-size: 46px; line-height: 1.12; letter-spacing: -0.01em; color: var(--cream); max-width: 1300px; }
+      .subline { font-size: 22px; color: var(--muted); max-width: 1000px; }
+
+      /* close */
+      .close-h { font-family: var(--display); font-weight: 700; font-size: 92px; line-height: 1.02; letter-spacing: -0.03em; margin: 0; }
+      .close-sub { font-family: var(--display); font-style: italic; font-size: 30px; color: var(--gold); max-width: 1200px; line-height: 1.3; }
+
+      /* entrance animation */
+      .anim { opacity: 0; transform: translateY(26px);
+        transition: opacity 0.62s cubic-bezier(0.2,0.7,0.2,1) var(--d,0s), transform 0.62s cubic-bezier(0.2,0.7,0.2,1) var(--d,0s); }
+      .slide[data-deck-active] .anim { opacity: 1; transform: none; }
+      @media print { .anim { opacity: 1 !important; transform: none !important; } }
+    </style>
+  </head>
+  <body>
+    <deck-stage width="1920" height="1080">
+      <!-- 01 TITLE -->
+      <section class="slide" data-label="01 Title">
+        <div class="bg-grad"></div>
+        <div class="bg-noise"></div>
+        <div class="chrome">
+          <div class="topbar">
+            <span class="brand"><span class="mark">A</span> AREEZA</span>
+            <span>National AI Hackathon · Court / Justice · Andijan 2026</span>
+          </div>
+          <div class="t-center">
+            <div class="byline anim" style="--d:0.05s">Roma Lutfullaev · Founder</div>
+            <div class="wordmark anim" style="--d:0.12s">Areeza<span class="dot">.</span></div>
+            <div class="tagline anim" style="--d:0.22s">A court-ready legal filing — <span class="em">from a single sentence.</span></div>
+            <div class="subline anim" style="--d:0.32s">The intelligence layer for digital justice in Uzbekistan.</div>
+          </div>
+          <div class="footer">
+            <span>01 / 12</span>
+            <span>Built with Oliy Sud — the Supreme Court of Uzbekistan</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 PROBLEM -->
+      <section class="slide ink" data-label="02 Problem">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>The Problem</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">The problem</div>
+              <h1 class="headline anim" style="--d:0.08s">Courts went online. <span class="coral em">Justice didn't.</span></h1>
+            </div>
+            <div class="cols c2">
+              <div class="card anim" style="--d:0.18s">
+                <div class="card-k">The citizen is alone</div>
+                <div class="stat-num gold">$125+</div>
+                <div class="card-d">for a lawyer — more than the $100/mo minimum wage. People don't know which claim, form, or code, so filings get rejected for procedural mistakes.</div>
+              </div>
+              <div class="card anim" style="--d:0.28s">
+                <div class="card-k">The courts are drowning</div>
+                <div class="stat-num gold">556 <span style="font-size:34px;color:var(--muted-soft)">/ mo</span></div>
+                <div class="card-d">civil cases per judge — vs. a global norm of 16. 2M+ civil cases a year (+50% YoY). The Supreme Court calls it "an unrealistic regime."</div>
+              </div>
+            </div>
+            <div class="lead anim" style="--d:0.38s"><b style="color:var(--cream)">One root cause:</b> people can't translate a life problem into the right legal procedure — so citizens are shut out, and courts drown in messy filings.</div>
+          </div>
+          <div class="footer"><span>02 / 12</span><span>Execution is online · navigation is not</span></div>
+        </div>
+      </section>
+
+      <!-- 03 WHY NOW -->
+      <section class="slide" data-label="03 Why Now">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Why Now</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Why now</div>
+              <h1 class="headline anim" style="--d:0.08s">This was impossible <span class="em">18 months ago.</span></h1>
+            </div>
+            <div class="nlist">
+              <div class="nrow anim" style="--d:0.18s"><div class="nnum">1</div><div><div class="t">E-filing just became mandatory</div><div class="d">Presidential decree (Aug 2025): court applications are now electronic-only.</div></div></div>
+              <div class="nrow anim" style="--d:0.26s"><div class="nnum">2</div><div><div class="t">The state is putting AI in courts</div><div class="d">An AI assistant on my.sud.uz, outcome prediction, auto-drafting — a built-in buyer and endorsement.</div></div></div>
+              <div class="nrow anim" style="--d:0.34s"><div class="nnum">3</div><div><div class="t">LLMs crossed the threshold</div><div class="d">Models can turn a messy story into legal language — but raw AI hallucinates; we validate against real forms.</div></div></div>
+              <div class="nrow anim" style="--d:0.42s"><div class="nnum">4</div><div><div class="t">Digital Uzbekistan 2030</div><div class="d">16M+ digital government services in H1 2025. Citizens are ready too.</div></div></div>
+            </div>
+          </div>
+          <div class="footer"><span>03 / 12</span><span>The rails, the mandate, and the models — all at once</span></div>
+        </div>
+      </section>
+
+      <!-- 04 SOLUTION -->
+      <section class="slide ink" data-label="04 Solution">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>The Solution</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">The solution</div>
+              <h1 class="headline anim" style="--d:0.08s">From a problem to a court-ready filing.</h1>
+            </div>
+            <div class="flow anim" style="--d:0.2s">
+              <div class="step"><div class="n">1</div><div class="l">Describe</div></div>
+              <div class="arrow">›</div>
+              <div class="step"><div class="n">2</div><div class="l">Classify</div></div>
+              <div class="arrow">›</div>
+              <div class="step"><div class="n">3</div><div class="l">Route</div></div>
+              <div class="arrow">›</div>
+              <div class="step"><div class="n">4</div><div class="l">Draft</div></div>
+              <div class="arrow">›</div>
+              <div class="step key"><div class="n">5</div><div class="l">Validate</div></div>
+              <div class="arrow">›</div>
+              <div class="step"><div class="n">6</div><div class="l">File</div></div>
+            </div>
+            <div class="lead anim" style="--d:0.34s"><b style="color:var(--cream)">Not a chatbot</b> — a platform that completes the filing: correct route, court-ready document, validation, submission guidance. The <span class="em">Validate</span> step catches the errors that cause rejection, before filing.</div>
+          </div>
+          <div class="footer"><span>04 / 12</span><span>A workflow, not a conversation</span></div>
+        </div>
+      </section>
+
+      <!-- 05 DEMO -->
+      <section class="slide" data-label="05 Live Demo">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Live Demo</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Live demo</div>
+              <h1 class="headline sm anim" style="--d:0.08s">"They didn't pay my salary" → a court-ready filing. <span class="em">In 2 minutes.</span></h1>
+            </div>
+            <div class="demo-grid">
+              <div class="in-card anim" style="--d:0.2s">
+                <div class="card-k" style="color:var(--gold)">Input</div>
+                <div class="q" style="margin-top:14px">"My employer hasn't paid my salary for two months."</div>
+                <div class="card-d" style="margin-top:16px">plain language — Uzbek or Russian</div>
+              </div>
+              <div class="arrow anim" style="--d:0.3s; justify-content:center; font-size:48px">→</div>
+              <div class="doc anim" style="--d:0.4s">
+                <h4>DAʼVO ARIZASI</h4>
+                <div class="sub">statement of claim — wage recovery</div>
+                <div class="ln"><b>Court:</b> Andijan district civil court</div>
+                <div class="ln"><b>Basis:</b> Labor Code · CPC art. 188, 189, 191</div>
+                <div class="ln"><b>State fee:</b> exempt (labor dispute)</div>
+                <div class="checks">
+                  <div class="ck"><b class="ok">✓</b> Court correctly identified</div>
+                  <div class="ck"><b class="ok">✓</b> Claim amount present</div>
+                  <div class="ck"><b class="warn">!</b> Attach employment contract</div>
+                </div>
+              </div>
+            </div>
+            <div class="lead anim" style="--d:0.52s; text-align:center; max-width:none">The generated document is <span class="em">verified with our Supreme Court advisors.</span></div>
+          </div>
+          <div class="footer"><span>05 / 12</span><span>From a sentence to a filing package</span></div>
+        </div>
+      </section>
+
+      <!-- 06 MARKET -->
+      <section class="slide ink" data-label="06 Market">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Market</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Market</div>
+              <h1 class="headline anim" style="--d:0.08s">Starts in Andijan. <span class="em">The world is ahead.</span></h1>
+            </div>
+            <div class="funnel">
+              <div class="fbar anim" style="--d:0.18s; width:96%; background:rgba(244,239,226,0.06); border:1px solid var(--rule)">
+                <span class="fk">TAM</span><span class="fd">Global legaltech <b>$29.8B → $73B</b> (2035) · <b>1.5B</b> people with unmet justice needs</span></div>
+              <div class="fbar anim" style="--d:0.28s; width:74%; background:rgba(244,239,226,0.09); border:1px solid var(--rule)">
+                <span class="fk">SAM</span><span class="fd">Civil-law digitizing-justice markets — Central Asia + CIS · <b>250–300M</b> people</span></div>
+              <div class="fbar anim" style="--d:0.38s; width:52%; background:var(--gold); color:var(--ink)">
+                <span class="fk">SOM</span><span class="fd">Uzbekistan — <b>2M+ civil cases/year, +50% YoY</b></span></div>
+            </div>
+            <div class="lead anim" style="--d:0.48s; text-align:center; max-width:none">A wedge into a market the government is <span class="em" style="font-style:normal;font-weight:600">forcing online.</span></div>
+          </div>
+          <div class="footer"><span>06 / 12</span><span>1.5B → 300M → 2M+, growing 50%</span></div>
+        </div>
+      </section>
+
+      <!-- 07 COMPETITION -->
+      <section class="slide" data-label="07 Competition">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Competition</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Competition</div>
+              <h1 class="headline anim" style="--d:0.08s">The only solution that does it all.</h1>
+            </div>
+            <table class="matrix anim" style="--d:0.2s">
+              <colgroup><col style="width:34%"/><col class="us"/><col/><col/><col/></colgroup>
+              <thead><tr><th></th><th class="us">Areeza</th><th>ChatGPT</th><th>Lawyer</th><th>e-sud / advice.uz</th></tr></thead>
+              <tbody>
+                <tr><td class="cap">Understands plain language (UZ/RU)</td><td class="us yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="mid">~</td></tr>
+                <tr><td class="cap">Picks the correct legal route</td><td class="us yes">✓</td><td class="no">✗</td><td class="yes">✓</td><td class="mid">~</td></tr>
+                <tr><td class="cap">Court-ready document</td><td class="us yes">✓</td><td class="mid">~</td><td class="yes">✓</td><td class="no">✗</td></tr>
+                <tr><td class="cap">Validates against rejection</td><td class="us yes">✓</td><td class="no">✗</td><td class="yes">✓</td><td class="no">✗</td></tr>
+                <tr><td class="cap">Local-law-specific</td><td class="us yes">✓</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+                <tr><td class="cap">24/7 · ~$4–8</td><td class="us yes">✓</td><td class="yes">✓</td><td class="no">✗</td><td class="mid">~</td></tr>
+              </tbody>
+            </table>
+            <div class="lead anim" style="--d:0.34s; text-align:center; max-width:none"><b style="color:var(--cream)">DoNotPay can't even run here</b> (common-law only, FTC-fined). <span class="em" style="font-style:normal;font-weight:600">e-sud isn't a competitor — it's our partner.</span></div>
+          </div>
+          <div class="footer"><span>07 / 12</span><span>Only Areeza fills every row</span></div>
+        </div>
+      </section>
+
+      <!-- 08 ADVANTAGE -->
+      <section class="slide ink" data-label="08 Advantage">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Advantage</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Advantage</div>
+              <h1 class="headline anim" style="--d:0.08s">An advantage that <span class="em">can't be copied.</span></h1>
+            </div>
+            <div class="cols c2">
+              <div class="card anim" style="--d:0.18s"><div class="card-k">01</div><div class="card-t">Supreme Court advisors</div><div class="card-d">Real procedures, real forms, full regulatory compliance — a relationship competitors can't replicate.</div></div>
+              <div class="card anim" style="--d:0.26s"><div class="card-k">02</div><div class="card-t">A model tuned for Uzbek/Russian</div><div class="card-d">Routes a citizen's story to the right legal procedure — better than a generic model.</div></div>
+              <div class="card anim" style="--d:0.34s"><div class="card-k">03</div><div class="card-t">A validation engine</div><div class="card-d">It knows why filings get rejected; this dataset compounds into a moat over time.</div></div>
+              <div class="card anim" style="--d:0.42s"><div class="card-k">04</div><div class="card-t">Team speed</div><div class="card-d">Cursor Ambassador; two AI products shipped solo — the speed this hackathon rewards.</div></div>
+            </div>
+          </div>
+          <div class="footer"><span>08 / 12</span><span>Relationship · model · data · velocity</span></div>
+        </div>
+      </section>
+
+      <!-- 09 ADOPTION -->
+      <section class="slide" data-label="09 Adoption">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Adoption Model</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Adoption model</div>
+              <h1 class="headline sm anim" style="--d:0.08s">We don't charge citizens. <span class="em">The government adopts it.</span></h1>
+            </div>
+            <div class="cols c3">
+              <div class="card hi anim" style="--d:0.18s"><div class="card-k" style="color:var(--gold)">Government · B2G — primary</div><div class="card-t">Adopted</div><div class="card-d">The citizen-facing intelligence layer for my.sud.uz. Winning triggers it. Sustained by a state contract / IT Park.</div></div>
+              <div class="card anim" style="--d:0.26s"><div class="card-k">Citizens · free</div><div class="card-t">Access</div><div class="card-d">Free at the point of use because it's government-backed — that's the impact, and why citizens adopt.</div></div>
+              <div class="card anim" style="--d:0.34s"><div class="card-k">B2B · expansion</div><div class="card-t">Scale</div><div class="card-d">White-label drafting + validation for the 149 "Madad" legal-aid bureaus, clinics, and SMEs.</div></div>
+            </div>
+            <div class="lead anim" style="--d:0.44s; text-align:center; max-width:none"><b style="color:var(--cream)">Unit economics:</b> a lawyer charges $125+; we deliver for ~$4–8 — <span class="em" style="font-style:normal;font-weight:600">10–30× cheaper</span>, marginal cost ≈ AI inference.</div>
+          </div>
+          <div class="footer"><span>09 / 12</span><span>Infrastructure, not an app</span></div>
+        </div>
+      </section>
+
+      <!-- 10 ROADMAP -->
+      <section class="slide ink" data-label="10 Roadmap">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Roadmap</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Roadmap</div>
+              <h1 class="headline anim" style="--d:0.08s">Win → government adoption → region.</h1>
+            </div>
+            <div class="tl anim" style="--d:0.2s">
+              <div class="tnode"><div class="dot"></div><div class="tk">Now</div><div class="td">Working MVP</div></div>
+              <div class="tnode key"><div class="dot"></div><div class="tk">Jun 6</div><div class="td">Win the track</div></div>
+              <div class="tnode"><div class="dot"></div><div class="tk">3 mo</div><div class="td">Pilot · my.sud.uz</div></div>
+              <div class="tnode"><div class="dot"></div><div class="tk">1 yr</div><div class="td">National rollout</div></div>
+              <div class="tnode"><div class="dot"></div><div class="tk">3 yr</div><div class="td">Region · C. Asia / CIS</div></div>
+            </div>
+          </div>
+          <div class="footer"><span>10 / 12</span><span>From Andijan to the National Final</span></div>
+        </div>
+      </section>
+
+      <!-- 11 TEAM -->
+      <section class="slide" data-label="11 Team">
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>Team</span></div>
+          <div class="body">
+            <div class="head-wrap">
+              <div class="eyebrow anim">Team</div>
+              <h1 class="headline anim" style="--d:0.08s">A team that ships fast — <span class="em">and the Supreme Court.</span></h1>
+            </div>
+            <div class="card anim" style="--d:0.18s; flex-direction:row; align-items:center; gap:28px">
+              <div class="mark" style="width:72px;height:72px;font-size:42px;flex:none">A</div>
+              <div><div class="card-t">Roma Lutfullaev — Founder / Lead</div>
+              <div class="card-d" style="margin-top:6px">First Cursor Ambassador in Uzbekistan. Built Horyco (restaurant AI OS) and Notiky (AI product brain) solo.</div></div>
+            </div>
+            <div class="cols c4">
+              <div class="card anim" style="--d:0.26s; align-items:center; text-align:center"><div class="card-t" style="font-size:24px">AI / Backend</div></div>
+              <div class="card anim" style="--d:0.32s; align-items:center; text-align:center"><div class="card-t" style="font-size:24px">Frontend</div></div>
+              <div class="card anim" style="--d:0.38s; align-items:center; text-align:center"><div class="card-t" style="font-size:24px">Design</div></div>
+              <div class="card anim" style="--d:0.44s; align-items:center; text-align:center"><div class="card-t" style="font-size:24px">Domain / Legal</div></div>
+            </div>
+            <div class="lead anim" style="--d:0.52s; text-align:center; max-width:none"><b style="color:var(--gold)">Advisors:</b> Oliy Sud — the Supreme Court of the Republic of Uzbekistan.</div>
+          </div>
+          <div class="footer"><span>11 / 12</span><span>Builders + the bench</span></div>
+        </div>
+      </section>
+
+      <!-- 12 CLOSE -->
+      <section class="slide" data-label="12 Close" data-deck-last-visible>
+        <div class="bg-grad"></div>
+        <div class="bg-noise"></div>
+        <div class="chrome">
+          <div class="topbar"><span class="brand"><span class="mark">A</span> AREEZA</span><span>The Ask</span></div>
+          <div class="body" style="justify-content:flex-start; margin-top:30px; gap:36px">
+            <h1 class="close-h anim" style="--d:0.05s">We don't need funding.<br/>We need to <span class="em" style="font-style:italic">win.</span></h1>
+            <div class="close-sub anim" style="--d:0.2s">Because winning means the government adopts Areeza — opening the door to justice for millions of citizens a year.</div>
+            <div class="stat-row c3 anim" style="--d:0.34s; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--rule); padding-top:34px">
+              <div><div class="stat-label">Track</div><div class="stat-num" style="font-size:56px">Court & Justice</div></div>
+              <div><div class="stat-label">Partner</div><div class="stat-num" style="font-size:56px">Supreme Court</div></div>
+              <div><div class="stat-label">Status</div><div class="stat-num gold" style="font-size:56px">Shipping</div></div>
+            </div>
+          </div>
+          <div class="footer"><span>12 / 12</span><span>Areeza · A court-ready filing from a single sentence · #AndijanAI</span></div>
+        </div>
+      </section>
+    </deck-stage>
+    <script src="deck-stage.js"></script>
+  </body>
+</html>
