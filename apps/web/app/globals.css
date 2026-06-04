@@ -51,6 +51,25 @@
   }
 }
 
+/* Density + shape prefs (set by AppPrefsBridge after hydration) */
+html[data-density="comfortable"] {
+  --page-px: var(--density-comfortable-page-px);
+  --page-py: var(--density-comfortable-page-py);
+  --section-gap: var(--density-comfortable-section-gap);
+}
+
+html[data-density="compact"] {
+  --page-px: var(--density-compact-page-px);
+  --page-py: var(--density-compact-page-py);
+  --section-gap: var(--density-compact-section-gap);
+}
+
+/* Sidebar proximity nav (FF) */
+[data-proximity-id][data-proximity] {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
 /* ── FF surface utilities ─────────────────────────────────────────────────── */
 
 @utility shellPanel {
