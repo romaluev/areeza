@@ -1,0 +1,286 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
+import { api, persistIntakeSession } from "@areeza/core/api";
+import { CATEGORIES } from "@areeza/core/legal";
+import type { CategoryCode } from "@areeza/core/types";
+import { withConfidenceLevel } from "@areeza/core/types";
+import { MessageList } from "./message-list";
+import { PromptBox } from "./prompt-box";
+import { ClassificationBanner } from "./classification-banner";
+import { FactsPanel } from "@/components/facts/facts-panel";
+import { useIntakeStore } from "@/lib/use-intake-store";
+import { COMPLIANCE_NOTE } from "@/lib/copy";
+import {
+  guardMessage,
+  validateIntakeInput,
+  INTAKE_MAX_CHARS,
+} from "@/lib/intake-guards";
+
+export function IntakeFlow({ seedText }: { seedText?: string }) {
+  const router = useRouter();
+  const [input, setInput] = useState(seedText ?? "");
+  const [guardHint, setGuardHint] = useState<string | null>(null);
+  const [awaitingCategory, setAwaitingCategory] = useState(false);
+  const [pendingCaseId, setPendingCaseId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const submittingRef = useRef(false);
+
+  const {
+    locale,
+    messages,
+    facts,
+    streaming,
+    assistantBuffer,
+    classification,
+    setLocale,
+    addMessage,
+    appendAssistant,
+    flushAssistant,
+    addFact,
+    setClassification,
+    setStreaming,
+    reset,
+  } = useIntakeStore();
+
+  const finishCase = useCallback(
+    (caseId: string) => {
+      const cls = useIntakeStore.getState().classification;
+      if (cls) {
+        persistIntakeSession(
+          caseId,
+          useIntakeStore.getState().messages,
+          useIntakeStore.getState().facts,
+          cls,
+        );
+      }
+      toast.success(
+        locale === "ru" ? "Классификация завершена" : "Tasniflash yakunlandi",
+      );
+      router.push(`/cases/${caseId}?from=intake`);
+    },
+    [locale, router],
+  );
+
+  const runIntake = useCallback(
+    async (text: string) => {
+      if (submittingRef.current) return;
+      submittingRef.current = true;
+      setGuardHint(null);
+      setAwaitingCategory(false);
+      setPendingCaseId(null);
+
+      reset();
+      setStreaming(true);
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+
+      addMessage({
+        id: `user-${Date.now()}`,
+        role: "user",
+        content: text,
+        createdAt: new Date().toISOString(),
+      });
+
+      try {
+        for await (const event of api.streamIntake(
+          undefined,
+          text,
+          abortRef.current.signal,
+        )) {
+          switch (event.type) {
+            case "assistant_delta":
+              appendAssistant(event.delta);
+              break;
+            case "question":
+              flushAssistant();
+              addMessage({
+                id: `q-${Date.now()}`,
+                role: "assistant",
+                content: event.question,
+                createdAt: new Date().toISOString(),
+              });
+              break;
+            case "fact":
+              addFact(event.fact);
+              break;
+            case "classified":
+              flushAssistant();
+              setClassification(event.classification);
+              break;
+            case "done": {
+              setStreaming(false);
+              const cls = useIntakeStore.getState().classification;
+              if (
+                cls &&
+                (cls.needsCategoryPick || cls.confidenceLevel === "low")
+              ) {
+                setAwaitingCategory(true);
+                setPendingCaseId(event.caseId);
+                break;
+              }
+              finishCase(event.caseId);
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        if ((e as Error).message !== "Aborted") {
+          toast.error(
+            locale === "ru" ? "Ошибка при приёме" : "Murojaatda xatolik",
+          );
+        }
+      } finally {
+        setStreaming(false);
+        submittingRef.current = false;
+      }
+    },
+    [
+      addFact,
+      addMessage,
+      appendAssistant,
+      flushAssistant,
+      finishCase,
+      locale,
+      reset,
+      setClassification,
+      setStreaming,
+    ],
+  );
+
+  const handleSend = useCallback(() => {
+    if (streaming || submittingRef.current) return;
+
+    const guard = validateIntakeInput(input);
+    if (!guard.ok && guard.reason) {
+      setGuardHint(guardMessage(guard.reason, locale));
+      return;
+    }
+
+    const text =
+      guard.trimmed.length > INTAKE_MAX_CHARS
+        ? guard.trimmed.slice(0, INTAKE_MAX_CHARS)
+        : guard.trimmed;
+
+    setGuardHint(null);
+    void runIntake(text);
+  }, [input, locale, runIntake, streaming]);
+
+  const handleSuggestedPick = useCallback(
+    (text: string) => {
+      setInput(text);
+      const guard = validateIntakeInput(text);
+      if (guard.ok) {
+        setGuardHint(null);
+        void runIntake(guard.trimmed);
+      }
+    },
+    [runIntake],
+  );
+
+  const handleCategoryPick = useCallback(
+    (code: CategoryCode) => {
+      const cat = CATEGORIES.find((c) => c.code === code);
+      if (!cat) return;
+      setClassification(
+        withConfidenceLevel({
+          categoryCode: code,
+          label: locale === "ru" ? cat.labelRu : cat.labelUz,
+          confidence: 0.92,
+          track: code === "family.child_support" ? "court_order" : "claim",
+          trackLabel:
+            locale === "ru"
+              ? code === "family.child_support"
+                ? "Приказное производство"
+                : "Исковое производство"
+              : code === "family.child_support"
+                ? "Sud buyrug'i tartibi"
+                : "Da'vo tartibi",
+          trackRationale:
+            locale === "ru"
+              ? "Категория выбрана вручную."
+              : "Toifa foydalanuvchi tanlovi bilan aniqlashtirildi.",
+          needsCategoryPick: false,
+        }),
+      );
+      setAwaitingCategory(false);
+    },
+    [locale, setClassification],
+  );
+
+  const handleContinueAfterPick = useCallback(() => {
+    if (pendingCaseId) finishCase(pendingCaseId);
+  }, [finishCase, pendingCaseId]);
+
+  const guard = validateIntakeInput(input);
+  const sendDisabled = !guard.ok || streaming;
+
+  return (
+    <div className="flex h-[calc(100dvh-0px)] flex-col gap-4 p-4 md:p-6">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">
+          {locale === "ru" ? "Что произошло?" : "Nima bo'ldi?"}
+        </h1>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+          {locale === "ru"
+            ? "Опишите проблему простыми словами — Areeza задаёт один вопрос за раз."
+            : "Muammoingizni oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi."}
+        </p>
+      </div>
+
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_280px]">
+        <div className="flex min-h-0 flex-col gap-3">
+          <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 md:p-4">
+            <MessageList
+              messages={messages}
+              streaming={streaming}
+              assistantBuffer={assistantBuffer}
+              locale={locale}
+              onSuggestedPick={handleSuggestedPick}
+              streamDisabled={streaming}
+            />
+          </div>
+
+          {classification && (awaitingCategory || classification.needsCategoryPick) ? (
+            <ClassificationBanner
+              classification={classification}
+              locale={locale}
+              awaitingPick={awaitingCategory}
+              onCategoryPick={handleCategoryPick}
+              onContinue={
+                pendingCaseId ? handleContinueAfterPick : undefined
+              }
+            />
+          ) : classification ? (
+            <ClassificationBanner
+              classification={classification}
+              locale={locale}
+              awaitingPick={false}
+              onCategoryPick={handleCategoryPick}
+            />
+          ) : null}
+
+          <PromptBox
+            value={input}
+            onChange={(v) => {
+              setInput(v);
+              if (guardHint) setGuardHint(null);
+            }}
+            onSend={handleSend}
+            disabled={streaming}
+            sendDisabled={sendDisabled}
+            locale={locale}
+            onLocaleChange={setLocale}
+            guardHint={guardHint}
+            charCount={input.length}
+          />
+        </div>
+        <FactsPanel facts={facts} />
+      </div>
+
+      <p className="text-[11px] text-[var(--muted-foreground)]">{COMPLIANCE_NOTE}</p>
+    </div>
+  );
+}
