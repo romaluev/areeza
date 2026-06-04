@@ -8,7 +8,7 @@ import type { CaseFact } from "@areeza/core/types";
 export function FactsPanel({ facts }: { facts: CaseFact[] }) {
   if (facts.length === 0) {
     return (
-      <Card>
+      <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
         <CardHeader>
           <CardTitle className="text-base">Yig&apos;ilgan faktlar</CardTitle>
         </CardHeader>
@@ -22,7 +22,7 @@ export function FactsPanel({ facts }: { facts: CaseFact[] }) {
   }
 
   return (
-    <Card>
+    <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
       <CardHeader>
         <CardTitle className="text-base">Yig&apos;ilgan faktlar</CardTitle>
       </CardHeader>
@@ -34,7 +34,7 @@ export function FactsPanel({ facts }: { facts: CaseFact[] }) {
               "rounded-lg border px-3 py-2 text-sm",
               fact.status === "missing"
                 ? "border-[var(--warn)]/40 bg-[var(--warn-bg)]"
-                : "border-[var(--border)] bg-[var(--surface)]",
+                : "border-[var(--border)] bg-[var(--surface-2)]",
             )}
           >
             <div className="flex items-start gap-2">

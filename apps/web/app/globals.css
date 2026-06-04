@@ -299,8 +299,19 @@ html[data-density="compact"] {
     inset: 0;
     margin: 0;
     padding: 2.5rem 3rem;
+    max-height: none !important;
+    overflow: visible !important;
+    font-family: var(--font-legal), Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #000 !important;
     background: #fff !important;
     box-shadow: none !important;
     border: none !important;
+  }
+
+  #print-document .ProseMirror h1,
+  #print-document .ProseMirror h2 {
+    text-align: center;
   }
 }

@@ -19,12 +19,12 @@ function FactBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
       <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-[var(--muted-foreground)]">
         <span className="text-[var(--primary)]">{icon}</span>
         {label}
       </div>
-      <p className="text-sm leading-snug">{children}</p>
+      <p className="text-sm leading-snug text-[var(--foreground)]">{children}</p>
     </div>
   );
 }
@@ -42,7 +42,7 @@ export function RouteCard({
       animate={{ opacity: 1, height: "auto" }}
       transition={springTransition}
     >
-      <Card>
+      <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Icon name="route" size="sm" className="text-[var(--primary)]" />

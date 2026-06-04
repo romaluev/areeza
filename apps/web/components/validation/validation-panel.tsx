@@ -22,7 +22,7 @@ export function ValidationPanel({ result }: { result: ValidationResult }) {
   const failCount = result.checks.filter((c) => c.status === "fail").length;
 
   return (
-    <Card>
+    <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base">
           <Icon name="shield" size="sm" className="text-[var(--primary)]" />
@@ -48,7 +48,7 @@ export function ValidationPanel({ result }: { result: ValidationResult }) {
               className={cn(
                 "flex items-start gap-2.5 rounded-lg border p-2.5",
                 check.status === "ok"
-                  ? "border-[var(--border)]"
+                  ? "border-[var(--border)] bg-[var(--surface-2)]"
                   : check.status === "warn"
                     ? "border-[var(--warn)]/30 bg-[var(--warn-bg)]/50"
                     : "border-[var(--danger)]/30 bg-[var(--danger-bg)]/50",
