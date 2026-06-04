@@ -11,7 +11,11 @@ import { MessageList } from "./message-list";
 import { PromptBox } from "./prompt-box";
 import { ClassificationBanner } from "./classification-banner";
 import { FactsPanel } from "@/components/facts/facts-panel";
-import { useIntakeStore } from "@/lib/use-intake-store";
+import {
+  getIntakeStore,
+  NEW_CASE_INTAKE_SURFACE,
+  useIntakeStore,
+} from "@/lib/use-intake-store";
 import { COMPLIANCE_NOTE } from "@/lib/copy";
 import {
   guardMessage,
@@ -22,6 +26,8 @@ import { INTAKE_DRAFT_KEY, type IntakeDraft } from "@/lib/intake-draft";
 import { readStorageJson, removeStorage } from "@/lib/storage";
 import { useDebouncedAutosave } from "@/lib/use-debounced-autosave";
 import { showRetryToast } from "@/lib/retry-toast";
+
+const INTAKE_SURFACE = NEW_CASE_INTAKE_SURFACE;
 
 export function IntakeFlow({ seedText }: { seedText?: string }) {
   const router = useRouter();
@@ -50,7 +56,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
     setClassification,
     setStreaming,
     reset,
-  } = useIntakeStore();
+  } = useIntakeStore(INTAKE_SURFACE);
 
   const draftDirty =
     messages.length > 0 ||
@@ -74,12 +80,19 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
   });
 
   useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      reset();
+    };
+  }, [reset]);
+
+  useEffect(() => {
     if (draftRestoredRef.current || messages.length > 0) return;
     const draft = readStorageJson<IntakeDraft>(INTAKE_DRAFT_KEY);
     if (!draft?.messages?.length) return;
     draftRestoredRef.current = true;
     queueMicrotask(() => {
-      useIntakeStore.setState({
+      getIntakeStore(INTAKE_SURFACE).setState({
         locale: draft.locale,
         messages: draft.messages,
         facts: draft.facts,
@@ -110,16 +123,20 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
     };
   }, [pathname]);
 
+  const stopStreaming = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    flushAssistant();
+    setStreaming(false);
+    submittingRef.current = false;
+  }, [flushAssistant, setStreaming]);
+
   const finishCase = useCallback(
     (caseId: string) => {
-      const cls = useIntakeStore.getState().classification;
+      const store = getIntakeStore(INTAKE_SURFACE).getState();
+      const cls = store.classification;
       if (cls) {
-        persistIntakeSession(
-          caseId,
-          useIntakeStore.getState().messages,
-          useIntakeStore.getState().facts,
-          cls,
-        );
+        persistIntakeSession(caseId, store.messages, store.facts, cls);
       }
       clearIntakeDraft();
       removeStorage(INTAKE_DRAFT_KEY);
@@ -127,7 +144,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
       toast.success(
         locale === "ru" ? "Классификация завершена" : "Tasniflash yakunlandi",
       );
-      router.push(`/cases/${caseId}?from=intake`);
+      router.push(`/situations/${caseId}?from=intake`);
     },
     [clearIntakeDraft, locale, router],
   );
@@ -141,7 +158,6 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
       setPendingCaseId(null);
       lastRunTextRef.current = text;
 
-      reset();
       setStreaming(true);
       abortRef.current?.abort();
       abortRef.current = new AbortController();
@@ -181,7 +197,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
               break;
             case "done": {
               setStreaming(false);
-              const cls = useIntakeStore.getState().classification;
+              const cls = getIntakeStore(INTAKE_SURFACE).getState().classification;
               if (!cls) {
                 toast.error(
                   locale === "ru"
@@ -221,7 +237,6 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
       flushAssistant,
       finishCase,
       locale,
-      reset,
       setClassification,
       setStreaming,
     ],
@@ -247,6 +262,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
 
   const handleSuggestedPick = useCallback(
     (text: string) => {
+      if (streaming || submittingRef.current) return;
       setInput(text);
       const guard = validateIntakeInput(text);
       if (guard.ok) {
@@ -254,7 +270,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
         void runIntake(guard.trimmed);
       }
     },
-    [runIntake],
+    [runIntake, streaming],
   );
 
   const handleCategoryPick = useCallback(
@@ -283,9 +299,6 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
         }),
       );
       setAwaitingCategory(false);
-      // Auto-advance: a manual pick is an explicit decision → go straight to the
-      // workspace (mirrors the high-confidence auto-advance). Fixes the dead-end
-      // where, after picking, no Continue button rendered.
       if (pendingCaseId) finishCase(pendingCaseId);
     },
     [locale, setClassification, pendingCaseId, finishCase],
@@ -297,23 +310,26 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
 
   const guard = validateIntakeInput(input);
   const sendDisabled = !guard.ok || streaming;
+  const showHero = messages.length === 0 && !streaming && !assistantBuffer;
 
   return (
     <div className="flex h-[calc(100dvh-0px)] flex-col gap-4 p-4 md:p-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">
-          {locale === "ru" ? "Что произошло?" : "Nima bo'ldi?"}
-        </h1>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-          {locale === "ru"
-            ? "Опишите проблему простыми словами — Areeza задаёт один вопрос за раз."
-            : "Muammoingizni oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi."}
-        </p>
-      </div>
+      {!showHero ? (
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">
+            {locale === "ru" ? "Что произошло?" : "Nima bo'ldi?"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {locale === "ru"
+              ? "Опишите проблему простыми словами — Areeza задаёт один вопрос за раз."
+              : "Muammoingizni oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi."}
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="flex min-h-0 flex-col gap-3">
-          <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 md:p-4">
+        <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-col gap-3 lg:max-w-none">
+          <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card p-3 md:p-4">
             <MessageList
               messages={messages}
               streaming={streaming}
@@ -345,6 +361,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
           ) : null}
 
           <PromptBox
+            heroLayout={showHero}
             value={input}
             onChange={(v) => {
               setInput(v);
@@ -357,12 +374,14 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
             onLocaleChange={setLocale}
             guardHint={guardHint}
             charCount={input.length}
+            pending={streaming}
+            onStop={stopStreaming}
           />
         </div>
         <FactsPanel facts={facts} />
       </div>
 
-      <p className="text-[11px] text-[var(--muted-foreground)]">{COMPLIANCE_NOTE}</p>
+      <p className="text-[11px] text-muted-foreground">{COMPLIANCE_NOTE[locale]}</p>
     </div>
   );
 }

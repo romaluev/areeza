@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Icon } from "@areeza/ui/icons";
-import { Button } from "@areeza/ui/components/button";
-import { Textarea } from "@areeza/ui/components/textarea";
 import { Segmented } from "@areeza/ui/components/segmented";
 import { cn } from "@areeza/ui/lib/utils";
 import { INTAKE_MAX_CHARS } from "@/lib/intake-guards";
+import { ComposerIconButton } from "./composer-icon-button";
 
 type Props = {
   value: string;
@@ -18,6 +17,9 @@ type Props = {
   onLocaleChange: (l: "uz" | "ru") => void;
   guardHint?: string | null;
   charCount?: number;
+  heroLayout?: boolean;
+  pending?: boolean;
+  onStop?: () => void;
 };
 
 export function PromptBox({
@@ -30,17 +32,33 @@ export function PromptBox({
   onLocaleChange,
   guardHint,
   charCount,
+  heroLayout,
+  pending,
+  onStop,
 }: Props) {
-  const ref = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [compact, setCompact] = useState(false);
   const count = charCount ?? value.length;
   const overMax = count > INTAKE_MAX_CHARS;
+  const hasContent = value.trim().length > 0;
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const obs = new ResizeObserver(([entry]) => {
+      if (entry) setCompact(entry.contentRect.width < 460);
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const autoGrow = useCallback(() => {
-    const el = ref.current;
+    const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
-  }, []);
+    el.style.height = `${Math.min(el.scrollHeight, heroLayout ? 240 : 160)}px`;
+  }, [heroLayout]);
 
   useEffect(() => {
     autoGrow();
@@ -58,32 +76,45 @@ export function PromptBox({
       ? "Например: Работодатель 2 месяца не платит зарплату…"
       : "Masalan: Ish beruvchim 2 oydan beri oyligimni to'lamayapti…";
 
+  const textareaLabel =
+    locale === "ru"
+      ? "Опишите ситуацию простыми словами"
+      : "Vaziyatingizni oddiy tilda yozing";
+
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm">
-      <Textarea
-        ref={ref}
+    <div
+      ref={containerRef}
+      className={cn(
+        "raisedSurface flex w-full flex-col border transition-colors duration-200",
+        "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 motion-reduce:transition-none",
+        heroLayout ? "p-3" : compact ? "p-2" : "p-2.5",
+      )}
+    >
+      <textarea
+        ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        disabled={disabled}
-        rows={1}
-        maxLength={INTAKE_MAX_CHARS + 200}
+        rows={heroLayout ? 2 : 1}
+        disabled={disabled || pending}
+        maxLength={INTAKE_MAX_CHARS}
+        aria-label={textareaLabel}
         aria-invalid={!!guardHint || overMax}
         aria-describedby={guardHint ? "intake-guard-hint" : undefined}
-        className="min-h-[44px] resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
+        className={cn(
+          "w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none",
+          heroLayout ? "px-1.5 py-1.5" : "px-1.5 py-1",
+        )}
       />
-      {guardHint ? (
-        <p
-          id="intake-guard-hint"
-          className="px-2 pb-1 text-xs text-[var(--warn)]"
-          role="alert"
-        >
-          {guardHint}
-        </p>
-      ) : null}
-      <div className="mt-1 flex items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-2">
+      <div className="mt-1 flex select-none flex-col gap-1.5">
+        {guardHint ? (
+          <p id="intake-guard-hint" className="px-1.5 text-xs text-warn" role="alert">
+            {guardHint}
+          </p>
+        ) : null}
+        <div className="flex items-center justify-between gap-2">
+        <div className={cn("flex items-center", compact ? "gap-1" : "gap-2")}>
           <Segmented
             value={locale}
             onValueChange={(v) => onLocaleChange(v as "uz" | "ru")}
@@ -94,30 +125,39 @@ export function PromptBox({
               { value: "ru", label: "RU" },
             ]}
           />
-          <Icon
-            name="languages"
-            size={14}
-            className="text-[var(--muted-foreground)]"
-          />
-        </div>
-        <div className="flex items-center gap-2">
+          <Icon name="languages" size={14} className="text-muted-foreground" />
           <span
             className={cn(
-              "text-[11px] tabular-nums text-[var(--muted-foreground)]",
-              overMax && "text-[var(--danger)]",
+              "text-[11px] tabular-nums text-muted-foreground",
+              overMax && "text-destructive",
             )}
           >
             {count}/{INTAKE_MAX_CHARS}
           </span>
-          <Button
-            size="sm"
-            disabled={disabled || sendDisabled}
+        </div>
+        <div className={cn("ml-auto flex shrink-0 items-center", compact ? "gap-0.5" : "gap-1")}>
+          {pending && onStop ? (
+            <ComposerIconButton
+              onClick={onStop}
+              aria-label={locale === "ru" ? "Остановить" : "To'xtatish"}
+              tone="danger"
+              icon={<Icon name="stop" size={14} />}
+            />
+          ) : null}
+          <ComposerIconButton
             onClick={onSend}
-            className="gap-1"
-          >
-            {locale === "ru" ? "Отправить" : "Yuborish"}
-            <Icon name="arrowUp" size={14} />
-          </Button>
+            disabled={disabled || sendDisabled}
+            tone={hasContent && !sendDisabled && !disabled ? "filled" : "ghost"}
+            aria-label={locale === "ru" ? "Отправить" : "Yuborish"}
+            icon={
+              pending ? (
+                <Icon name="loading" size={14} className="animate-spin" />
+              ) : (
+                <Icon name="arrowUp" size={14} />
+              )
+            }
+          />
+        </div>
         </div>
       </div>
     </div>

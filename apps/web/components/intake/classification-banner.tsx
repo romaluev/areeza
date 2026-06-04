@@ -7,8 +7,6 @@ import { Button } from "@areeza/ui/components/button";
 import { cn } from "@areeza/ui/lib/utils";
 import { interactiveWeight } from "@areeza/ui/lib/font-weight";
 import { Icon } from "@areeza/ui/icons";
-import { useRef } from "react";
-import { useProximityHover } from "@areeza/ui/hooks/use-proximity-hover";
 import { confidencePill } from "@/lib/intake-copy";
 
 type Props = {
@@ -26,8 +24,6 @@ export function ClassificationBanner({
   onCategoryPick,
   onContinue,
 }: Props) {
-  const listRef = useRef<HTMLDivElement>(null);
-  useProximityHover(listRef, { axis: "y" });
   const pill = confidencePill(classification.confidenceLevel, locale);
   const showPicker =
     awaitingPick ||
@@ -35,45 +31,40 @@ export function ClassificationBanner({
     classification.confidenceLevel === "low";
 
   return (
-    <div className="space-y-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+    <div className="space-y-3 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
         <StatusPill tone={pill.tone}>{pill.label}</StatusPill>
-        <span className="text-sm font-medium text-[var(--foreground)]">
-          {classification.label}
-        </span>
+        <span className="text-sm font-medium text-foreground">{classification.label}</span>
       </div>
 
       {classification.clarifyingQuestion ? (
-        <p className="text-sm text-[var(--muted-foreground)]">
-          {classification.clarifyingQuestion}
-        </p>
+        <p className="text-sm text-muted-foreground">{classification.clarifyingQuestion}</p>
       ) : null}
 
       {showPicker ? (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-[var(--muted-foreground)]">
+          <p className="text-xs font-medium text-muted-foreground">
             {locale === "ru"
               ? "Выберите тип дела:"
               : "Qaysi turdagi ish bo'yicha murojaat qilmoqchisiz?"}
           </p>
-          <div ref={listRef} className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5">
             {CATEGORIES.filter((c) => c.code !== "other").map((cat) => (
               <button
                 key={cat.code}
                 type="button"
-                data-proximity-id={cat.code}
                 onClick={() => onCategoryPick(cat.code)}
                 className={cn(
                   "flex items-center justify-between rounded-xl border border-transparent px-3 py-2 text-left text-sm",
                   interactiveWeight,
-                  "text-[var(--foreground)] hover:bg-[var(--card)]",
-                  "data-[proximity]:bg-[var(--card)] data-[proximity]:font-medium",
+                  "text-foreground transition-colors hover:border-primary/30 hover:bg-muted/50",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   classification.categoryCode === cat.code &&
-                    "border-[var(--primary)] bg-[color-mix(in_oklab,var(--primary)_8%,transparent)] font-medium",
+                    "border-primary bg-primary/10 font-medium",
                 )}
               >
                 <span>{locale === "ru" ? cat.labelRu : cat.labelUz}</span>
-                <Icon name="arrowRight" size="sm" className="text-[var(--muted-foreground)]" />
+                <Icon name="arrowRight" size="sm" className="text-muted-foreground" />
               </button>
             ))}
           </div>
