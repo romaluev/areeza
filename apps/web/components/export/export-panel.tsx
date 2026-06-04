@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "@areeza/ui/icons";
 import { toast } from "sonner";
 import { Button } from "@areeza/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@areeza/ui/components/card";
 import { api } from "@areeza/core/api";
+import type {
+  GeneratedDocument,
+  LegalRoute,
+  ValidationResult,
+} from "@areeza/core/types";
+import { downloadBlob, safeExportFilename } from "./download";
+import { getExportReadiness } from "./export-readiness";
 
 const FILING_STEPS = [
   {
@@ -20,7 +27,7 @@ const FILING_STEPS = [
   },
   {
     title: "Hujjatlar paketini yuklang",
-    detail: "Da'vo arizasi, ilovalar va rekvizitlar to'liq bo'lishi kerak.",
+    detail: "Da'vo arizasi (PDF + DOCX), topshirish.txt va ilova joylari.",
   },
   {
     title: "Davlat bojini tekshiring",
@@ -29,21 +36,107 @@ const FILING_STEPS = [
   },
 ];
 
-export function ExportPanel({ caseId }: { caseId: string }) {
-  const [loading, setLoading] = useState(false);
+type BusyKind = "package" | "pdf" | "docx" | "print" | null;
 
-  async function handleDownload() {
-    setLoading(true);
+export function ExportPanel({
+  caseId,
+  caseTitle,
+  document,
+  documents,
+  route,
+  validation,
+}: {
+  caseId: string;
+  caseTitle: string;
+  document?: GeneratedDocument;
+  documents?: GeneratedDocument[];
+  route?: LegalRoute;
+  validation?: ValidationResult;
+}) {
+  const readiness = getExportReadiness(document);
+  const busyRef = useRef(false);
+  const [busy, setBusy] = useState<BusyKind>(null);
+
+  const disabled = !readiness.ready || busy !== null;
+
+  async function withGuard(kind: BusyKind, work: () => Promise<void>) {
+    if (!readiness.ready || busyRef.current) return;
+    busyRef.current = true;
+    setBusy(kind);
     try {
-      const res = await api.exportPackage(caseId);
-      toast.success("Topshiriq paketi tayyor", {
-        description: res.packageName,
-      });
-      window.print();
+      await work();
     } catch {
-      toast.error("Yuklab olishda xatolik");
+      toast.error("Yuklab olishda xatolik", {
+        description: "Brauzer bloklagan bo'lishi mumkin — «Chop etish» ni sinab ko'ring.",
+      });
     } finally {
-      setLoading(false);
+      busyRef.current = false;
+      setBusy(null);
+    }
+  }
+
+  async function handlePackage() {
+    await withGuard("package", async () => {
+      const { buildFilingPackageZip } = await import("./build-package");
+      const { blob, filename } = await buildFilingPackageZip({
+        caseTitle,
+        document: document!,
+        documents,
+        route,
+        validation,
+      });
+      const ok = downloadBlob(blob, filename);
+      if (!ok) {
+        toast.warning("Yuklab olish bloklandi", {
+          description: "Chop etish tugmasi orqali PDF olish mumkin.",
+        });
+        return;
+      }
+      try {
+        const res = await api.exportPackage(caseId);
+        toast.success("Topshiriq paketi yuklandi", {
+          description: res.packageName ?? filename,
+        });
+      } catch {
+        toast.success("Topshiriq paketi yuklandi", { description: filename });
+      }
+    });
+  }
+
+  async function handlePdf() {
+    await withGuard("pdf", async () => {
+      const { buildPdfBlob } = await import("./build-package");
+      const blob = await buildPdfBlob(document!);
+      const name = safeExportFilename(caseTitle, "pdf");
+      if (!downloadBlob(blob, name)) {
+        toast.warning("PDF yuklab bo'lmadi — chop etishni sinang.");
+      } else {
+        toast.success("PDF tayyor", { description: name });
+      }
+    });
+  }
+
+  async function handleDocx() {
+    await withGuard("docx", async () => {
+      const { buildDocxBlob } = await import("./build-docx");
+      const blob = await buildDocxBlob(document!);
+      const name = safeExportFilename(caseTitle, "docx");
+      if (!downloadBlob(blob, name)) {
+        toast.warning("DOCX yuklab bo'lmadi.");
+      } else {
+        toast.success("Word hujjati tayyor", { description: name });
+      }
+    });
+  }
+
+  function handlePrint() {
+    if (!readiness.ready) return;
+    if (busyRef.current) return;
+    setBusy("print");
+    try {
+      window.print();
+    } finally {
+      window.setTimeout(() => setBusy(null), 400);
     }
   }
 
@@ -56,10 +149,54 @@ export function ExportPanel({ caseId }: { caseId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button onClick={handleDownload} disabled={loading} className="gap-2">
-          <Icon name="download" size="sm" />
-          Hujjatlar paketini yuklab olish
-        </Button>
+        {!readiness.ready ? (
+          <p className="rounded-lg border border-[var(--warn)]/30 bg-[var(--warn)]/10 px-3 py-2 text-sm text-[var(--foreground)]">
+            {readiness.message}
+          </p>
+        ) : null}
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={handlePackage}
+            disabled={disabled}
+            className="gap-2"
+          >
+            <Icon name="download" size="sm" />
+            {busy === "package" ? "Tayyorlanmoqda…" : "Paketni yuklab olish (ZIP)"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handlePdf}
+            disabled={disabled}
+            className="gap-2"
+          >
+            <Icon name="file" size="sm" />
+            {busy === "pdf" ? "PDF…" : "PDF"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleDocx}
+            disabled={disabled}
+            className="gap-2"
+          >
+            <Icon name="file" size="sm" />
+            {busy === "docx" ? "DOCX…" : "DOCX"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handlePrint}
+            disabled={!readiness.ready || busy === "package" || busy === "pdf" || busy === "docx"}
+            className="gap-2"
+          >
+            <Icon name="printer" size="sm" />
+            Chop etish
+          </Button>
+        </div>
+
+        <p className="text-[11px] text-[var(--muted-foreground)]">
+          ZIP: PDF + Word + topshirish.txt + ilova joylari. Brauzer bloklasa — «Hujjat»
+          yorlig&apos;idagi chop etish yoki PDF alohida.
+        </p>
 
         <div className="space-y-3">
           <p className="text-sm font-medium">E-sud orqali topshirish</p>
