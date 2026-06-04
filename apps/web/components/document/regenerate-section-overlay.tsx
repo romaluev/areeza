@@ -64,7 +64,7 @@ export function RegenerateSectionOverlay({
           />
         ) : (
           <div
-            className="legal-paper max-h-48 overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm"
+            className="legal-paper max-h-48 overflow-y-auto rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm"
             aria-live="polite"
           >
             {section ? (
@@ -73,7 +73,8 @@ export function RegenerateSectionOverlay({
                 kind={section.kind}
                 content={streamingContent}
                 isActive
-                showCaret
+                done={!isStreaming}
+                showCaret={isStreaming}
               />
             ) : null}
           </div>

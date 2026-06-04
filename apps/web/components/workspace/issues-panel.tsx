@@ -1,11 +1,11 @@
 "use client";
 
+import { ListRow, ListRowGroup } from "@areeza/ui/components/list-row";
 import { StatusPill } from "@areeza/ui/components/status-pill";
-import { cn } from "@areeza/ui/lib/utils";
 import type { Issue, Situation } from "@areeza/core/types";
-import { StepProgress } from "./step-progress";
+import { ReviewReadinessSummary, IssueDetailPane } from "./review-readiness";
 
-const forumLabel: Record<string, string> = {
+const FORUM_LABELS: Record<string, string> = {
   civil_court: "Fuqarolik sudi",
   prosecutor: "Prokuratura",
   anticorruption_agency: "Korrupsiya agentligi",
@@ -23,22 +23,30 @@ export function IssuesPanel({
   activeIssueId?: string;
   onSelectIssue: (id: string) => void;
 }) {
+  const resolvedId = activeIssueId ?? situation.issues[0]?.id;
+
   return (
-    <div className="space-y-3 overflow-y-auto p-4">
-      {situation.issues.map((issue) => (
-        <IssueCard
-          key={issue.id}
-          issue={issue}
-          situation={situation}
-          selected={activeIssueId === issue.id}
-          onSelect={() => onSelectIssue(issue.id)}
-        />
-      ))}
+    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="flex min-h-0 flex-col border-b border-border lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-r">
+        <ReviewReadinessSummary situation={situation} />
+        <ListRowGroup className="min-h-0 flex-1 overflow-y-auto p-2">
+          {situation.issues.map((issue) => (
+            <IssueListRow
+              key={issue.id}
+              issue={issue}
+              situation={situation}
+              selected={resolvedId === issue.id}
+              onSelect={() => onSelectIssue(issue.id)}
+            />
+          ))}
+        </ListRowGroup>
+      </div>
+      <IssueDetailPane situation={situation} issueId={resolvedId ?? ""} />
     </div>
   );
 }
 
-function IssueCard({
+function IssueListRow({
   issue,
   situation,
   selected,
@@ -51,31 +59,26 @@ function IssueCard({
 }) {
   const doc = situation.documents.find((d) => d.issueIds.includes(issue.id));
   const forum = doc?.destination;
+  const docReady = doc?.validation?.canFile === true || doc?.status === "final";
 
   return (
-    <button
-      type="button"
+    <ListRow
+      title={issue.title}
+      subtitle={forum ? (FORUM_LABELS[forum] ?? forum) : issue.rationale}
+      selected={selected}
       onClick={onSelect}
-      className={cn(
-        "w-full rounded-lg border p-4 text-left transition-colors",
-        selected ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-surface-2",
-      )}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-medium text-ink">{issue.title}</p>
-          <p className="mt-1 text-xs text-muted">{issue.rationale}</p>
-        </div>
-        <StatusPill tone={issue.severity === "critical" ? "danger" : "default"}>
-          {issue.severity === "critical" ? "Muhim" : issue.status}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      tabIndex={0}
+      trailing={
+        <StatusPill tone={issue.severity === "critical" ? "danger" : docReady ? "success" : "warn"}>
+          {issue.severity === "critical" ? "Muhim" : docReady ? "Tayyor" : "Tekshirish"}
         </StatusPill>
-      </div>
-      {forum ? (
-        <p className="mt-2 text-xs text-muted">{forumLabel[forum] ?? forum}</p>
-      ) : null}
-      <div className="mt-3">
-        <StepProgress current={issue.step} />
-      </div>
-    </button>
+      }
+    />
   );
 }

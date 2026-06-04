@@ -1,78 +1,126 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Button } from "@areeza/ui/components/button";
-import { api, isMockFailureError } from "@areeza/core/api";
+import { Icon } from "@areeza/ui/icons";
+import { cn } from "@areeza/ui/lib/utils";
+import type { UseMutationResult } from "@tanstack/react-query";
 import type { Situation } from "@areeza/core/types";
-import { buildSituationPackage } from "./build-situation-package";
-import { showRetryToast } from "@/lib/retry-toast";
+import {
+  getForumGuide,
+  getSituationExportBlockers,
+  type ExportBlocker,
+} from "./situation-export-blockers";
 
-const FORUM_GUIDES: Record<string, string> = {
-  civil_court: "my.sud.uz / cabinet.sud.uz — fuqarolik sudi",
-  prosecutor: "prokuratura.uz — jinoiy ariza",
-  anticorruption_agency: "anticorruption.uz — korrupsiya",
-  labor_inspectorate: "mehnat.uz — mehnat inspeksiyasi",
-  family_court: "my.sud.uz — oila / aliment",
-  admin_authority: "Tegishli organ yoki prokuratura",
-};
+type ExportMutation = UseMutationResult<unknown, Error, void, unknown>;
+
+function BlockerRow({ blocker }: { blocker: ExportBlocker }) {
+  return (
+    <li
+      className={cn(
+        "flex gap-3 rounded-lg border px-3 py-2.5 text-sm",
+        blocker.kind === "advisory"
+          ? "border-destructive/30 bg-destructive/5"
+          : "border-warn/30 bg-warn/5",
+      )}
+    >
+      <Icon
+        name={blocker.kind === "advisory" ? "alert" : "alertWarn"}
+        size="sm"
+        className="mt-0.5 shrink-0"
+      />
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-foreground">{blocker.title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{blocker.detail}</p>
+        {blocker.actionLabel ? (
+          <p className="mt-1 text-xs font-medium text-primary">{blocker.actionLabel}</p>
+        ) : null}
+      </div>
+    </li>
+  );
+}
 
 export function SituationExportPanel({
   situation,
-  situationId,
+  exportMutation,
+  showDownloadButton = false,
+  onGoToReview,
 }: {
   situation: Situation;
-  situationId: string;
+  exportMutation: ExportMutation;
+  /** Workspace footer owns the primary CTA when false. */
+  showDownloadButton?: boolean;
+  onGoToReview?: () => void;
 }) {
-  const exportMutation = useMutation({
-    mutationFn: async () => {
-      if (!situation.readiness.canExport) {
-        throw new Error("blocked");
-      }
-      await buildSituationPackage(situation);
-      return api.exportPackage(situationId);
-    },
-    onSuccess: () => toast.success("Topshirish paketi yuklab olindi"),
-    onError: (err) => {
-      if ((err as Error).message === "blocked") {
-        toast.error("Shoshilinch ogohlantirishlarni hal qiling");
-        return;
-      }
-      if (isMockFailureError(err)) {
-        showRetryToast("Eksport bajarilmadi", () => exportMutation.mutate());
-      } else {
-        toast.error("Eksport bajarilmadi");
-      }
-    },
-  });
+  const blockers = getSituationExportBlockers(situation);
+  const { documentsReady, documentsTotal, canExport } = situation.readiness;
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted">
-        Paket: {situation.documents.length} ta PDF, dalillar ro&apos;yxati, har bir forum
-        uchun topshirish yo&apos;riqnomasi.
-      </p>
+    <div className="space-y-5">
+      <div className="rounded-xl border border-border bg-card p-4">
+        <p className="text-sm font-medium text-foreground">Topshirish paketi</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {situation.documents.length} ta PDF, dalillar ro&apos;yxati va har bir organ uchun
+          yo&apos;riqnoma.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Tayyor hujjatlar:{" "}
+          <span className="font-medium text-foreground">
+            {documentsReady}/{documentsTotal}
+          </span>
+        </p>
+      </div>
+
+      {blockers.length > 0 ? (
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-foreground">
+            Eksportdan oldin hal qiling
+          </h3>
+          <ul className="space-y-2">
+            {blockers.map((b) => (
+              <BlockerRow key={b.id} blocker={b} />
+            ))}
+          </ul>
+          {onGoToReview ? (
+            <button
+              type="button"
+              className="text-xs font-medium text-primary underline-offset-2 hover:underline"
+              onClick={onGoToReview}
+            >
+              Tekshirish bosqichiga o&apos;tish
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <ul className="space-y-2 text-sm">
         {situation.documents.map((d) => (
           <li key={d.id} className="rounded-lg border border-border px-3 py-2">
             <span className="font-medium">{d.title}</span>
-            <span className="text-muted"> → {FORUM_GUIDES[d.destination] ?? d.destination}</span>
+            <span className="mt-0.5 flex items-center gap-1 text-muted-foreground">
+              <Icon name="arrowRight" size={12} className="shrink-0" aria-hidden />
+              {getForumGuide(d.destination)}
+            </span>
           </li>
         ))}
       </ul>
-      {!situation.readiness.canExport ? (
-        <p className="text-sm text-danger">
-          Eksport bloklangan: barcha hujjatlar tayyor bo&apos;lishi va shoshilinch
-          ogohlantirishlar hal qilinishi kerak.
+
+      {showDownloadButton ? (
+        <Button
+          type="button"
+          variant="brand"
+          disabled={!canExport || exportMutation.isPending}
+          loading={exportMutation.isPending}
+          onClick={() => exportMutation.mutate()}
+        >
+          ZIP yuklab olish
+        </Button>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {canExport
+            ? "Pastdagi tugma orqali paketni yuklab oling."
+            : "Bloklovchilarni hal qilgach, pastdagi tugma faollashadi."}
         </p>
-      ) : null}
-      <Button
-        type="button"
-        disabled={!situation.readiness.canExport || exportMutation.isPending}
-        onClick={() => exportMutation.mutate()}
-      >
-        ZIP yuklab olish
-      </Button>
+      )}
     </div>
   );
 }

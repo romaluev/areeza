@@ -341,8 +341,8 @@ function DocumentPanelBody({
       </CardHeader>
       <CardContent className="space-y-3">
         {showPrepare ? (
-          <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-2)] px-4 py-8 text-center">
-            <p className="text-sm text-[var(--muted-foreground)]">
+          <div className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-8 text-center">
+            <p className="text-sm text-muted-foreground">
               Marshrut tayyor. Hujjatni bo&apos;limma-bo&apos;lim yaratamiz.
             </p>
             <Button type="button" className="mt-4 gap-2" onClick={handleGenerate}>
@@ -377,7 +377,7 @@ function DocumentPanelBody({
         ) : null}
 
         {(canEdit || isGenerating) && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-[var(--border)] pt-3">
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
             {canEdit ? (
               <>
                 <RegenerateSectionOverlay
@@ -418,7 +418,7 @@ function DocumentPanelBody({
           </div>
         )}
 
-        <p className="text-[11px] text-[var(--muted-foreground)]">
+        <p className="text-[11px] text-muted-foreground">
           Tuzilma shablondan; faktlar murojaatdan to&apos;ldirildi. Sud sarlavhalari himoyalangan.
         </p>
       </CardContent>

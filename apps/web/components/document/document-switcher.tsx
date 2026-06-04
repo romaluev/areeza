@@ -29,7 +29,7 @@ export function DocumentSwitcher({
           <span className="flex items-center gap-1.5">
             <span className="truncate max-w-[9rem]">{doc.title}</span>
             {doc.status === "generating" ? (
-              <span className="text-[10px] text-[var(--muted-foreground)]">…</span>
+              <span className="text-[10px] text-muted-foreground">…</span>
             ) : null}
           </span>
         ),
@@ -42,7 +42,7 @@ export function DocumentSwitcher({
 
 export function DocumentSwitcherHint({ doc }: { doc: GeneratedDocument }) {
   return (
-    <p className="text-[11px] text-[var(--muted-foreground)]">
+    <p className="text-[11px] text-muted-foreground">
       {documentKindLabel(doc.kind)}
       {doc.claimAmount ? ` · ${doc.claimAmount}` : ""}
     </p>

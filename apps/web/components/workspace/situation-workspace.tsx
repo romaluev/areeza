@@ -1,44 +1,215 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { notFound, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@areeza/ui/components/tabs";
-import { Skeleton } from "@areeza/ui/components/skeleton";
 import { Button } from "@areeza/ui/components/button";
+import { Skeleton } from "@areeza/ui/components/skeleton";
+import { Icon } from "@areeza/ui/icons";
+import { cn } from "@areeza/ui/lib/utils";
+import { motionPresets } from "@areeza/ui/motion/presets";
 import { api, isMockFailureError } from "@areeza/core/api";
+import type { Advisory, Situation } from "@areeza/core/types";
 import { SituationIntakeRail } from "@/components/intake/situation-intake-rail";
-import { AdvisoryPanel } from "./advisory-panel";
-import { IssuesPanel } from "./issues-panel";
-import { SituationDocumentsPanel } from "./situation-documents-panel";
-import { TimelinePanel } from "./timeline-panel";
-import { PartiesPanel } from "./parties-panel";
-import { EvidencePanel } from "./evidence-panel";
 import { SituationExportPanel } from "@/components/export/situation-export-panel";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useSituationExport } from "@/lib/use-situation-export";
+import { uiCopy } from "@/lib/copy";
+import { useAppLocale } from "@/lib/use-app-locale";
 import { showRetryToast } from "@/lib/retry-toast";
+import { useTopBar } from "@/components/shell/use-top-bar";
+import { EvidencePanel } from "./evidence-panel";
+import { IssuesPanel } from "./issues-panel";
+import { PartiesPanel } from "./parties-panel";
+import { SituationDocumentsPanel } from "./situation-documents-panel";
+import { WorkspaceStepProgress } from "./step-progress";
+import { TimelinePanel } from "./timeline-panel";
+
+const WORKSPACE_STEPS = [
+  { id: "chat", label: "Suhbat" },
+  { id: "documents", label: "Hujjatlar" },
+  { id: "review", label: "Tekshirish" },
+  { id: "export", label: "Topshirish" },
+] as const;
+
+type WorkspaceStep = (typeof WORKSPACE_STEPS)[number]["id"];
+
+const STEP_MOTION = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -6 },
+};
+
+function AdvisoryCallout({
+  advisories,
+  onAcknowledge,
+}: {
+  advisories: Advisory[];
+  onAcknowledge: (id: string) => void;
+}) {
+  const top = advisories.filter((a) => a.status === "open").slice(0, 2);
+  if (top.length === 0) return null;
+
+  return (
+    <div className="space-y-2 px-4 pt-4 lg:px-6">
+      {top.map((a) => (
+        <div
+          key={a.id}
+          className={cn(
+            "flex items-start gap-3 rounded-xl border px-3 py-2.5 text-sm",
+            a.severity === "urgent" && "border-destructive/30 bg-destructive/5 text-foreground",
+            a.severity === "high" && "border-warn/30 bg-warn/5 text-foreground",
+            (a.severity === "medium" || a.severity === "info") &&
+              "border-border bg-muted/40 text-foreground",
+          )}
+        >
+          <Icon
+            name={a.severity === "urgent" ? "alert" : "alertWarn"}
+            size="sm"
+            className="mt-0.5 shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium">{a.title}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{a.body}</p>
+          </div>
+          {a.status === "open" ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => onAcknowledge(a.id)}>
+              Tushundim
+            </Button>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WorkspaceStepBody({
+  step,
+  situationId,
+  situation,
+  resolvedActiveIssue,
+  onSelectIssue,
+  showDetails,
+  onToggleDetails,
+  exportMutation,
+  onGoToReview,
+}: {
+  step: WorkspaceStep;
+  situationId: string;
+  situation: Situation;
+  resolvedActiveIssue: string | undefined;
+  onSelectIssue: (id: string) => void;
+  showDetails: boolean;
+  onToggleDetails: () => void;
+  exportMutation: ReturnType<typeof useSituationExport>;
+  onGoToReview: () => void;
+}) {
+  if (step === "chat") {
+    return (
+      <SituationIntakeRail
+        situationId={situationId}
+        readOnly={situation.messages.length > 0}
+        initialMessages={situation.messages}
+      />
+    );
+  }
+  if (step === "documents") {
+    return <SituationDocumentsPanel situationId={situationId} situation={situation} />;
+  }
+  if (step === "review") {
+    return (
+      <div className="flex h-full min-h-0 flex-col">
+        <IssuesPanel
+          situation={situation}
+          activeIssueId={resolvedActiveIssue}
+          onSelectIssue={onSelectIssue}
+        />
+        <div className="shrink-0 border-t border-border px-4 py-2 lg:px-6">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground"
+            onClick={onToggleDetails}
+          >
+            <Icon
+              name="arrowRight"
+              size="sm"
+              className={cn("transition-transform", showDetails && "rotate-90")}
+            />
+            Tafsilotlar
+          </Button>
+          {showDetails ? (
+            <div className="mt-3 grid gap-4 lg:grid-cols-3">
+              <TimelinePanel events={situation.timeline} />
+              <PartiesPanel parties={situation.parties} />
+              <EvidencePanel evidence={situation.evidence} />
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="overflow-y-auto p-4 lg:p-6">
+      <SituationExportPanel
+        situation={situation}
+        exportMutation={exportMutation}
+        onGoToReview={onGoToReview}
+      />
+    </div>
+  );
+}
 
 export function SituationWorkspace({ situationId }: { situationId: string }) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const [tab, setTab] = useState("issues");
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const { data: situation, isLoading, isFetched } = useQuery({
     queryKey: ["situation", situationId],
     queryFn: () => api.getSituation(situationId),
   });
 
-  const [activeIssueId, setActiveIssueId] = useState<string | undefined>(
-    () => situation?.activeIssueId,
-  );
-  const resolvedActiveIssue =
-    activeIssueId ?? situation?.activeIssueId ?? situation?.issues[0]?.id;
-
   useEffect(() => {
     if (!isFetched || isLoading) return;
     if (!situation) notFound();
   }, [isFetched, isLoading, situation]);
+
+  if (isLoading || !situation) {
+    return (
+      <div className="flex h-full flex-col gap-4 p-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="min-h-[400px] flex-1" />
+      </div>
+    );
+  }
+
+  return <SituationWorkspaceLoaded situation={situation} situationId={situationId} />;
+}
+
+function SituationWorkspaceLoaded({
+  situation,
+  situationId,
+}: {
+  situation: Situation;
+  situationId: string;
+}) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { locale } = useAppLocale();
+  const copy = uiCopy(locale);
+  const topBarConfig = useMemo(() => ({ title: situation.title }), [situation.title]);
+  useTopBar(topBarConfig);
+  const reducedMotion = useReducedMotion();
+  const [step, setStep] = useState<WorkspaceStep>("chat");
+  const [showDetails, setShowDetails] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [activeIssueId, setActiveIssueId] = useState<string | undefined>(
+    () => situation.activeIssueId,
+  );
+
+  const exportMutation = useSituationExport(situationId, situation);
+  const resolvedActiveIssue =
+    activeIssueId ?? situation.activeIssueId ?? situation.issues[0]?.id;
 
   const ackMutation = useMutation({
     mutationFn: (advisoryId: string) => api.acknowledgeAdvisory(situationId, advisoryId),
@@ -60,95 +231,120 @@ export function SituationWorkspace({ situationId }: { situationId: string }) {
     },
   });
 
-  if (isLoading || !situation) {
-    return (
-      <div className="flex h-full flex-col gap-4 p-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="min-h-[400px] flex-1" />
-      </div>
-    );
-  }
+  const stepIndex = WORKSPACE_STEPS.findIndex((s) => s.id === step);
+  const primaryCta = useMemo(() => {
+    if (step === "chat") return { label: "Hujjatlarga o'tish", next: "documents" as const };
+    if (step === "documents") return { label: "Tekshirishga o'tish", next: "review" as const };
+    if (step === "review") return { label: "Topshirishga o'tish", next: "export" as const };
+    return {
+      label: "Paketni yuklab olish",
+      next: null,
+      disabled: !situation.readiness.canExport || exportMutation.isPending,
+    };
+  }, [step, situation.readiness.canExport, exportMutation.isPending]);
+
+  const stepTransition = reducedMotion
+    ? { duration: 0 }
+    : { ...motionPresets.base, ease: "easeOut" as const };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 lg:px-6">
-        <div>
-          <h1 className="text-lg font-semibold text-ink">{situation.title}</h1>
-          <p className="text-xs text-muted">
-            {situation.issues.length} ta masala · {situation.documents.length} ta hujjat
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => setDeleteOpen(true)}>
-            O&apos;chirish
-          </Button>
+      <header className="shrink-0 space-y-3 border-b border-border px-4 py-3 lg:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground">{situation.title}</h1>
+            <p className="text-xs text-muted-foreground">
+              {situation.issues.length} ta masala · {situation.documents.length} ta hujjat
+            </p>
+          </div>
           <Button
             type="button"
+            variant="ghost"
             size="sm"
-            disabled={!situation.readiness.canExport}
-            onClick={() => setTab("export")}
+            aria-label={copy.deleteSituationTitle}
+            onClick={() => setDeleteOpen(true)}
           >
-            Paketni yuklab olish
+            {copy.deleteConfirm}
           </Button>
         </div>
+        <WorkspaceStepProgress
+          steps={WORKSPACE_STEPS}
+          currentIndex={stepIndex}
+          onStepClick={(index) => {
+            if (index < stepIndex) {
+              setStep(WORKSPACE_STEPS[index]!.id);
+            }
+          }}
+        />
       </header>
 
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(280px,340px)_1fr_minmax(240px,280px)]">
-        <section className="flex min-h-0 flex-col border-r border-border">
-          <SituationIntakeRail
-            situationId={situationId}
-            readOnly={situation.messages.length > 0}
-            initialMessages={situation.messages}
-          />
-        </section>
+      <AdvisoryCallout
+        advisories={situation.advisories}
+        onAcknowledge={(id) => ackMutation.mutate(id)}
+      />
 
-        <section className="flex min-h-0 flex-col overflow-hidden">
-          <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
-            <TabsList className="mx-4 mt-3 shrink-0">
-              <TabsTrigger value="issues">Masalalar</TabsTrigger>
-              <TabsTrigger value="documents">Hujjatlar</TabsTrigger>
-              <TabsTrigger value="timeline">Vaqt</TabsTrigger>
-              <TabsTrigger value="parties">Tomonlar</TabsTrigger>
-              <TabsTrigger value="evidence">Dalillar</TabsTrigger>
-              <TabsTrigger value="export">Topshirish</TabsTrigger>
-            </TabsList>
-            <TabsContent value="issues" className="min-h-0 flex-1 overflow-hidden">
-              <IssuesPanel
-                situation={situation}
-                activeIssueId={resolvedActiveIssue}
-                onSelectIssue={setActiveIssueId}
-              />
-            </TabsContent>
-            <TabsContent value="documents" className="min-h-0 flex-1 overflow-hidden data-[state=active]:flex">
-              <SituationDocumentsPanel situationId={situationId} situation={situation} />
-            </TabsContent>
-            <TabsContent value="timeline" className="min-h-0 flex-1 overflow-auto">
-              <TimelinePanel events={situation.timeline} />
-            </TabsContent>
-            <TabsContent value="parties" className="min-h-0 flex-1 overflow-auto">
-              <PartiesPanel parties={situation.parties} />
-            </TabsContent>
-            <TabsContent value="evidence" className="min-h-0 flex-1 overflow-auto">
-              <EvidencePanel evidence={situation.evidence} />
-            </TabsContent>
-            <TabsContent value="export" className="min-h-0 flex-1 overflow-auto p-4">
-              <SituationExportPanel situation={situation} situationId={situationId} />
-            </TabsContent>
-          </Tabs>
-        </section>
-
-        <AdvisoryPanel
-          situation={situation}
-          onAcknowledge={(id) => ackMutation.mutate(id)}
-        />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={step}
+            className="absolute inset-0 flex min-h-0 flex-col overflow-hidden"
+            initial={reducedMotion ? false : STEP_MOTION.initial}
+            animate={reducedMotion ? undefined : STEP_MOTION.animate}
+            exit={reducedMotion ? undefined : STEP_MOTION.exit}
+            transition={stepTransition}
+          >
+            <WorkspaceStepBody
+              step={step}
+              situationId={situationId}
+              situation={situation}
+              resolvedActiveIssue={resolvedActiveIssue}
+              onSelectIssue={setActiveIssueId}
+              showDetails={showDetails}
+              onToggleDetails={() => setShowDetails((v) => !v)}
+              exportMutation={exportMutation}
+              onGoToReview={() => setStep("review")}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
+
+      <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-border px-4 py-3 lg:px-6">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={stepIndex <= 0}
+          onClick={() => setStep(WORKSPACE_STEPS[Math.max(0, stepIndex - 1)]!.id)}
+        >
+          Orqaga
+        </Button>
+        <Button
+          type="button"
+          variant="brand"
+          size="sm"
+          disabled={primaryCta.disabled}
+          loading={step === "export" && exportMutation.isPending}
+          onClick={() => {
+            if (primaryCta.next) {
+              setStep(primaryCta.next);
+              return;
+            }
+            exportMutation.mutate();
+          }}
+        >
+          {primaryCta.label}
+        </Button>
+      </footer>
 
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Holatni o'chirish"
-        description="Bu amalni qaytarib bo'lmaydi."
-        confirmLabel="O'chirish"
+        title={copy.deleteSituationTitle}
+        description={copy.deleteSituationDescription}
+        confirmLabel={copy.deleteConfirm}
+        cancelLabel={copy.deleteCancel}
+        variant="destructive"
+        loading={deleteMutation.isPending}
         onConfirm={() => deleteMutation.mutate()}
       />
     </div>

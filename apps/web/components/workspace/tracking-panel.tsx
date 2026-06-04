@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@areeza/ui/components/empty-state";
 import { Icon } from "@areeza/ui/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@areeza/ui/components/card";
 import { TimelineItem, TimelineList } from "@areeza/ui/components/timeline-item";
@@ -37,30 +38,34 @@ export function TrackingPanel({
 
   if (sorted.length === 0) {
     return (
-      <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Icon name="list" size="sm" className="text-[var(--primary)]" />
+            <Icon name="list" size="sm" className="text-primary" />
             Jarayon kuzatuvi
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Murojaat va keyingi bosqichlar shu yerda paydo bo&apos;ladi.
-          </p>
+          <EmptyState
+            variant="list"
+            icon="list"
+            title="Hozircha voqealar yo'q"
+            description="Murojaat va keyingi bosqichlar shu yerda paydo bo'ladi."
+            className="py-8"
+          />
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
+    <Card className="border-border bg-card shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Icon name="list" size="sm" className="text-[var(--primary)]" />
+          <Icon name="list" size="sm" className="text-primary" />
           Jarayon kuzatuvi
         </CardTitle>
-        <p className="text-xs text-[var(--muted-foreground)]">
+        <p className="text-xs text-muted-foreground">
           Ish holati va keyingi qadamlar — sud topshirishgacha.
         </p>
       </CardHeader>

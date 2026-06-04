@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { cn } from "@areeza/ui/lib/utils";
+import { EmptyState } from "@areeza/ui/components/empty-state";
+import { ListRow, ListRowGroup } from "@areeza/ui/components/list-row";
 import { StatusPill } from "@areeza/ui/components/status-pill";
+import { cn } from "@areeza/ui/lib/utils";
 import type { Situation, SituationDocument } from "@areeza/core/types";
 import { DocumentPanel } from "@/components/document/document-panel";
 
-const forumLabel: Record<string, string> = {
+const FORUM_LABELS: Record<string, string> = {
   civil_court: "Sud",
   prosecutor: "Prokuratura",
   anticorruption_agency: "Agentlik",
@@ -16,7 +18,10 @@ const forumLabel: Record<string, string> = {
   family_court: "Oila",
 };
 
-export function SituationDocumentsPanel({ situationId, situation }: {
+export function SituationDocumentsPanel({
+  situationId,
+  situation,
+}: {
   situationId: string;
   situation: Situation;
 }) {
@@ -24,21 +29,40 @@ export function SituationDocumentsPanel({ situationId, situation }: {
   const [docId, setDocId] = useState(situation.documents[0]?.id ?? "");
   const active = situation.documents.find((d) => d.id === docId) ?? situation.documents[0];
 
-  if (!active) {
-    return <p className="p-4 text-sm text-muted">Hujjatlar hali tayyorlanmagan.</p>;
+  if (situation.documents.length === 0) {
+    return (
+      <EmptyState
+        variant="list"
+        icon="file"
+        title="Hujjatlar tayyorlanmagan"
+        description="Suhbat va marshrutdan keyin hujjatlar shu yerda paydo bo'ladi."
+        className="h-full"
+      />
+    );
   }
 
+  if (!active) return null;
+
   return (
-    <div className="flex min-h-0 flex-1">
-      <nav className="w-52 shrink-0 overflow-y-auto border-r border-border p-2">
-        {situation.documents.map((d) => (
-          <DocSwitcherItem
-            key={d.id}
-            doc={d}
-            selected={d.id === active.id}
-            onSelect={() => setDocId(d.id)}
-          />
-        ))}
+    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <nav
+        className={cn(
+          "shrink-0 border-border md:w-56 md:border-r",
+          "border-b md:border-b-0",
+          "overflow-x-auto md:overflow-y-auto",
+        )}
+        aria-label="Hujjatlar ro'yxati"
+      >
+        <ListRowGroup className="flex flex-row gap-0.5 p-2 md:flex-col md:gap-0">
+          {situation.documents.map((d) => (
+            <DocNavRow
+              key={d.id}
+              doc={d}
+              selected={d.id === active.id}
+              onSelect={() => setDocId(d.id)}
+            />
+          ))}
+        </ListRowGroup>
       </nav>
       <div className="min-h-0 min-w-0 flex-1">
         <DocumentPanel
@@ -55,7 +79,7 @@ export function SituationDocumentsPanel({ situationId, situation }: {
   );
 }
 
-function DocSwitcherItem({
+function DocNavRow({
   doc,
   selected,
   onSelect,
@@ -66,21 +90,29 @@ function DocSwitcherItem({
 }) {
   const canFile = doc.validation?.canFile;
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <ListRow
       className={cn(
-        "mb-1 w-full rounded-lg border px-2 py-2 text-left text-xs transition-colors",
-        selected ? "border-primary bg-primary/5" : "border-transparent hover:bg-surface-2",
+        "min-w-[10rem] shrink-0 md:min-w-0",
+        selected && "border-primary/40",
       )}
-    >
-      <p className="font-medium text-ink line-clamp-2">{doc.title}</p>
-      <p className="mt-1 text-muted">{forumLabel[doc.destination] ?? doc.destination}</p>
-      {canFile !== undefined ? (
-        <StatusPill tone={canFile ? "success" : "warn"} className="mt-1">
-          {canFile ? "Tayyor" : "Tekshirish"}
-        </StatusPill>
-      ) : null}
-    </button>
+      title={doc.title}
+      subtitle={FORUM_LABELS[doc.destination] ?? doc.destination}
+      selected={selected}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      tabIndex={0}
+      trailing={
+        canFile !== undefined ? (
+          <StatusPill tone={canFile ? "success" : "warn"}>
+            {canFile ? "Tayyor" : "Tekshirish"}
+          </StatusPill>
+        ) : undefined
+      }
+    />
   );
 }

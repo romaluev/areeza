@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Icon } from "@areeza/ui/icons";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@areeza/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@areeza/ui/components/card";
 import { Separator } from "@areeza/ui/components/separator";
@@ -19,12 +19,12 @@ function FactBlock({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
-      <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-[var(--muted-foreground)]">
-        <span className="text-[var(--primary)]">{icon}</span>
+    <div className="rounded-lg border border-border bg-muted/50 p-3">
+      <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <span className="text-primary">{icon}</span>
         {label}
       </div>
-      <p className="text-sm leading-snug text-[var(--foreground)]">{children}</p>
+      <p className="text-sm leading-snug text-foreground">{children}</p>
     </div>
   );
 }
@@ -36,23 +36,25 @@ export function RouteCard({
   route: LegalRoute;
   classification?: Classification;
 }) {
+  const reduced = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, height: 0 }}
+      initial={reduced ? false : { opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       transition={springTransition}
     >
-      <Card className="border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-2)]">
+      <Card className="border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Icon name="route" size="sm" className="text-[var(--primary)]" />
+            <Icon name="route" size="sm" className="text-primary" />
             Protsessual marshrut
           </CardTitle>
           {classification ? (
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <Badge variant="secondary">{classification.label}</Badge>
               <Badge variant="outline">{classification.trackLabel}</Badge>
-              <span className="text-xs text-[var(--muted-foreground)]">
+              <span className="text-xs text-muted-foreground">
                 {Math.round(classification.confidence * 100)}% ishonch
               </span>
             </div>
@@ -75,9 +77,7 @@ export function RouteCard({
           </div>
           <Separator />
           <div>
-            <p className="mb-1.5 text-xs font-medium text-[var(--muted-foreground)]">
-              Yuridik asos
-            </p>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Yuridik asos</p>
             <div className="flex flex-wrap gap-1.5">
               {route.legalBasis.map((b) => (
                 <Badge key={b} variant="outline" className="font-normal">
@@ -87,13 +87,13 @@ export function RouteCard({
             </div>
           </div>
           <div>
-            <p className="mb-1.5 text-xs font-medium text-[var(--muted-foreground)]">
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">
               Talab qilinadigan hujjatlar
             </p>
             <ul className="space-y-1">
               {route.requiredDocuments.map((d) => (
                 <li key={d} className="flex items-start gap-2 text-sm">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[var(--primary)]/50" />
+                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary/50" />
                   {d}
                 </li>
               ))}

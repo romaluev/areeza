@@ -11,6 +11,7 @@ export function DocumentSectionStream({
   kind,
   content,
   isActive,
+  done,
   showCaret,
   onVisible,
 }: {
@@ -18,13 +19,16 @@ export function DocumentSectionStream({
   kind: DocSectionKind;
   content: string;
   isActive: boolean;
+  done: boolean;
   showCaret: boolean;
   onVisible?: (id: string) => void;
 }) {
   const ref = useRef<HTMLElement>(null);
+  const streaming = isActive && !done;
+
   const { displayed, isComplete } = useTypewriter(content, {
-    resetOnChange: true,
-    instant: !isActive,
+    resetOnChange: false,
+    instant: streaming || !isActive,
   });
 
   useEffect(() => {
@@ -34,8 +38,8 @@ export function DocumentSectionStream({
     }
   }, [isActive, sectionId, onVisible, displayed.length]);
 
-  const text = isActive ? displayed : content;
-  const pending = isActive && !isComplete;
+  const text = streaming ? content : isActive ? displayed : content;
+  const pending = isActive && (streaming || !isComplete);
 
   return (
     <section
@@ -45,13 +49,13 @@ export function DocumentSectionStream({
         "whitespace-pre-wrap transition-opacity duration-200",
         sectionPaperClass(kind),
         pending && "opacity-95",
-        !pending && isActive && "areeza-rise",
+        !pending && isActive && done && "areeza-rise",
       )}
       aria-busy={pending}
     >
       {formatSectionText(text)}
       {showCaret && pending ? (
-        <span className="ml-0.5 inline-block w-[2px] translate-y-px bg-[var(--primary)] animate-caret-blink">
+        <span className="ml-0.5 inline-block w-[2px] translate-y-px bg-primary animate-caret-blink">
           &nbsp;
         </span>
       ) : null}

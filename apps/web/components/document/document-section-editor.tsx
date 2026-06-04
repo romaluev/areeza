@@ -72,7 +72,7 @@ export function DocumentSectionEditor({
   return (
     <div key={editorKey} data-section-id={section.id} className="legal-editable-section">
       <BubbleMenu editor={editor}>
-        <div className="flex gap-1 rounded-lg border border-[var(--border)] bg-[var(--card)] p-1 shadow-md">
+        <div className="flex gap-1 rounded-lg border border-border bg-card p-1 shadow-md">
           <Button
             type="button"
             variant="ghost"
