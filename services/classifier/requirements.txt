@@ -1,0 +1,15 @@
+# Areeza router — Python 3.12 (NOT 3.14). Install with uv:
+#   uv venv --python 3.12 .venv && source .venv/bin/activate
+#   uv pip install -r requirements.txt
+mlx-lm
+sentence-transformers
+scikit-learn
+joblib
+numpy
+fastapi
+uvicorn[standard]
+sentencepiece
+matplotlib
+anthropic
+pydantic
+httpx

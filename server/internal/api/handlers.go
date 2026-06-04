@@ -77,7 +77,10 @@ func (h *Handler) Classify(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusBadRequest, "bad json")
 		return
 	}
-	result := legal.ClassifyText(req.Text)
+	result, ok := legal.ClassifyRemote(req.Text)
+	if !ok {
+		result = legal.ClassifyText(req.Text)
+	}
 	if req.CaseID != nil && *req.CaseID != "" {
 		raw, ok := h.Store.Get(*req.CaseID)
 		if ok {
