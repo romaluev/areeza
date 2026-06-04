@@ -1,0 +1,274 @@
+@import "tailwindcss";
+@import "@areeza/ui/styles/tokens.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-ring: var(--ring);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-surface-5: var(--surface-5);
+  --color-surface-6: var(--surface-6);
+  --color-surface-7: var(--surface-7);
+  --color-surface-8: var(--surface-8);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-legal);
+  --font-mono: var(--font-mono);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply min-h-dvh bg-background text-foreground antialiased;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+}
+
+/* ── FF surface utilities ─────────────────────────────────────────────────── */
+
+@utility shellPanel {
+  background-color: var(--sidebar);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--fx-shadow-panel);
+  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+}
+
+@utility elevatedCard {
+  background-color: var(--card);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--fx-shadow-card);
+  border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
+}
+
+@utility raisedSurface {
+  background-color: var(--surface-raised);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--fx-shadow-sm);
+}
+
+@utility floatingSurface {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--fx-shadow-float);
+}
+
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
+}
+
+/* ── Motion keyframes ─────────────────────────────────────────────────────── */
+
+@keyframes spinner-move {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinner-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  50% {
+    opacity: 0;
+  }
+}
+
+@utility shimmer-text {
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--muted-foreground) 85%, transparent) 0%,
+    color-mix(in oklab, var(--muted-foreground) 85%, transparent) 35%,
+    color-mix(in oklab, var(--foreground) 55%, var(--muted-foreground)) 50%,
+    color-mix(in oklab, var(--muted-foreground) 85%, transparent) 65%,
+    color-mix(in oklab, var(--muted-foreground) 85%, transparent) 100%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.animate-spinner-move {
+  animation: spinner-move 1.4s linear infinite;
+}
+
+.animate-spinner-dash {
+  animation: spinner-dash 1.4s ease-in-out infinite;
+}
+
+.animate-caret-blink {
+  animation: caret-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-text {
+    animation: none;
+    color: var(--muted-foreground);
+    background: none;
+  }
+  .animate-spinner-move,
+  .animate-spinner-dash,
+  .animate-caret-blink {
+    animation: none;
+  }
+}
+
+/* ── Thin scrollbars ──────────────────────────────────────────────────────── */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Legacy motion + legal paper ──────────────────────────────────────────── */
+
+@keyframes areeza-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.areeza-rise {
+  animation: areeza-rise 0.5s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .areeza-rise {
+    animation: none;
+  }
+}
+
+.legal-paper {
+  font-family: var(--font-legal), Georgia, "Times New Roman", serif;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: var(--foreground);
+}
+
+.legal-paper .ProseMirror {
+  min-height: 480px;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.legal-paper .ProseMirror h1,
+.legal-paper .ProseMirror h2 {
+  text-align: center;
+  font-weight: 700;
+  margin: 1rem 0;
+}
+
+.legal-paper .ProseMirror p {
+  margin: 0.5rem 0;
+}
+
+.legal-paper .legal-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8125rem;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-document,
+  #print-document * {
+    visibility: visible;
+  }
+  #print-document {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 2.5rem 3rem;
+    background: #fff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}

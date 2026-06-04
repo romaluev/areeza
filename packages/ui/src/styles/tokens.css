@@ -1,0 +1,308 @@
+/* =============================================================================
+ * Areeza design tokens — Fluid Functionalism (navy + scan-blue + gold)
+ * OKLCH palette · 8-step surface ladder · paired shadow ladder
+ * ============================================================================= */
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-legal);
+  --font-mono: var(--font-mono);
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+  --radius-pill: 9999px;
+
+  --shadow-surface-1: var(--shadow-1);
+  --shadow-surface-2: var(--shadow-2);
+  --shadow-surface-3: var(--shadow-3);
+  --shadow-surface-4: var(--shadow-4);
+  --shadow-surface-5: var(--shadow-5);
+  --shadow-surface-6: var(--shadow-6);
+  --shadow-surface-7: var(--shadow-7);
+  --shadow-surface-8: var(--shadow-8);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-surface-5: var(--surface-5);
+  --color-surface-6: var(--surface-6);
+  --color-surface-7: var(--surface-7);
+  --color-surface-8: var(--surface-8);
+
+  --color-success: var(--success);
+  --color-warning: var(--warn);
+  --color-overlay-scrim: var(--overlay-scrim);
+
+  --color-ink: var(--ink);
+  --color-gold: var(--accent-gold);
+}
+
+/* ── Light mode ───────────────────────────────────────────────────────────── */
+
+:root {
+  --ink: oklch(0.22 0.04 260);
+  --navy: oklch(0.18 0.035 258);
+  --scan-blue: oklch(0.55 0.16 255);
+  --scan-blue-deep: oklch(0.38 0.1 258);
+  --accent-gold: oklch(0.78 0.14 90);
+  --coral: oklch(0.62 0.18 25);
+
+  --background: oklch(0.99 0.004 255);
+  --foreground: var(--ink);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--ink);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--ink);
+
+  --primary: var(--scan-blue);
+  --primary-foreground: oklch(0.99 0.005 255);
+  --secondary: oklch(0.96 0.012 255);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.95 0.01 255);
+  --muted-foreground: oklch(0.52 0.03 258);
+  --accent: oklch(0.96 0.03 90);
+  --accent-foreground: oklch(0.42 0.08 85);
+  --destructive: var(--coral);
+
+  --border: oklch(0.88 0.015 255);
+  --input: oklch(0.88 0.015 255);
+  --ring: oklch(0.68 0.14 264);
+
+  --sidebar: oklch(0.97 0.01 255);
+  --sidebar-foreground: var(--ink);
+  --sidebar-accent: oklch(0.93 0.02 255);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  --surface-raised: oklch(0.98 0.008 255);
+  --surface-overlay: oklch(0.99 0.006 255);
+
+  --surface-1: var(--background);
+  --surface-2: color-mix(in oklab, var(--background) 88%, var(--card) 12%);
+  --surface-3: color-mix(in oklab, var(--background) 76%, var(--card) 24%);
+  --surface-4: color-mix(in oklab, var(--background) 64%, var(--card) 36%);
+  --surface-5: color-mix(in oklab, var(--background) 52%, var(--card) 48%);
+  --surface-6: color-mix(in oklab, var(--background) 40%, var(--card) 60%);
+  --surface-7: color-mix(in oklab, var(--background) 28%, var(--popover) 72%);
+  --surface-8: var(--popover);
+
+  --success: oklch(0.52 0.12 155);
+  --success-bg: oklch(0.95 0.04 155);
+  --warn: oklch(0.68 0.14 75);
+  --warn-bg: oklch(0.97 0.04 85);
+  --danger: var(--coral);
+  --danger-bg: oklch(0.96 0.04 25);
+
+  --radius: var(--radius-md);
+
+  --shadow-color: oklch(0 0 0 / 6%);
+  --shadow-1: 0 0 0 1px var(--shadow-color);
+  --shadow-2:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color);
+  --shadow-3:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+    0 3px 3px -1.5px var(--shadow-color);
+  --shadow-4:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color);
+  --shadow-5:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+    0 12px 12px -6px var(--shadow-color);
+  --shadow-6:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+    0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color);
+  --shadow-7:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+    0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color),
+    0 48px 48px -24px var(--shadow-color);
+  --shadow-8:
+    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+    0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color),
+    0 48px 48px -24px var(--shadow-color), 0 96px 96px -48px var(--shadow-color);
+
+  --fx-shadow-panel: 0 4px 20px oklch(0 0 0 / 8%), 0 1px 3px oklch(0 0 0 / 4%);
+  --fx-shadow-card: 0 4px 16px oklch(0 0 0 / 6%), 0 1px 4px oklch(0 0 0 / 3%);
+  --fx-shadow-sm: 0 1px 3px oklch(0 0 0 / 6%), 0 1px 2px oklch(0 0 0 / 3%);
+  --fx-shadow-float:
+    0 16px 48px oklch(0 0 0 / 12%), 0 4px 16px oklch(0 0 0 / 6%);
+
+  --overlay-scrim: oklch(0 0 0 / 45%);
+
+  --dur-fast: 80ms;
+  --dur-normal: 160ms;
+  --dur-slow: 240ms;
+  --ease-std: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0, 0, 0.3, 1);
+
+  --control-track-padding: 3px;
+  --control-h: 2rem;
+  --icon-size-xs: 12px;
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 20px;
+
+  --density-comfortable-page-px: 2.5rem;
+  --density-comfortable-page-py: 3rem;
+  --density-comfortable-section-gap: 2rem;
+  --density-comfortable-card-px: 1rem;
+  --density-comfortable-card-py: 1rem;
+  --density-comfortable-stack-gap: 0.75rem;
+
+  --density-compact-page-px: 1rem;
+  --density-compact-page-py: 0;
+  --density-compact-section-gap: 1rem;
+  --density-compact-card-px: 0.75rem;
+  --density-compact-card-py: 0.75rem;
+  --density-compact-stack-gap: 0.5rem;
+
+  --layout-app-sidebar-width: 240px;
+  --layout-workspace-chat-width: 420px;
+  --layout-workspace-doc-min: 480px;
+  --layout-message-bubble-max: 88%;
+  --layout-dialog-width: 480px;
+  --layout-popover-width: 360px;
+  --layout-cases-summary-max: 720px;
+
+  --scrollbar-size: 6px;
+  --scrollbar-thumb: oklch(0 0 0 / 12%);
+  --scrollbar-thumb-hover: oklch(0 0 0 / 22%);
+
+  /* Legacy aliases (existing components) */
+  --bg: var(--background);
+  --surface: var(--surface-3);
+  --ink-legacy: var(--ink);
+  --muted-color: var(--muted);
+  --primary-color: var(--primary);
+}
+
+/* ── Dark mode ────────────────────────────────────────────────────────────── */
+
+.dark {
+  --ink: oklch(0.93 0.01 255);
+  --navy: oklch(0.14 0.03 258);
+  --scan-blue: oklch(0.68 0.14 255);
+  --accent-gold: oklch(0.82 0.13 90);
+  --coral: oklch(0.7 0.16 25);
+
+  --background: oklch(0.16 0.025 258);
+  --foreground: var(--ink);
+  --card: oklch(0.2 0.028 258);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.22 0.03 258);
+  --popover-foreground: var(--ink);
+
+  --primary: var(--scan-blue);
+  --primary-foreground: oklch(0.12 0.03 258);
+  --secondary: oklch(0.24 0.03 258);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.22 0.028 258);
+  --muted-foreground: oklch(0.68 0.03 258);
+  --accent: oklch(0.26 0.04 85);
+  --accent-foreground: var(--accent-gold);
+  --destructive: var(--coral);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.72 0.12 264);
+
+  --sidebar: oklch(0.14 0.028 258);
+  --sidebar-foreground: var(--ink);
+  --sidebar-accent: oklch(0.22 0.035 258);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(1 0 0 / 18%);
+
+  --surface-raised: oklch(0.22 0.03 258);
+  --surface-overlay: oklch(0.24 0.032 258);
+
+  --surface-1: var(--background);
+  --surface-2: color-mix(in oklab, var(--background) 88%, var(--card) 12%);
+  --surface-3: color-mix(in oklab, var(--background) 76%, var(--card) 24%);
+  --surface-4: color-mix(in oklab, var(--background) 64%, var(--card) 36%);
+  --surface-5: color-mix(in oklab, var(--background) 52%, var(--card) 48%);
+  --surface-6: color-mix(in oklab, var(--background) 40%, var(--card) 60%);
+  --surface-7: color-mix(in oklab, var(--background) 28%, var(--popover) 72%);
+  --surface-8: var(--popover);
+
+  --success: oklch(0.68 0.12 155);
+  --success-bg: oklch(0.22 0.05 155);
+  --warn: oklch(0.78 0.12 85);
+  --warn-bg: oklch(0.24 0.05 85);
+  --danger: var(--coral);
+  --danger-bg: oklch(0.22 0.06 25);
+
+  --shadow-color: oklch(0 0 0 / 35%);
+  --dm-hi-base: oklch(1 0 0 / 4%);
+  --dm-hi-mid: oklch(1 0 0 / 6%);
+  --dm-ring-base: oklch(1 0 0 / 6%);
+  --dm-drop: oklch(0 0 0 / 22%);
+  --shadow-1: inset 0 0 0 1px var(--dm-ring-base);
+  --shadow-2:
+    inset 0 1px 0 0 var(--dm-hi-base), inset 0 0 0 1px var(--dm-ring-base),
+    0 2px 4px var(--dm-drop);
+  --shadow-3:
+    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
+    0 4px 8px var(--dm-drop);
+  --shadow-4:
+    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
+    0 6px 14px var(--dm-drop);
+  --shadow-5:
+    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
+    0 10px 22px var(--dm-drop);
+  --shadow-6:
+    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
+    0 14px 28px var(--dm-drop);
+  --shadow-7:
+    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
+    0 20px 40px var(--dm-drop);
+  --shadow-8:
+    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
+    0 28px 56px var(--dm-drop);
+
+  --fx-shadow-panel: 0 4px 20px oklch(0 0 0 / 50%), 0 1px 3px oklch(0 0 0 / 30%);
+  --fx-shadow-card: 0 4px 16px oklch(0 0 0 / 40%), 0 1px 4px oklch(0 0 0 / 24%);
+  --fx-shadow-sm: 0 1px 4px oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 2%);
+  --fx-shadow-float:
+    0 20px 60px oklch(0 0 0 / 70%), 0 6px 20px oklch(0 0 0 / 40%),
+    inset 0 1px 0 oklch(1 0 0 / 4%);
+
+  --overlay-scrim: oklch(0 0 0 / 55%);
+  --scrollbar-thumb: oklch(1 0 0 / 12%);
+  --scrollbar-thumb-hover: oklch(1 0 0 / 22%);
+}
