@@ -1,0 +1,15 @@
+# TODO(real): wire pgx/sqlc once BE5 persistence lands.
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: areeza
+      POSTGRES_PASSWORD: areeza
+      POSTGRES_DB: areeza
+    volumes:
+      - areeza_pg:/var/lib/postgresql/data
+
+volumes:
+  areeza_pg:

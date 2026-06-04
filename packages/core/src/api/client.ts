@@ -15,6 +15,7 @@ import type {
   ValidationResult,
 } from "../types/index";
 import * as mock from "./mock";
+import * as real from "./real";
 
 export type ApiMode = "mock" | "real";
 
@@ -29,27 +30,23 @@ function getMode(): ApiMode {
   return "mock";
 }
 
-async function notImplemented(): Promise<never> {
-  throw new Error("Real API not wired yet. Set NEXT_PUBLIC_API_MODE=mock.");
-}
-
 export const api = {
   mode: getMode,
 
   listCases(): Promise<Case[]> {
-    return getMode() === "mock" ? mock.listCases() : notImplemented();
+    return getMode() === "mock" ? mock.listCases() : real.listCases();
   },
 
   getCaseSummaryCounts(): Promise<CaseSummaryCounts> {
-    return getMode() === "mock" ? mock.getCaseSummaryCounts() : notImplemented();
+    return getMode() === "mock" ? mock.getCaseSummaryCounts() : real.getCaseSummaryCounts();
   },
 
   getCase(id: string): Promise<CaseDetail | null> {
-    return getMode() === "mock" ? mock.getCase(id) : notImplemented();
+    return getMode() === "mock" ? mock.getCase(id) : real.getCase(id);
   },
 
   deleteCase(id: string): Promise<void> {
-    return getMode() === "mock" ? mock.deleteCase(id) : notImplemented();
+    return getMode() === "mock" ? mock.deleteCase(id) : real.deleteCase(id);
   },
 
   streamIntake(
@@ -57,23 +54,22 @@ export const api = {
     initialText: string,
     signal?: AbortSignal,
   ): AsyncGenerator<IntakeEvent> {
-    if (getMode() === "mock") {
-      return mock.streamIntake(caseId, initialText, signal);
-    }
-    return (async function* () {
-      await notImplemented();
-    })();
+    return getMode() === "mock"
+      ? mock.streamIntake(caseId, initialText, signal)
+      : real.streamIntake(caseId, initialText, signal);
   },
 
   classify(req: ClassifyRequest): Promise<ClassifyResponse> {
-    return getMode() === "mock" ? mock.classify(req.text) : notImplemented();
+    return getMode() === "mock"
+      ? mock.classify(req.text)
+      : real.classify(req);
   },
 
   route(req: RouteRequest, caseId?: string): Promise<LegalRoute> {
     if (getMode() === "mock" && caseId) {
       return mock.applyRoute(caseId, req);
     }
-    return getMode() === "mock" ? mock.route(req) : notImplemented();
+    return getMode() === "mock" ? mock.route(req) : real.route(req, caseId);
   },
 
   streamDraft(
@@ -81,32 +77,31 @@ export const api = {
     docId: string,
     signal?: AbortSignal,
   ): AsyncGenerator<DraftStreamEvent> {
-    if (getMode() === "mock") {
-      return mock.streamDraft(caseId, docId, signal);
-    }
-    return (async function* () {
-      await notImplemented();
-    })();
+    return getMode() === "mock"
+      ? mock.streamDraft(caseId, docId, signal)
+      : real.streamDraft(caseId, docId, signal);
   },
 
   regenerateSection(req: RegenerateSectionRequest): Promise<GeneratedDocument> {
-    return getMode() === "mock" ? mock.regenerateSection(req) : notImplemented();
+    return getMode() === "mock" ? mock.regenerateSection(req) : real.regenerateSection(req);
   },
 
   updateDocument(req: UpdateDocumentRequest): Promise<GeneratedDocument> {
-    return getMode() === "mock" ? mock.updateDocument(req) : notImplemented();
+    return getMode() === "mock" ? mock.updateDocument(req) : real.updateDocument(req);
   },
 
   draft(caseId: string): Promise<GeneratedDocument> {
-    return getMode() === "mock" ? mock.draft(caseId) : notImplemented();
+    return getMode() === "mock" ? mock.draft(caseId) : real.draft(caseId);
   },
 
   validate(caseId: string, documentId: string): Promise<ValidationResult> {
-    return getMode() === "mock" ? mock.validate(caseId, documentId) : notImplemented();
+    return getMode() === "mock"
+      ? mock.validate(caseId, documentId)
+      : real.validate(caseId, documentId);
   },
 
   exportPackage(caseId: string): Promise<ExportResponse> {
-    return getMode() === "mock" ? mock.exportPackage(caseId) : notImplemented();
+    return getMode() === "mock" ? mock.exportPackage(caseId) : real.exportPackage(caseId);
   },
 };
 

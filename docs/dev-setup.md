@@ -29,8 +29,9 @@ pnpm dev          # run the web app
 pnpm build        # turbo build all
 pnpm lint         # eslint across the workspace
 pnpm typecheck    # tsc --noEmit across the workspace
-make dev          # Go API + Postgres (backend track)
-make migrate      # apply DB migrations
+make dev          # Go API on :8080 (in-memory seed; Postgres optional via docker-compose)
+make seed         # regenerate server/internal/store/seed.json from TS fixtures
+make migrate      # apply DB migrations (TODO — not wired yet)
 ```
 
 Run `pnpm typecheck && pnpm lint` **before every push** (see [conventions.md](conventions.md) §4).
