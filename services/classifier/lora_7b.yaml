@@ -1,0 +1,23 @@
+# Max-effort 7B hero — the biggest base we attempt on 16GB. Conservative train
+# params (batch 1, 8 layers, grad checkpoint) to fit memory; best-effort.
+model: "mlx-community/Qwen2.5-7B-Instruct-4bit"
+train: true
+data: "../../data/classify_llm"
+adapter_path: "adapters_7b"
+fine_tune_type: lora
+
+num_layers: 8
+batch_size: 1
+iters: 400
+learning_rate: 1.0e-4
+max_seq_length: 512
+grad_checkpoint: true
+
+steps_per_report: 25
+steps_per_eval: 100
+save_every: 200
+
+lora_parameters:
+  rank: 16
+  scale: 32.0
+  dropout: 0.05

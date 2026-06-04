@@ -1,0 +1,29 @@
+# Areeza Tier-2 router — MLX LoRA config, sized for a 16GB M1 Pro.
+# Run from services/classifier with the venv active:
+#     mlx_lm.lora --config lora_config.yaml
+# If Activity Monitor shows memory pressure (yellow/red): batch_size -> 1, then num_layers -> 4.
+
+model: "mlx-community/Qwen2.5-3B-Instruct-4bit"   # 3B fits easily (1.5B peaked at only 2.2GB)
+train: true
+
+# chat JSONL produced by build_chat_jsonl.py (expects train.jsonl + valid.jsonl here)
+data: "../../data/classify_llm"
+
+adapter_path: "adapters"
+fine_tune_type: lora
+
+num_layers: 8            # fine-tune only the last 8 transformer blocks -> low memory
+batch_size: 2            # -> 1 under memory pressure
+iters: 500               # ~1.25 epochs — 1.5B's val loss bottomed here before overfitting
+save_every: 100
+learning_rate: 1.0e-4
+max_seq_length: 512      # complaints are short; caps activation memory
+grad_checkpoint: true    # memory insurance
+
+steps_per_report: 25
+steps_per_eval: 100
+
+lora_parameters:
+  rank: 8
+  scale: 16.0
+  dropout: 0.05

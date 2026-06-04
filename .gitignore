@@ -12,3 +12,16 @@ dist
 .claude/
 .deck/
 .prototype/
+
+# IDE
+.idea/
+
+# Python ML services — venvs, caches, model weights, indexes (regenerable)
+**/__pycache__/
+*.pyc
+services/classifier/.venv/
+services/classifier/adapters*/
+services/classifier/areeza-router-*/
+services/classifier/artifacts/
+services/rag/artifacts/
+data/classify_llm/

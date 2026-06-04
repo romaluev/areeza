@@ -1,0 +1,22 @@
+# Max-effort 3B hero — uses the memory headroom (more layers, bigger batch, rank 16).
+model: "mlx-community/Qwen2.5-3B-Instruct-4bit"
+train: true
+data: "../../data/classify_llm"
+adapter_path: "adapters_3b"
+fine_tune_type: lora
+
+num_layers: 16
+batch_size: 4
+iters: 800
+learning_rate: 1.0e-4
+max_seq_length: 512
+grad_checkpoint: true
+
+steps_per_report: 25
+steps_per_eval: 100
+save_every: 200
+
+lora_parameters:
+  rank: 16
+  scale: 32.0
+  dropout: 0.05

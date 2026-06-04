@@ -1,0 +1,179 @@
+{"text":"Oylik to'lanmayapti, uch oy bo'ldi. Buxgalteriya hisoblagan, lekin pul yo'q.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Korxonada ishlayman, ikki oydan beri maosh bermayaptilar, summa aniq belgilangan.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Тўрт ой ишладим, ҳали бир сўм ҳам ойлик олмадим, корхона буни тан олади.","locale":"uz","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Зарплату задерживают четвёртый месяц, бухгалтерия всё посчитала.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Уволился, а расчёт и зарплату за месяц так и не выдали.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Ish haqimni to'liq bermadilar, qancha qarz ekani ustida tortishuv bor.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Иш ҳақи миқдори бўйича келишмовчилик, директор тан олмаяпти.","locale":"uz","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Работодатель не согласен с суммой долга по зарплате, спорим.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Pandemiya paytidan beri qoldiq oyligimni to'lashmadi, miqdori belgilangan.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Премию и зарплату за два месяца начислили, но не перечислили.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Qurilishda ishladim, kelishilgan summa hisoblangan lekin to'lanmadi.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Уч ойлик иш ҳақим тўланмаган, корхона қарзини тан олади.","locale":"uz","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Не выплачивают зарплату с марта, сумма не оспаривается.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Ortiqcha ishlagan soatlarim uchun haq berilmadi, bu masalada nizo bor.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Спор по зарплате: мне насчитали меньше, чем по договору.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Maoshim ikki oy kechiktirildi, miqdori aniq, hech kim e'tiroz qilmayapti.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Ишдан бўшадим, охирги ойлик ва компенсация берилмади.","locale":"uz","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Зарплата за декабрь и январь не выплачена, всё начислено и подтверждено.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Ish beruvchi qancha to'lashi kerakligini rad etyapti, hisob-kitobga rozi emasman.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Besh oy maosh yo'q, korxona qarzdorligini yozma ravishda tan olgan.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Не дали зарплату при сокращении, сумма посчитана и не спорная.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Иш ҳақи устида низо чиқди, тарафлар келиша олмаяпти.","locale":"uz","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Tungi smenalarda ishladim, haqi hisoblangan, ammo to'lanmagan.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Зарплату за отработанный месяц удерживают без объяснений, сумма ясна.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Ikki yarim oy oylik kelmadi, buxgalter summani tasdiqladi.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Маошим уч ойдан бери ушланиб турибди, миқдори аниқ.","locale":"uz","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Директор оспаривает мои переработки и отказывается за них платить.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Ishdan bo'shaganimda hisob-kitob bo'yicha kelishmovchilik bor.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"claim"}
+{"text":"Компания признаёт долг по зарплате за два месяца, но не платит.","locale":"ru","script":"cyrillic","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Oyligimni to'lashni cho'zib yuborishyapti, summa belgilangan va aniq.","locale":"uz","script":"latin","categoryCode":"labor.wage_recovery","track":"order"}
+{"text":"Meni sababsiz ishdan bo'shatishdi, ishga qaytarishni so'rayman.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Незаконно уволили, хочу восстановиться на работе.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Ноқонуний равишда ишдан четлатишди, тикланмоқчиман.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Уволили без предупреждения и без всякой причины.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Dekret ta'tilidan keyin ishimga qaytarmadilar.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"После больничного меня уволили, считаю это незаконным.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Иш ўрнимни асоссиз қисқартиришди, лавозимни тиклашни сўрайман.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Buyruqsiz va sababsiz ishdan haydashdi, lavozimimni tiklamoqchiman.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Меня уволили по статье, но никаких нарушений я не совершал.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Homiladorligim sababli ishdan bo'shatishdi, bu qonunga zid.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Сократили, не предложив другую должность, хочу восстановиться.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Меҳнат шартномам асоссиз бекор қилинди.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Уволили за прогул, которого не было, требую восстановления.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Ish beruvchi meni ogohlantirmasdan ishdan chiqardi.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Хочу восстановиться на работе после незаконного увольнения.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Касаба уюшмаси розилигисиз ишдан бўшатишди.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Sinov muddatini bahona qilib noqonuniy bo'shatishdi.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Меня уволили во время отпуска, требую восстановления.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Direktor almashgach, meni asossiz ishdan oldi.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Уволили устно, без приказа, хочу вернуться на работу.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Ноҳақ ишдан бўшатилдим, ишга тикланишни талаб қиламан.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Сокращение провели с нарушениями закона, прошу восстановить.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Kasallik varaqasida bo'lganimda ishdan chetlatishdi.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"После конфликта с начальником уволили без основания.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Mehnat shartnomasi noqonuniy bekor qilindi, ishga qaytmoqchiman.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Иш берувчи ноқонуний равишда меҳнат шартномасини бекор қилди.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Уволили задним числом, считаю это незаконным.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Ariza yozishga majburlab, keyin ishdan bo'shatishdi.","locale":"uz","script":"latin","categoryCode":"labor.reinstatement","track":null}
+{"text":"Принудили уволиться по собственному, хочу восстановиться.","locale":"ru","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Ишдан асоссиз бўшатилганман, лавозимимни тиклашни сўрайман.","locale":"uz","script":"cyrillic","categoryCode":"labor.reinstatement","track":null}
+{"text":"Do'stimga qarz berdim, qaytarmayapti, tilxat bor.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Дал в долг 15 миллионов сумов, не возвращает.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Қарз берган пулимни белгиланган муддатда қайтармаяпти.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Заняла подруге деньги под расписку, срок прошёл, не отдаёт.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Pulni qarzga berdim, muddati o'tdi, qaytarib bermayapti.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Контрагент не оплатил поставку по договору, хочу взыскать долг.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Шартнома бўйича товар учун ҳақ тўланмади.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Сосед взял в долг и не отдаёт уже целый год.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Hamkorim shartnoma bo'yicha to'lovni amalga oshirmadi.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Должник скрывается и не возвращает заёмные деньги.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Қарздор пулни қайтаришдан бош тортяпти.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"По расписке должны вернуть деньги, срок истёк.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Tovarni yetkazib berdim, lekin haqini hali to'lamadilar.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Не возвращают займ, есть расписка и переписка.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Qarzga olgan pulini kelishilgan muddatda bermadi.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Бир йил олдин берган қарзимни ҳалигача қайтармаяпти.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Фирма не оплатила выполненные по договору работы.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Mol yetkazib berdim, lekin to'lov hali ham yo'q.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Знакомый занял крупную сумму и перестал выходить на связь.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Қарзни ундириб бериш учун судга мурожаат қилмоқчиман.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Арендатор задолжал за несколько месяцев и не платит.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Ijara haqini bir necha oydan beri to'lamayapti.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Одолжил коллеге деньги, теперь отказывается возвращать.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Kompaniya bajarilgan xizmat uchun to'lovni kechiktiryapti.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Берган қарзим бўйича муддат ўтди, пул йўқ.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Хочу взыскать долг по договору займа через суд.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Qarzdor tilxatda ko'rsatilgan summani qaytarmayapti.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Партнёр по бизнесу не вернул вложенные мной деньги.","locale":"ru","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Дўстимга катта миқдорда пул қарз бердим, қайтармаяпти.","locale":"uz","script":"cyrillic","categoryCode":"debt.recovery","track":null}
+{"text":"Shartnomaga ko'ra qarzni undirib berishni so'rayman.","locale":"uz","script":"latin","categoryCode":"debt.recovery","track":null}
+{"text":"Telefon sotib oldim, bir haftada buzildi, almashtirmayaptilar.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Купил телевизор, оказался бракованным, деньги не возвращают.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Сотиб олган музлаткичим ишламади, дўкон қайтармаяпти.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Заказал диван, привезли с браком, обмен делать отказываются.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Yangi kir yuvish mashinasi ishlamadi, kafolati bor edi.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Сделали ремонт телефона некачественно, требую возврат денег.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Буюртма қилган мебель нуқсонли ҳолда келди.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Купила обувь, развалилась через неделю, магазин отказывает.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Onlayn buyurtma reklamaga mos kelmadi, pulni qaytarmayaptilar.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Турфирма не предоставила оплаченные услуги.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Хизмат сифатсиз кўрсатилди, пулни қайтаришни талаб қиламан.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Автосервис испортил машину при ремонте, не возмещают.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Sotib olgan noutbukim nuqsonli chiqdi, do'kon e'tirof etmayapti.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Магазин продал просроченный товар, деньги возвращать отказывается.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Kafolat muddatida buzilgan texnikani ta'mirlab berishmadi.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Заказал кухню, установили с дефектами, исправлять не хотят.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Интернет дўкондан келган маҳсулот бузуқ эди.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Оплатил курсы, услугу не оказали, деньги не вернули.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Yangi konditsioner sovutmayapti, sotuvchi javob bermayapti.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Купленный товар не соответствует описанию на сайте.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Таъмирлаш хизмати ёмон бажарилди, пулни сўраяпман.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Доставили испорченные продукты, возврат не оформляют.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Mebel buyurtma qildim, sifati va'da qilinganidan past chiqdi.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Телефон на гарантии сломался, в ремонте отказали.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Сотиб олган товарим яроқсиз, дўкон жавоб бермаяпти.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Заплатил за установку, сделали плохо, переделывать отказываются.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Internet-do'kon noto'g'ri tovar yubordi va qaytarib olmayapti.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Бракованную бытовую технику не меняют по гарантии.","locale":"ru","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Кафолат бор эди, лекин бузилган товарни алмаштиришмади.","locale":"uz","script":"cyrillic","categoryCode":"consumer.dispute","track":null}
+{"text":"Sifatsiz xizmat uchun to'lagan pulimni qaytarishni so'rayman.","locale":"uz","script":"latin","categoryCode":"consumer.dispute","track":null}
+{"text":"Eski erim aliment to'lamayapti, ikkita bolam bor.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Бывший муж не платит алименты на двоих детей.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Собиқ эрим болаларга нафақа бермаяпти.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Отец ребёнка уклоняется от уплаты алиментов.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Ajrashganmizdan keyin farzandimga nafaqa bermayapti.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Хочу взыскать алименты на несовершеннолетнего ребёнка.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Болам учун алимент тўлашдан бош тортяпти.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Нужно установить алименты на ребёнка через суд.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Otasi bolamizni ta'minlashdan voz kechyapti.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Алименты не платит уже полгода, накопился долг.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Алимент тўловини ярим йилдан бери олмаяпман.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Бывший супруг скрывает доходы, чтобы не платить алименты.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Suddan farzandim uchun aliment undirib berishni so'rayman.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Отец ребёнка платит копейки, хочу пересмотреть размер алиментов.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Фарзандим вояга етмаган, нафақа тўланмаяпти.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Муж ушёл из семьи и не содержит ребёнка.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Bolamning otasi aliment to'lashdan bo'yin tovlamoqda.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Накопилась задолженность по алиментам за целый год.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Икки фарзандим бор, отаси нафақа бермайди.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Прошу взыскать алименты в твёрдой денежной сумме.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Ajrashganmiz, lekin u bolaga hech narsa bermayapti.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Бывший муж работает неофициально и не платит на ребёнка.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Алимент бўйича қарзи кундан-кунга кўпайиб кетди.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Хочу подать на алименты, ребёнку три года.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Farzandimning ta'minoti uchun aliment kerak.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Отец не участвует в содержании детей после развода.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Собиқ турмуш ўртоғим болалар нафақасини бермаяпти.","locale":"uz","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Алименты присудили, но он их так и не выплачивает.","locale":"ru","script":"cyrillic","categoryCode":"family.child_support","track":null}
+{"text":"Bolam uchun har oylik nafaqani undirmoqchiman.","locale":"uz","script":"latin","categoryCode":"family.child_support","track":null}
+{"text":"Bo'shni devorni buzib, hovlimga suv oqizyapti, zararni qoplashini istayman.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Сосед затопил мою квартиру, требую возмещения ущерба.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Мерос тақсими бўйича оила аъзолари билан низо чиқди.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Спор по наследству между братьями и сёстрами.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Meni firibgarlik bilan aldab pulimdan ayirishdi.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Стал жертвой мошенничества, хочу написать заявление в милицию.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Ер участкаси чегараси бўйича қўшни билан жанжал.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Спор о границах земельного участка с соседом.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Avtohalokatdan keyin sug'urta to'lovini bermayaptilar.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Страховая отказывается выплачивать после ДТП.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Ажрашмоқчиман, фарзанд ҳам, мол-мулк ҳам йўқ.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Хочу развестись, общих детей и имущества нет.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Meni internetda tuhmat qilib obro'yimni to'kishdi.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Меня оскорбили и оклеветали в социальных сетях.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Қўшним тунда шовқин қилиб тинчлигимни бузяпти.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Сосед постоянно шумит по ночам и не даёт спать.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Mol-mulkni bo'lish bo'yicha aka-ukam bilan kelisha olmayapmiz.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Раздел имущества после смерти родителей.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Politsiya mening arizamni qabul qilmayapti.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"На меня завели уголовное дело, нужна защита адвоката.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Уй-жойни рўйхатдан ўтказишда муаммо чиқди.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Не могу оформить право собственности на дом.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Mashinamga zarar yetkazib, qochib ketishdi.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Повредили мой автомобиль на парковке и скрылись.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Қариндошлар ўртасида мерос бўйича жанжал.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Хочу оспорить завещание родственника.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Bizni firibgar pul yig'ish sxemasiga jalb qilishdi.","locale":"uz","script":"latin","categoryCode":"other","track":null}
+{"text":"Меня незаконно пытаются выселить из квартиры.","locale":"ru","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Уй эгаси мени ноқонуний кўчиришга уринмоқда.","locale":"uz","script":"cyrillic","categoryCode":"other","track":null}
+{"text":"Yo'l-transport hodisasida zarar ko'rdim, sug'urta to'lamayapti.","locale":"uz","script":"latin","categoryCode":"other","track":null}
