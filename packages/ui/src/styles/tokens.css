@@ -192,6 +192,7 @@
   --density-compact-stack-gap: 0.5rem;
 
   --layout-app-sidebar-width: 240px;
+  --layout-app-sidebar-collapsed-width: 4rem;
   --layout-workspace-chat-width: 420px;
   --layout-workspace-doc-min: 480px;
   --layout-message-bubble-max: 88%;

@@ -18,7 +18,10 @@ import {
   LanguageCircleIcon,
   LeftToRightListBulletIcon,
   LinkSquare02Icon,
+  Menu01Icon,
   Moon02Icon,
+  SidebarLeft01Icon,
+  SidebarRight01Icon,
   PrinterIcon,
   Route01Icon,
   SecurityCheckIcon,
@@ -26,6 +29,7 @@ import {
   Sun01Icon,
   TextBoldIcon,
   TextItalicIcon,
+  UserCircle02Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "../lib/utils";
 
@@ -50,12 +54,16 @@ export const icons = {
   languages: LanguageCircleIcon,
   list: LeftToRightListBulletIcon,
   externalLink: LinkSquare02Icon,
+  menu: Menu01Icon,
   moon: Moon02Icon,
+  sidebarCollapse: SidebarLeft01Icon,
+  sidebarExpand: SidebarRight01Icon,
   printer: PrinterIcon,
   route: Route01Icon,
   shield: SecurityCheckIcon,
   sparkles: SparklesIcon,
   sun: Sun01Icon,
+  user: UserCircle02Icon,
   bold: TextBoldIcon,
   italic: TextItalicIcon,
 } as const satisfies Record<string, HugeiconsIconProps["icon"]>;
