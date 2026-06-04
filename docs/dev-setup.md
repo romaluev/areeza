@@ -36,6 +36,49 @@ make migrate      # apply DB migrations (TODO — not wired yet)
 
 Run `pnpm typecheck && pnpm lint` **before every push** (see [conventions.md](conventions.md) §4).
 
+## 3b. Optional: classifier + RAG services (real-mode enrichment)
+
+The **mock Situation demo** does not need these. When `NEXT_PUBLIC_API_MODE=real`, the Go API can call two optional Python sidecars; if they are down or unset, behavior degrades gracefully.
+
+| Service | Port | Env (Go API) | Fallback when unset / unreachable |
+|---|---|---|---|
+| [`services/classifier`](../services/classifier/) | **8081** | `CLASSIFIER_API_URL=http://localhost:8081` | In-proc **keyword router** in `server/internal/legal/classify.go` (includes extended platform categories: `fraud.*`, `criminal.*`, `family.*`, `admin.*`) |
+| [`services/rag`](../services/rag/) | **8082** | `RAG_API_URL=http://localhost:8082` | Static `LegalBasis` from the route engine until draft wiring lands ([handoff-rag-contract.md](handoff-rag-contract.md)) |
+
+**Classifier (trained router, 6 base categories):**
+
+```bash
+cd services/classifier
+uv venv && source .venv/bin/activate
+uv pip install -r requirements.txt
+python generate.py seed          # seed training JSONL from data/classify/
+python train.py                  # downloads bge-m3 + LoRA — multi-GB, one-time
+uvicorn serve:app --host 0.0.0.0 --port 8081
+```
+
+**RAG (lex.uz grounding):**
+
+```bash
+cd services/rag
+uv venv && source .venv/bin/activate
+uv pip install -r requirements.txt
+python ingest.py                 # scrape + embed — multi-GB, one-time
+uvicorn serve:app --host 0.0.0.0 --port 8082
+```
+
+**Wire into the Go API:**
+
+```bash
+export CLASSIFIER_API_URL=http://localhost:8081   # optional
+export RAG_API_URL=http://localhost:8082          # optional; not used by draft yet
+make dev
+curl -s -X POST http://localhost:8080/api/classify \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"Ish beruvchim oyligimni to'\''lamayapti"}'
+```
+
+With `CLASSIFIER_API_URL` unset, `/api/classify` always answers via the keyword router (no Python process required). Contracts: [handoff-classify-contract.md](handoff-classify-contract.md), [handoff-rag-contract.md](handoff-rag-contract.md).
+
 ## 4. Repo map (where things live)
 
 ```

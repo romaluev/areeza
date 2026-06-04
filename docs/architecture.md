@@ -123,8 +123,9 @@ GET/POST /api/cases ...     case CRUD
 
 - **Backend:** Go modules, `make dev` (server + Postgres via docker-compose), sqlc-generated queries, migrations. Deploy to Railway/Fly.
 - **Web:** pnpm + Turborepo, `pnpm dev`, deploy to Vercel.
-- **Classifier:** separate small service (Railway/Render) behind `CLASSIFIER_API_URL`; Claude+enum fallback so `/classify` always works.
-- **Env:** `ANTHROPIC_API_KEY`, `DATABASE_URL`, `CLASSIFIER_API_URL`, storage keys.
+- **Classifier:** [`services/classifier`](../services/classifier/) on **:8081** (`uvicorn serve:app`). Go calls `POST {CLASSIFIER_API_URL}/classify` from `server/internal/legal/remote.go`; on unset URL, timeout, or non-200, **`ClassifyText`** keyword router in `classify.go` answers (trained model knows the original 6 codes; keyword router also returns platform categories like `fraud.investment`). Mock multi-issue demo does not use this path.
+- **RAG:** [`services/rag`](../services/rag/) on **:8082** (`POST /retrieve`). `RAG_API_URL` is documented for draft grounding ([handoff-rag-contract.md](handoff-rag-contract.md)); not wired into draft yet — route-engine `LegalBasis` remains the fallback.
+- **Env:** `ANTHROPIC_API_KEY`, `DATABASE_URL`, `CLASSIFIER_API_URL` (optional), `RAG_API_URL` (optional), storage keys. See [dev-setup.md](dev-setup.md) §3b for local run commands.
 
 ## 11. How to build it (sequence)
 

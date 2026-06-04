@@ -56,9 +56,12 @@ func ClassifyRemote(text string) (Classification, bool) {
 		return Classification{}, false
 	}
 
-	label := categoryLabels[rc.CategoryCode]
+	// Trained classifier covers the original 6 codes; platform keyword router handles more.
+	categoryCode := rc.CategoryCode
+	label := categoryLabels[categoryCode]
 	if label == "" {
 		label = categoryLabels["other"]
+		categoryCode = "other"
 	}
 	track, trackLabel := "claim", "Da'vo tartibi"
 	rationale := "Tasniflagich (bge-m3) natijasi."
@@ -74,7 +77,7 @@ func ClassifyRemote(text string) (Classification, bool) {
 	}
 
 	return withLevel(Classification{
-		CategoryCode:   rc.CategoryCode,
+		CategoryCode:   categoryCode,
 		Label:          label,
 		Confidence:     rc.Confidence,
 		Track:          track,
