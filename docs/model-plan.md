@@ -1,61 +1,74 @@
-# Areeza — Model Plan (the classifier)
+# Areeza — Model & Data Plan
 
-> **Owner:** Dev 1. **Goal:** a real, fast, **defensible** trained model for case routing — the "we trained a model" beat — not a from-scratch LLM. It must be **live in the demo** and **swap behind `/api/classify`** (Claude+enum stays as the always-on fallback, so the demo never breaks).
+> **Owner:** the AI/model engineer. Two distinct AI assets, two distinct data needs:
+> 1. **The router** — a small fine-tuned model that maps a plain-language complaint → `categoryCode` + `track`. The "we trained a model" beat; live behind `/classify`.
+> 2. **The legal RAG corpus** — the codes, chunked + embedded, that ground document drafting + validation (and resolve the `[VERIFY]` article numbers in [legal-domain.md](legal-domain.md)).
+>
+> Claude does the heavy generation; these make us **fast, cheap, and locally accurate** where a generic model is weak (Uzbek/Russian legal routing). See the token discipline in [architecture.md](architecture.md) §5.
 
-## 1. What the model does
+## 1. What the router does
 
-Input: a citizen's plain-language complaint (Uzbek or Russian). Output: `{ categoryCode, confidence, track }` matching the **same contract** as `/api/classify` (see [development-plan.md](development-plan.md) §3). `categoryCode` ∈ the enum in [legal-domain.md](legal-domain.md) §3 (`labor.wage_recovery`, `labor.reinstatement`, `debt.recovery`, `consumer.dispute`, `family.child_support`, `other`). For `labor.wage_recovery`, also predict `track` = `order` (accrued & undisputed) vs `claim` (disputed).
+Input: a citizen's complaint in Uzbek or Russian. Output: `{ categoryCode, confidence, track }` (same contract as `/classify`). `categoryCode` ∈ the enum in [legal-domain.md](legal-domain.md) §3. For `labor.wage_recovery`, also predict `track` = `order` (accrued & undisputed) vs `claim` (disputed). A small classifier, not a from-scratch LLM: fastest to train, genuinely better than a generic model at UZ/RU legal phrasing, trivial to host, demoable live.
 
-Why a classifier (not a generative fine-tune): fastest to train, genuinely better than a generic model at **Uzbek/Russian** legal routing, easy to host, easy to explain, and demoable live. Claude still does the heavy generation.
+## 2. Where to get the data
 
-## 2. Approach — start at Tier 1, climb only if time
+### 2a. Legal codes → the RAG corpus (and the real article numbers)
+**lex.uz** — the official legal database. Scrape the full text of:
+- **Labor Code** (ЎРҚ-798, 2023): `lex.uz/docs/6257288` (UZ) · `lex.uz/docs/6257291` (RU)
+- **Civil Procedure Code** (2018): `lex.uz/docs/3517337` (UZ) · `lex.uz/docs/3517334` (RU)
+- **Tax Code** (fee exemption art.), **Consumer-Rights Law** (`lex.uz/acts/4704`)
 
-**Tier 1 — embeddings + lightweight classifier (RECOMMENDED, ~hours).**
-Multilingual sentence embeddings → a small classifier (logistic regression / linear SVM). Robust on small data, trains in minutes, trivial to serve.
-- Embeddings: a multilingual model that handles UZ/RU — `intfloat/multilingual-e5-base`, `sentence-transformers/LaBSE`, or a hosted API (OpenAI `text-embedding-3-small`, Cohere `embed-multilingual-v3`).
-- Classifier: `scikit-learn` `LogisticRegression` (with `predict_proba` for confidence) or `LinearSVC` + calibration.
+Pages are mostly static, article-structured HTML → split by **modda / статья**, keep `{article_ref, lang, text}`. This both (a) builds `legal_chunks` for RAG and (b) **gives the authoritative current article numbers** — feed a sample to the advisors to confirm, then delete the `[VERIFY]` flags.
 
-**Tier 2 — fine-tune a small open LLM (if time, stronger "trained a model" story).**
-Fine-tune `Qwen2.5-1.5B/3B-Instruct` or `Llama-3.2-1B/3B` to output the category as constrained text. Easiest paths: **Together AI / Fireworks** hosted fine-tune, or **Unsloth** on a free Colab/T4. Serve via the provider endpoint.
+### 2b. Real court decisions → classifier grounding + rejection patterns
+**publication.sud.uz / public.sud.uz** — the public database of court rulings (large). Each decision states the case type, the parties' claims, the legal basis, and the outcome. Scrape (paginated, rate-limited) to get **real legal language per category**, real `da'vo arizasi` structures, and **why filings fail** (returned/refused cases → validation rules). This is the highest-value *real* signal.
 
-**Tier 3 — stretch (probably skip):** fine-tune fact-extraction or the order/claim sub-decision as its own head.
+### 2c. Official templates → the document skeletons
+**yurxizmat.uz** (Justice Ministry generator, e.g. `/uz/document/24` = wage claim) and **advice.uz** — authentic `da'vo arizasi` samples in UZ/RU. Scrape to lock the template slots in [legal-domain.md](legal-domain.md) §4.
 
-## 3. Data — generate it with Claude (the key enabler)
+### 2d. Synthetic plain-language complaints → the classifier's main signal
+Court decisions are *formal*; citizens type *informally* ("oyligimni bermayapti, 2 oy bo'ldi"). Bridge the gap: prompt **Claude (opus)** to generate realistic plain-language complaints per category, **UZ + RU**, varied dialect/formality/length, with labels + `track`. Target ~300–500/category (~2–3k total) as `{text, locale, categoryCode, track}` JSONL. This matches the input distribution we actually serve.
 
-We have no labeled corpus, so synthesize one and have the **Oliy Sud advisors sanity-check a sample** (cheap quality + Domain-lens credibility).
+### 2e. The advisors — the real unlock
+Our advisors are the **Supreme Court's dev + IT team** (they build e-sud / my.sud.uz). Ask them for: the **authoritative current article numbers**, **real anonymized filings** (gold training + grounding data), label sign-off, and — for the roadmap — **sud.uz data/API access**. This is data and integration no competitor can get.
 
-1. Prompt Claude (`claude-opus-4-8`) to generate realistic plain-language complaints for **each** category in [legal-domain.md](legal-domain.md) §3, in **both Uzbek and Russian**, varying phrasing, dialect, formality, and length. Include ambiguous/edge cases and the `other` class. For wage cases, label `track`.
-2. Target ~**300–500 examples/category** → ~2–3k total. Output **JSONL**: `{ "text": "...", "locale": "uz|ru", "categoryCode": "...", "track": "order|claim|null" }`.
-3. Advisors review a ~50-example sample for label correctness; fix systematic errors in the generation prompt and regenerate.
-4. Split **80/10/10** train/val/test → `data/classify/{train,val,test}.jsonl`.
+> **Training set = synthetic (primary, matches real input) + real-decision snippets (grounding) + advisor-checked labels.** RAG corpus = scraped lex.uz codes.
 
-## 4. Train (Tier 1 steps)
+## 3. Tools (fast + easy)
 
-1. Generate dataset (step 3) → `data/classify/*.jsonl`.
-2. Embed all texts with the chosen multilingual model; **cache** embeddings.
-3. Train `LogisticRegression` on embeddings → `categoryCode`; a second small head (or rules) for `track`.
-4. **Evaluate** on test: accuracy, per-class F1, confusion matrix. Report honestly (synthetic test will look high — say so).
-5. Save artifact (`joblib`) + the embedding model id.
+| Need | Tool | Why |
+|---|---|---|
+| Scrape lex.uz (static) | Python `requests` + `BeautifulSoup`/`lxml` | simplest; pages are article-structured HTML |
+| Scrape sud.uz / JS-heavy | **Firecrawl** (hosted, LLM-ready markdown) or **Crawl4AI** (OSS, free) | handles JS + pagination, clean output, fast |
+| Embeddings (UZ/RU) | `intfloat/multilingual-e5-base` or `LaBSE` (HF, local, free); or OpenAI `text-embedding-3` / Cohere `embed-multilingual-v3` (hosted) | strong multilingual; local = zero cost |
+| Classifier (Tier 1) | `scikit-learn` LogisticRegression on embeddings | trains in **minutes**, `predict_proba` confidence, trivial to serve |
+| Fine-tune (Tier 2) | **Together AI / Fireworks** hosted fine-tune, or **Unsloth** on a free Colab T4 — base `Qwen2.5-1.5B/3B` or `Llama-3.2-1B/3B` | a real fine-tuned-LLM artifact; stronger story |
+| Labeling / augmentation | Claude (opus) | generate + label synthetic data |
+| Vector store | Postgres **pgvector** (already in our stack) | one fewer service |
 
-## 5. Serve & integrate
+## 4. Build sequence
 
-- Smallest reliable option: a tiny **FastAPI** service `POST /classify {text} → {categoryCode, confidence, track}`, deployed on Railway/Render/Fly (or run locally for the demo).
-- `apps/web/app/api/classify/route.ts` calls `CLASSIFIER_API_URL` when set; **falls back to Claude+enum** on any error or if unset. Same contract either way → zero frontend change.
-- Add `CLASSIFIER_API_URL` to `.env.example`.
+1. **Scrape** codes (2a) + a few thousand decisions (2b) + templates (2c) → `data/legal/*` and `data/decisions/*`.
+2. **Generate** the synthetic complaint set (2d) → `data/classify/{train,val,test}.jsonl` (80/10/10). Advisor spot-check (2e).
+3. **RAG:** embed code articles → `legal_chunks` (pgvector). Retrieval tested per category.
+4. **Train router (Tier 1):** embed train texts → LogisticRegression → eval (accuracy, per-class F1, confusion matrix). Save `joblib` + the embedding-model id. Upgrade to Tier 2 only if time.
+5. **Serve:** small FastAPI `/classify {text} → {categoryCode, confidence, track}`; deploy (Railway/Render) behind `CLASSIFIER_API_URL`. Go `/classify` calls it and **falls back to Claude+enum** on any error → the endpoint always works.
+6. **Eval honestly** (synthetic test scores high — say so) and set the roadmap: retrain on real anonymized filings post-pilot → the data moat compounds.
 
-## 6. Files
+## 5. Files
 
 ```
-data/classify/{train,val,test}.jsonl     # generated dataset
-services/classifier/                      # Python: generate.py, train.py, serve.py (FastAPI), requirements.txt
-packages/core/ai/classify/                # the TS client + the Claude+enum fallback
+data/legal/         # scraped codes (article-chunked, UZ/RU) → legal_chunks
+data/decisions/     # scraped court decisions (grounding + rejection patterns)
+data/classify/      # {train,val,test}.jsonl  (synthetic + real, labeled)
+services/scraper/   # Python: lex.py, sud.py (requests/Firecrawl) → JSONL
+services/classifier/# Python: embed.py, train.py, serve.py (FastAPI), requirements.txt
 ```
 
-## 7. Honesty & roadmap (for the pitch)
+## 6. Honesty & pitch line
 
-- Say exactly what it is: *"a model trained on Uzbek/Russian legal-case patterns to route a plain-language story to the correct procedure,"* validated with Supreme-Court advisors. Don't claim a from-scratch LLM.
-- Roadmap line: retrain on **real anonymized filings** post-pilot → the data moat compounds.
+Say exactly what it is: *"a model trained on Uzbek/Russian legal-case patterns to route a plain-language story to the correct procedure,"* validated with the Supreme Court's own engineers. Not a from-scratch LLM.
 
-## 8. Timebox & cut-line
+## 7. Timebox & cut-line
 
-Tier 1 is a few hours. **It must not block the end-to-end demo** — `/api/classify` works on the Claude+enum fallback from day one, so the classifier is a *swap-in upgrade* for CP2, not a dependency. If short on time: ship Tier 1, present Tier 2 as "in training."
+Tier 1 (scrape codes for RAG + synthetic set + embeddings classifier) is a **few hours**. It must **not block** the end-to-end demo — `/classify` runs on the Claude+enum fallback from day one, so the trained router is a swap-in upgrade for CP2, not a dependency. If short on time: ship Tier 1, present Tier 2 as "in training," and lead with the lex.uz RAG (it visibly grounds the document in real article text).

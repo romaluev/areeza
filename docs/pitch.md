@@ -90,9 +90,10 @@
 
 ## Slide 10 — Team (Jamoa)
 
-- **Roma Lutfullaev — Founder/Lead.** First **Cursor Ambassador** in Uzbekistan; built **Horyco** (restaurant AI OS, solo: 30 clients, ~$2K MRR) and **Notiky** (AI product brain, paying customers in week 1). Ships at the speed this hackathon rewards. *(+ your 4–5 members: AI/backend, frontend, design, domain.)*
-- **Advisors — Oliy Sud (Supreme Court of Uzbekistan).**
-- 🎤 *"The Technical mentor asked about team knowledge (T4): I'm the country's Cursor Ambassador and I've shipped two AI products solo. We don't *plan* to build fast — we already did."*
+- **Rakhmatillo Lutfullaev — Founder / CEO.** First **Cursor Ambassador** in Uzbekistan; built **Horyco** (restaurant AI OS, solo) and **Notiky** (AI product brain, paying customers in week 1).
+- **Mukhammadxoja Lutfullaev — CTO** (SWE @ Clockster · CTO @ Horyco) · **Shoxdiyor Aliyev — COO** (Manager @ Yandex Market) · **Saloxiddin Mirxafizov — SWE** (3 yrs) · **Abdulboriy Abduxalilov — SWE** (2 yrs).
+- **Advisors — Anvarjon Abdullajonov** (Supreme Court dev-team lead, 10+ yrs SWE) **+ Jasur Umarov** (Supreme Court IT): the engineers who build **e-sud / my.sud.uz** — our integration path, not just legal sign-off.
+- 🎤 *"Our advisors don't just know the law — they build the court's systems. When we say the government can adopt this, it's the people in the room who'd ship it."* (**B3 advantage, S4 compliance, S5 impact.**)
 
 ## Slide 11 — Close (the ask is the win)
 
