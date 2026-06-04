@@ -7,23 +7,16 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-[var(--primary)] text-[var(--primary-foreground)]",
-        secondary:
-          "border-[color-mix(in_oklab,var(--foreground)_20%,transparent)] bg-[color-mix(in_oklab,var(--secondary)_90%,transparent)] text-[var(--foreground)]",
-        outline:
-          "border-[color-mix(in_oklab,var(--foreground)_20%,transparent)] bg-transparent text-[var(--foreground)]",
-        success:
-          "border-[color-mix(in_oklab,var(--success)_20%,transparent)] bg-[color-mix(in_oklab,var(--success)_10%,transparent)] text-[var(--success)]",
-        warn:
-          "border-[color-mix(in_oklab,var(--warn)_20%,transparent)] bg-[color-mix(in_oklab,var(--warn)_10%,transparent)] text-[var(--warn)]",
-        danger:
-          "border-[color-mix(in_oklab,var(--danger)_20%,transparent)] bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] text-[var(--danger)]",
-        muted:
-          "border-[color-mix(in_oklab,var(--muted-foreground)_20%,transparent)] bg-[color-mix(in_oklab,var(--muted-foreground)_10%,transparent)] text-[var(--muted-foreground)]",
+        default: "border-transparent bg-primary text-primary-foreground",
+        secondary: "border-foreground/20 bg-secondary/90 text-foreground",
+        outline: "border-foreground/20 bg-transparent text-foreground",
+        success: "border-success/20 bg-success/10 text-success",
+        warn: "border-warn/20 bg-warn/10 text-warn",
+        danger: "border-danger/20 bg-danger/10 text-danger",
+        muted: "border-muted-foreground/20 bg-muted-foreground/10 text-muted-foreground",
       },
       shape: {
-        pill: "rounded-[var(--radius-pill)]",
+        pill: "rounded-pill",
         rounded: "rounded-md",
       },
     },

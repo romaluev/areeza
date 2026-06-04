@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "./utils";
-import { surfaceClasses } from "./surface-classes";
+import { SURFACE_BG, surfaceClasses } from "./surface-classes";
 
 export const SURFACE_MIN = 1 as const;
 export const SURFACE_MAX = 8 as const;
@@ -75,7 +75,7 @@ export function useSurfaceLevel(): SurfaceLevel {
 
 export function useSurfaceClassName(): string {
   const { level } = useSurface();
-  return `bg-[var(--surface-${level})]`;
+  return SURFACE_BG[level];
 }
 
 export interface ElevatedProps {

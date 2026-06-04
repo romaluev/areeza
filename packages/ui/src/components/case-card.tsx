@@ -59,7 +59,7 @@ export function CaseCard({
         ) : null}
       </CardHeader>
       {(meta || footer) && (
-        <CardContent className="flex flex-col gap-2 pt-0 text-sm text-[var(--muted-foreground)]">
+        <CardContent className="flex flex-col gap-2 pt-0 text-sm text-muted-foreground">
           {meta}
           {footer}
         </CardContent>

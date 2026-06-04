@@ -29,18 +29,18 @@ export function TimelineItem({
       <div className="flex flex-col items-center">
         <span
           className={cn(
-            "relative z-10 flex size-2.5 shrink-0 rounded-full ring-2 ring-[var(--background)]",
-            completed && "bg-[var(--success)]",
-            active && !completed && "bg-[var(--primary)]",
-            !active && !completed && "bg-[var(--border)]",
+            "relative z-10 flex size-2.5 shrink-0 rounded-full ring-2 ring-background",
+            completed && "bg-success",
+            active && !completed && "bg-primary",
+            !active && !completed && "bg-border",
           )}
           aria-hidden
         />
         {!isLast ? (
           <span
             className={cn(
-              "mt-1 w-px flex-1 bg-[var(--border)]",
-              completed && "bg-[color-mix(in_oklab,var(--success)_40%,var(--border))]",
+              "mt-1 w-px flex-1 bg-border",
+              completed && "bg-success/40",
             )}
             aria-hidden
           />
@@ -49,18 +49,18 @@ export function TimelineItem({
       <div className="min-w-0 flex-1 pt-0.5">
         <p
           className={cn(
-            "text-sm leading-snug",
-            active ? "font-medium text-[var(--foreground)]" : "text-[var(--foreground)]",
+            "text-sm leading-snug text-foreground",
+            active && "font-medium",
           )}
         >
           {label}
         </p>
         {at ? (
-          <time className="mt-0.5 block text-xs tabular-nums text-[var(--muted-foreground)]">
+          <time className="mt-0.5 block text-xs tabular-nums text-muted-foreground">
             {at}
           </time>
         ) : null}
-        {note ? <p className="mt-1 text-xs text-[var(--muted-foreground)]">{note}</p> : null}
+        {note ? <p className="mt-1 text-xs text-muted-foreground">{note}</p> : null}
       </div>
     </li>
   );

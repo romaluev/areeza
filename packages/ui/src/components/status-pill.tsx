@@ -3,22 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 const statusPillVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border px-2.5 py-0.5 text-xs font-medium tabular-nums",
+  "inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-0.5 text-xs font-medium tabular-nums",
   {
     variants: {
       tone: {
-        default:
-          "border-[color-mix(in_oklab,var(--foreground)_20%,transparent)] bg-[color-mix(in_oklab,var(--foreground)_8%,transparent)] text-[var(--foreground)]",
-        primary:
-          "border-[color-mix(in_oklab,var(--primary)_20%,transparent)] bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--primary)]",
-        success:
-          "border-[color-mix(in_oklab,var(--success)_20%,transparent)] bg-[color-mix(in_oklab,var(--success)_10%,transparent)] text-[var(--success)]",
-        warn:
-          "border-[color-mix(in_oklab,var(--warn)_20%,transparent)] bg-[color-mix(in_oklab,var(--warn)_10%,transparent)] text-[var(--warn)]",
-        danger:
-          "border-[color-mix(in_oklab,var(--danger)_20%,transparent)] bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] text-[var(--danger)]",
-        muted:
-          "border-[color-mix(in_oklab,var(--muted-foreground)_20%,transparent)] bg-[color-mix(in_oklab,var(--muted-foreground)_10%,transparent)] text-[var(--muted-foreground)]",
+        default: "border-foreground/20 bg-foreground/8 text-foreground",
+        primary: "border-primary/20 bg-primary/10 text-primary",
+        success: "border-success/20 bg-success/10 text-success",
+        warn: "border-warn/20 bg-warn/10 text-warn",
+        danger: "border-danger/20 bg-danger/10 text-danger",
+        muted: "border-muted-foreground/20 bg-muted-foreground/10 text-muted-foreground",
       },
     },
     defaultVariants: { tone: "default" },

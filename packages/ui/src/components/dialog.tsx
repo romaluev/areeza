@@ -7,12 +7,36 @@ import { cn } from "../lib/utils";
 import { Elevated, SurfaceProvider } from "../lib/surface-context";
 import { OverlayContentMotion } from "../lib/overlay-content";
 import { useMotionTransition } from "../hooks/use-reduced-motion";
+import { Button } from "./button";
 import { Icon } from "../icons";
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 export const DialogPortal = DialogPrimitive.Portal;
+
+export function ModalCloseButton({
+  className,
+  "aria-label": ariaLabel = "Yopish",
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Close>) {
+  return (
+    <DialogPrimitive.Close asChild {...props}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label={ariaLabel}
+        className={cn(
+          "absolute top-4 right-4 z-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground",
+          className,
+        )}
+      >
+        <Icon name="cancel" size="sm" />
+      </Button>
+    </DialogPrimitive.Close>
+  );
+}
 
 export function DialogOverlay({
   className,
@@ -28,7 +52,7 @@ export function DialogOverlay({
         exit={{ opacity: 0 }}
         transition={transition}
         className={cn(
-          "fixed inset-0 z-50 bg-[var(--overlay-scrim)] backdrop-blur-[2px]",
+          "fixed inset-0 z-[length:var(--z-overlay)] bg-overlay-scrim supports-backdrop-filter:backdrop-blur-xs",
           className,
         )}
       />
@@ -60,14 +84,7 @@ export function DialogContent({
               style={{ borderRadius: "var(--radius-xl)" }}
             >
               {children}
-              {showClose ? (
-                <DialogPrimitive.Close
-                  className="absolute top-4 right-4 rounded-md p-1 text-[var(--muted-foreground)] opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-[var(--ring)]"
-                  aria-label="Yopish"
-                >
-                  <Icon name="cancel" size="sm" />
-                </DialogPrimitive.Close>
-              ) : null}
+              {showClose ? <ModalCloseButton /> : null}
             </Elevated>
           </SurfaceProvider>
         </OverlayContentMotion>
@@ -109,7 +126,7 @@ export function DialogDescription({
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-sm text-[var(--muted-foreground)]", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   );

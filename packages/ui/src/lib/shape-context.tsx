@@ -55,7 +55,7 @@ export interface ShapeProviderProps {
 export function ShapeProvider({
   children,
   density = "default",
-  preset = "pill",
+  preset = "default",
 }: ShapeProviderProps) {
   const value = useMemo(() => ({ density, preset }), [density, preset]);
   return (
@@ -65,7 +65,7 @@ export function ShapeProvider({
 
 export function useShape(): ShapeContextValue {
   const ctx = useContext(ShapeContext);
-  return ctx ?? { density: "default", preset: "pill" };
+  return ctx ?? { density: "default", preset: "default" };
 }
 
 export function useShapeStyle(): Pick<CSSProperties, "borderRadius"> {

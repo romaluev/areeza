@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "../lib/utils";
-import { useProximityHover } from "../hooks/use-proximity-hover";
+import { navRowTransition } from "../lib/nav-motion";
 import { StatusPill } from "./status-pill";
 import type { CaseStatus } from "@areeza/core/types";
 
@@ -12,8 +12,10 @@ export interface ListRowProps extends React.HTMLAttributes<HTMLDivElement> {
   status?: CaseStatus;
   statusLabel?: string;
   trailing?: React.ReactNode;
+  /** @deprecated Ignored — kept for call-site compatibility */
   rowId?: string;
   interactive?: boolean;
+  selected?: boolean;
 }
 
 const statusTone: Record<
@@ -34,11 +36,8 @@ export function ListRowGroup({
   children,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  useProximityHover(ref, { axis: "y" });
-
   return (
-    <div ref={ref} data-slot="list-row-group" className={cn("flex flex-col", className)} {...props}>
+    <div data-slot="list-row-group" className={cn("flex flex-col gap-0.5", className)} {...props}>
       {children}
     </div>
   );
@@ -50,30 +49,30 @@ export function ListRow({
   status,
   statusLabel,
   trailing,
-  rowId,
   interactive = true,
+  selected = false,
   className,
   ...props
 }: ListRowProps) {
-  const id = rowId ?? React.useId();
-
   return (
     <div
-      data-proximity-id={id}
       data-slot="list-row"
+      role={interactive ? "option" : undefined}
+      aria-selected={interactive ? selected : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5",
-        "transition-[background-color,border-color] duration-[var(--dur-fast)]",
-        interactive &&
-          "cursor-pointer hover:border-[var(--border)] hover:bg-[var(--surface-3)] data-[proximity]:border-[var(--border)] data-[proximity]:bg-[var(--surface-3)]",
+        "flex items-center gap-3 rounded-xl border border-transparent",
+        "h-[length:var(--density-row-h-default)] px-[length:var(--density-row-px)]",
+        navRowTransition,
+        interactive && "cursor-pointer hover:bg-accent/40",
+        selected && "bg-accent",
         className,
       )}
       {...props}
     >
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-[var(--foreground)]">{title}</p>
+        <p className="truncate text-sm font-medium text-foreground">{title}</p>
         {subtitle ? (
-          <p className="truncate text-xs text-[var(--muted-foreground)]">{subtitle}</p>
+          <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
         ) : null}
       </div>
       {status && statusLabel ? (

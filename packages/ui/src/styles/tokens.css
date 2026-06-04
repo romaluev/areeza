@@ -1,309 +1,441 @@
 /* =============================================================================
- * Areeza design tokens — Fluid Functionalism (navy + scan-blue + gold)
- * OKLCH palette · 8-step surface ladder · paired shadow ladder
+ * Areeza design tokens — ported from notiky (warm cream / forest-green brand)
+ * Color space: OKLCH. Dark mode lives in dark-tokens.css.
  * ============================================================================= */
 
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-legal);
-  --font-mono: var(--font-mono);
+    /* ── Typography ────────────────────────────────────────────────────────── */
+    --font-sans: var(--font-inter);
+    --font-serif: var(--font-legal);
+    --font-mono: var(--font-mono);
+    --font-heading: var(--font-sans);
+    --font-display: var(--font-sans);
 
-  --radius-xs: 0.25rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.875rem;
-  --radius-2xl: 1.25rem;
-  --radius-pill: 9999px;
+    /**
+     * Product shell density: `text-sm` is the default “chrome” step (sidebar nav,
+     * settings, dense controls).
+     *
+     * Marketing decks and landing-specific layouts under `apps/web/features/landing/**`
+     * intentionally use explicit display sizes (`text-[Npx]`, fluid rem) for deck
+     * fidelity; do not require them to match this scale. Product code (`packages/ui`,
+     * `packages/views`, dashboard) should use these tokens and `text-2xs` / `text-3xs`
+     * / `text-calendar-day` instead of raw pixel classes.
+     */
+    --text-sm: 0.8125rem;
+    --text-sm--line-height: 1.25rem;
 
-  --shadow-surface-1: var(--shadow-1);
-  --shadow-surface-2: var(--shadow-2);
-  --shadow-surface-3: var(--shadow-3);
-  --shadow-surface-4: var(--shadow-4);
-  --shadow-surface-5: var(--shadow-5);
-  --shadow-surface-6: var(--shadow-6);
-  --shadow-surface-7: var(--shadow-7);
-  --shadow-surface-8: var(--shadow-8);
+    /** Calendar weekday + week-number cells — between `text-xs` and `text-sm`. */
+    --text-calendar-day: 0.8rem;
+    --text-calendar-day--line-height: 1rem;
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+    /** Dense chips, mono IDs, upgrade save badges (~10px). */
+    --text-2xs: 0.625rem;
+    --text-2xs--line-height: 0.875rem;
 
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-surface-4: var(--surface-4);
-  --color-surface-5: var(--surface-5);
-  --color-surface-6: var(--surface-6);
-  --color-surface-7: var(--surface-7);
-  --color-surface-8: var(--surface-8);
+    /** Smallest product labels (plan tier pill, micro metadata ~9px). */
+    --text-3xs: 0.5625rem;
+    --text-3xs--line-height: 0.75rem;
 
-  --color-success: var(--success);
-  --color-warning: var(--warn);
-  --color-overlay-scrim: var(--overlay-scrim);
+    /* ── Radius — explicit rem, not calc() ─────────────────────────────────── */
+    --radius-xs: 0.25rem; /* 4px */
+    --radius-sm: 0.375rem; /* 6px */
+    --radius-md: 0.5rem; /* 8px — default */
+    --radius-lg: 0.625rem; /* 10px */
+    --radius-xl: 0.875rem; /* 14px */
+    --radius-2xl: 1.25rem; /* 20px */
+    --radius-3xl: 2.25rem; /* 36px — marketing hero panels only */
+    --radius-pill: 9999px; /* FF pill chips / mode toggles */
 
-  --color-ink: var(--ink);
-  --color-gold: var(--accent-gold);
+    /* ── Shadow — single size scale, values tuned per mode below ───────────── */
+    --shadow-xs: var(--fx-shadow-xs);
+    --shadow-sm: var(--fx-shadow-sm);
+    --shadow-md: var(--fx-shadow-md);
+    --shadow-lg: var(--fx-shadow-lg);
+    --shadow-xl: var(--fx-shadow-xl);
+    --shadow-float: var(--fx-shadow-float);
+    --shadow-panel: var(--fx-shadow-panel);
+    --shadow-card: var(--fx-shadow-card);
+    --shadow-raised: var(--fx-shadow-raised);
+
+    /* FF surface shadow ladder — paired with --surface-1 … --surface-8 */
+    --shadow-surface-1: var(--shadow-1);
+    --shadow-surface-2: var(--shadow-2);
+    --shadow-surface-3: var(--shadow-3);
+    --shadow-surface-4: var(--shadow-4);
+    --shadow-surface-5: var(--shadow-5);
+    --shadow-surface-6: var(--shadow-6);
+    --shadow-surface-7: var(--shadow-7);
+    --shadow-surface-8: var(--shadow-8);
+
+    /* ── Overlay scrim — shared backdrop for modals / lightboxes ───────────── */
+    --color-overlay-scrim: var(--overlay-scrim);
+
+    /* ── Colors: base ──────────────────────────────────────────────────────── */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    /* ── Colors: sidebar (shadcn) ──────────────────────────────────────────── */
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* ── Colors: charts (shadcn) ───────────────────────────────────────────── */
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    /* ── Colors: semantic ──────────────────────────────────────────────────── */
+    --color-brand: var(--brand);
+    --color-brand-foreground: var(--brand-foreground);
+    --color-brand-gold: var(--brand-gold);
+    --color-brand-deep: var(--brand-deep);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-danger: var(--danger);
+    --color-warn: var(--warn);
+    --color-info: var(--info);
+    --color-priority: var(--priority);
+    --color-mode-ask: var(--mode-ask);
+    --color-mode-think: var(--mode-think);
+    --color-mode-plan: var(--mode-plan);
+    --color-mode-do: var(--mode-do);
+
+    /* ── NEW: surface hierarchy (ported from v1) ───────────────────────────── */
+    --color-surface-raised: var(--surface-raised);
+    --color-surface-overlay: var(--surface-overlay);
+    --color-interactive: var(--interactive);
+
+    /* Fluid Functionalism — nested depth stack (1 = page, 8 = float) */
+    --color-surface-1: var(--surface-1);
+    --color-surface-2: var(--surface-2);
+    --color-surface-3: var(--surface-3);
+    --color-surface-4: var(--surface-4);
+    --color-surface-5: var(--surface-5);
+    --color-surface-6: var(--surface-6);
+    --color-surface-7: var(--surface-7);
+    --color-surface-8: var(--surface-8);
+
+    /* ── NEW: border hierarchy ─────────────────────────────────────────────── */
+    --color-border-subtle: var(--border-subtle);
+    --color-border-strong: var(--border-strong);
+
+    /* ── Brand palette (logo + marketing accents) ──────────────────────────── */
+    --color-cream: var(--cream);
+    --color-ink: var(--ink);
+    --color-night: var(--night);
+    --color-terracotta: var(--accent-terracotta);
+    --color-sage: var(--accent-sage);
+    --color-blush: var(--accent-blush);
+
 }
 
-/* ── Light mode ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+ * LIGHT MODE — warm off-white with forest-green brand accent
+ * ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  --ink: oklch(0.22 0.04 260);
-  --navy: oklch(0.18 0.035 258);
-  --scan-blue: oklch(0.55 0.16 255);
-  --scan-blue-deep: oklch(0.38 0.1 258);
-  --accent-gold: oklch(0.78 0.14 90);
-  --coral: oklch(0.62 0.18 25);
+    /*
+     * Canonical hex → OKLCH (sRGB-derived):
+     *   #10604c brand  #faf6e6 cream  #ebbe38 gold  #c74329 terracotta
+     *   #dcedc5 sage   #fbdfd9 blush  #0a0d12 ink    #05070b night
+     */
+    --cream: oklch(0.9719 0.0215 95.28);
+    --ink: oklch(0.1582 0.0118 260.62);
+    --night: oklch(0.1277 0.0108 259.64);
+    --accent-terracotta: oklch(0.566 0.1727 33.1);
+    --accent-sage: oklch(0.9231 0.0559 126.24);
+    --accent-blush: oklch(0.925 0.0322 32.06);
 
-  --background: oklch(0.99 0.004 255);
-  --foreground: var(--ink);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--ink);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--ink);
+    /* Page & surfaces — milky canvas with lifted cards */
+    --background: var(--cream);
+    --foreground: var(--ink);
+    --card: oklch(0.985 0.014 96);
+    --card-foreground: var(--ink);
+    --popover: oklch(0.985 0.014 96);
+    --popover-foreground: var(--ink);
 
-  --primary: var(--scan-blue);
-  --primary-foreground: oklch(0.99 0.005 255);
-  --secondary: oklch(0.96 0.012 255);
-  --secondary-foreground: var(--ink);
-  --muted: oklch(0.95 0.01 255);
-  --muted-foreground: oklch(0.52 0.03 258);
-  --accent: oklch(0.96 0.03 90);
-  --accent-foreground: oklch(0.42 0.08 85);
-  --destructive: var(--coral);
+    /* Primary = brand green in light (CTAs, links, selection chrome) */
+    --brand: oklch(0.438 0.0802 171.03);
+    --brand-foreground: var(--cream);
+    --primary: var(--brand);
+    --primary-foreground: var(--brand-foreground);
 
-  --border: oklch(0.88 0.015 255);
-  --input: oklch(0.88 0.015 255);
-  --ring: oklch(0.68 0.14 264);
+    --secondary: oklch(0.94 0.022 95);
+    --secondary-foreground: var(--ink);
+    --muted: oklch(0.93 0.024 95);
+    --muted-foreground: color-mix(in oklab, var(--ink) 55%, transparent);
+    --accent: oklch(0.915 0.023 95);
+    --accent-foreground: var(--ink);
+    --destructive: oklch(0.577 0.245 27);
 
-  --sidebar: oklch(0.97 0.01 255);
-  --sidebar-foreground: var(--ink);
-  --sidebar-accent: oklch(0.93 0.02 255);
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
+    /* Borders — ink-tinted so they read on cream */
+    --border: color-mix(in oklab, var(--ink) 10%, transparent);
+    --border-subtle: color-mix(in oklab, var(--ink) 5%, transparent);
+    --border-strong: color-mix(in oklab, var(--ink) 16%, transparent);
+    --input: color-mix(in oklab, var(--ink) 12%, transparent);
+    --ring: color-mix(in oklab, var(--ink) 18%, transparent);
 
-  --surface-raised: oklch(0.98 0.008 255);
-  --surface-overlay: oklch(0.99 0.006 255);
+    /* Shell — slightly stepped from page background */
+    --sidebar: oklch(0.965 0.024 95);
+    --sidebar-foreground: var(--ink);
+    --sidebar-primary: var(--brand);
+    --sidebar-primary-foreground: var(--brand-foreground);
+    --sidebar-accent: oklch(0.92 0.028 95);
+    --sidebar-accent-foreground: var(--ink);
+    --sidebar-border: color-mix(in oklab, var(--ink) 8%, transparent);
+    --sidebar-ring: color-mix(in oklab, var(--ink) 18%, transparent);
+    --surface-raised: oklch(0.978 0.018 95);
+    --surface-overlay: oklch(0.975 0.02 95);
+    --interactive: oklch(0.91 0.02 95);
 
-  --surface-1: var(--background);
-  --surface-2: color-mix(in oklab, var(--background) 88%, var(--card) 12%);
-  --surface-3: color-mix(in oklab, var(--background) 76%, var(--card) 24%);
-  --surface-4: color-mix(in oklab, var(--background) 64%, var(--card) 36%);
-  --surface-5: color-mix(in oklab, var(--background) 52%, var(--card) 48%);
-  --surface-6: color-mix(in oklab, var(--background) 40%, var(--card) 60%);
-  --surface-7: color-mix(in oklab, var(--background) 28%, var(--popover) 72%);
-  --surface-8: var(--popover);
+    /*
+     * Fluid Functionalism depth ramp — OKLCH steps from page (--background) toward
+     * floating chrome (--popover). Use via SurfaceProvider / bg-[var(--surface-N)].
+     */
+    --surface-1: var(--background);
+    --surface-2: color-mix(in oklab, var(--background) 88%, var(--card) 12%);
+    --surface-3: color-mix(in oklab, var(--background) 76%, var(--card) 24%);
+    --surface-4: color-mix(in oklab, var(--background) 64%, var(--card) 36%);
+    --surface-5: color-mix(in oklab, var(--background) 52%, var(--card) 48%);
+    --surface-6: color-mix(in oklab, var(--background) 40%, var(--card) 60%);
+    --surface-7: color-mix(in oklab, var(--background) 28%, var(--popover) 72%);
+    --surface-8: var(--popover);
 
-  --success: oklch(0.52 0.12 155);
-  --success-bg: oklch(0.95 0.04 155);
-  --warn: oklch(0.68 0.14 75);
-  --warn-bg: oklch(0.97 0.04 85);
-  --danger: var(--coral);
-  --danger-bg: oklch(0.96 0.04 25);
+    --brand-gold: oklch(0.8195 0.151 89.17);
+    /* Solid deep teal for hero / CTA cards (richer than color-mix on cream canvas) */
+    --brand-deep: oklch(0.3 0.06 165);
 
-  --radius: var(--radius-md);
+    /* Semantic */
+    --success: oklch(0.5 0.1 171);
+    --success-bg: oklch(0.95 0.04 171);
+    --warn: var(--brand-gold);
+    --warn-bg: oklch(0.97 0.04 85);
+    --danger: oklch(0.577 0.245 27);
+    --danger-bg: oklch(0.96 0.04 25);
+    --warning: var(--brand-gold);
+    --info: oklch(0.58 0.18 250);
+    --priority: oklch(0.65 0.18 50);
 
-  --shadow-color: oklch(0 0 0 / 6%);
-  --shadow-1: 0 0 0 1px var(--shadow-color);
-  --shadow-2:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color);
-  --shadow-3:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
-    0 3px 3px -1.5px var(--shadow-color);
-  --shadow-4:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
-    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color);
-  --shadow-5:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
-    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
-    0 12px 12px -6px var(--shadow-color);
-  --shadow-6:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
-    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
-    0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color);
-  --shadow-7:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
-    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
-    0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color),
-    0 48px 48px -24px var(--shadow-color);
-  --shadow-8:
-    0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
-    0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
-    0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color),
-    0 48px 48px -24px var(--shadow-color), 0 96px 96px -48px var(--shadow-color);
+    /* Conversation modes — one signature colour per pill */
+    --mode-ask: oklch(0.65 0.18 225);
+    --mode-think: oklch(0.65 0.22 295);
+    --mode-plan: oklch(0.62 0.15 75);
+    --mode-do: oklch(0.5 0.1 171);
 
-  --fx-shadow-panel: 0 4px 20px oklch(0 0 0 / 8%), 0 1px 3px oklch(0 0 0 / 4%);
-  --fx-shadow-card: 0 4px 16px oklch(0 0 0 / 6%), 0 1px 4px oklch(0 0 0 / 3%);
-  --fx-shadow-sm: 0 1px 3px oklch(0 0 0 / 6%), 0 1px 2px oklch(0 0 0 / 3%);
-  --fx-shadow-float:
-    0 16px 48px oklch(0 0 0 / 12%), 0 4px 16px oklch(0 0 0 / 6%);
+    /* Charts — stay in brand family */
+    --chart-1: var(--brand);
+    --chart-2: oklch(0.58 0.18 250);
+    --chart-3: var(--brand-gold);
+    --chart-4: var(--accent-terracotta);
+    --chart-5: color-mix(in oklab, var(--ink) 55%, transparent);
 
-  --overlay-scrim: oklch(0 0 0 / 45%);
+    /* Default radius (used by shadcn utilities that reference --radius) */
+    --radius: 0.5rem;
 
-  --dur-fast: 80ms;
-  --dur-normal: 160ms;
-  --dur-slow: 240ms;
-  --ease-std: cubic-bezier(0.2, 0, 0, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-out: cubic-bezier(0, 0, 0.3, 1);
+    /* ── Density tiers — comfortable (settings/forms) vs compact (lists) ── */
+    --density-comfortable-page-px: 40px;
+    --density-comfortable-page-py: 48px;
+    --density-comfortable-section-gap: 32px;
+    --density-comfortable-card-px: 16px;
+    --density-comfortable-card-py: 16px;
+    --density-comfortable-stack-gap: 12px;
+    --density-comfortable-field-gap: 24px;
 
-  --control-track-padding: 3px;
-  --control-h: 2rem;
-  --icon-size-xs: 12px;
-  --icon-size-sm: 14px;
-  --icon-size-md: 16px;
-  --icon-size-lg: 20px;
+    --density-compact-page-px: 16px;
+    --density-compact-page-py: 0;
+    --density-compact-section-gap: 16px;
+    --density-compact-card-px: 12px;
+    --density-compact-card-py: 12px;
+    --density-compact-stack-gap: 8px;
 
-  --density-comfortable-page-px: 2.5rem;
-  --density-comfortable-page-py: 3rem;
-  --density-comfortable-section-gap: 2rem;
-  --density-comfortable-card-px: 1rem;
-  --density-comfortable-card-py: 1rem;
-  --density-comfortable-stack-gap: 0.75rem;
+    --density-row-h-compact: 28px;
+    --density-row-h-default: 36px;
+    --density-row-h-tall: 44px;
+    --density-row-px: 16px;
 
-  --density-compact-page-px: 1rem;
-  --density-compact-page-py: 0;
-  --density-compact-section-gap: 1rem;
-  --density-compact-card-px: 0.75rem;
-  --density-compact-card-py: 0.75rem;
-  --density-compact-stack-gap: 0.5rem;
+    --density-pane-header-h: 48px;
+    --density-pane-header-px: 16px;
 
-  --layout-app-sidebar-width: 240px;
-  --layout-app-sidebar-collapsed-width: 4rem;
-  --layout-workspace-chat-width: 420px;
-  --layout-workspace-doc-min: 480px;
-  --layout-message-bubble-max: 88%;
-  --layout-dialog-width: 480px;
-  --layout-popover-width: 360px;
-  --layout-cases-summary-max: 720px;
+    --icon-size-xs: 12px;
+    --icon-size-sm: 14px;
+    --icon-size-md: 16px;
+    --icon-size-lg: 20px;
 
-  --scrollbar-size: 6px;
-  --scrollbar-thumb: oklch(0 0 0 / 12%);
-  --scrollbar-thumb-hover: oklch(0 0 0 / 22%);
+    /* Settings modal — aliases comfortable tier */
+    --settings-content-max-w: 720px;
+    --settings-content-max-w-wide: 960px;
+    --settings-content-px: var(--density-comfortable-page-px);
+    --settings-content-py: var(--density-comfortable-page-py);
+    --settings-section-gap: 24px;
+    --settings-field-gap: 16px;
+    --settings-field-label-w: 200px;
+    --settings-control-max-w-sm: 220px;
+    --settings-control-max-w-md: 420px;
+    --settings-row-h-default: var(--density-row-h-default);
+    --settings-row-h-compact: var(--density-row-h-compact);
+    --settings-row-h-tall: var(--density-row-h-tall);
 
-  /* Legacy aliases (existing components) */
-  --bg: var(--background);
-  --surface: var(--surface-3);
-  --ink-legacy: var(--ink);
-  --muted-color: var(--muted);
-  --primary-color: var(--primary);
-}
+    /*
+     * Product layout — widths that repeat across dashboard, issues, and modals.
+     * Pair with `[length:var(--…)]` in TSX so rail, sheet, and popover widths stay aligned.
+     */
+    --layout-app-sidebar-width: 240px;
+    --layout-app-sidebar-collapsed-width: 4rem;
+    --layout-workspace-chat-width: 420px;
+    --layout-workspace-doc-min: 480px;
+    --layout-cases-summary-max: 720px;
+    --layout-assistant-rail-width: 420px;
+    --layout-message-bubble-max: 88%;
+    --layout-detail-side-panel-width: 320px;
+    --layout-detail-side-panel-min: 320px;
+    --layout-list-detail-default: 280px;
+    --layout-list-detail-min: 240px;
+    --layout-list-detail-max: 400px;
+    --layout-inbox-list-default: 320px;
+    --layout-inbox-list-min: 240px;
+    --layout-inbox-list-max: 480px;
+    --layout-kanban-column-width: 280px;
+    --layout-kanban-hidden-columns-width: 240px;
+    --layout-knowledge-node-panel-max: 520px;
+    --layout-modal-md-max: 480px;
+    --layout-dialog-popover-width: 360px;
+    --layout-dialog-width: var(--layout-dialog-popover-width);
+    --layout-popover-width: var(--layout-dialog-popover-width);
+    --layout-upgrade-modal-max: 1280px;
+    --layout-settings-nav-width: 240px;
+    --layout-settings-list-w: 240px;
 
-/* ── Dark mode ────────────────────────────────────────────────────────────── */
+    /* Stacking order — use z-[length:var(--z-*)] in product UI */
+    --z-sticky: 10;
+    --z-dropdown: 40;
+    --z-overlay: 50;
+    --z-modal-nested: 60;
+    --z-progress: 60;
+    --z-toast: 70;
 
-.dark {
-  --ink: oklch(0.93 0.01 255);
-  --navy: oklch(0.14 0.03 258);
-  --scan-blue: oklch(0.68 0.14 255);
-  --accent-gold: oklch(0.82 0.13 90);
-  --coral: oklch(0.7 0.16 25);
+    --spacing-tree-indent: 0.75rem;
 
-  --background: oklch(0.16 0.025 258);
-  --foreground: var(--ink);
-  --card: oklch(0.2 0.028 258);
-  --card-foreground: var(--ink);
-  --popover: oklch(0.22 0.03 258);
-  --popover-foreground: var(--ink);
+    /*
+     * Semantic indents — search nested rows, code under avatar column, transcript thread gutter.
+     */
+    --spacing-search-nested-indent: 1.625rem; /* 26px */
+    --spacing-agent-code-indent: 1.125rem; /* 18px */
+    --spacing-transcript-thread-indent: 4.5rem; /* 72px */
 
-  --primary: var(--scan-blue);
-  --primary-foreground: oklch(0.12 0.03 258);
-  --secondary: oklch(0.24 0.03 258);
-  --secondary-foreground: var(--ink);
-  --muted: oklch(0.22 0.028 258);
-  --muted-foreground: oklch(0.68 0.03 258);
-  --accent: oklch(0.26 0.04 85);
-  --accent-foreground: var(--accent-gold);
-  --destructive: var(--coral);
+    /* Tabs / menubar pill track — hairline inset matching upstream shadcn density */
+    --control-h: 2rem;
+    --control-track-padding: 3px;
+    --scrollbar-size: 6px;
 
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.72 0.12 264);
+    /* Appearance tab window mockup — isolate illustrative hex from product tokens */
+    --mockup-chrome: oklch(0.93 0.01 95);
+    --mockup-pane: oklch(0.97 0.015 95);
+    --mockup-sidebar: oklch(0.94 0.02 95);
+    --mockup-border: color-mix(in oklab, var(--ink) 8%, transparent);
+    --mockup-titlebar-close: oklch(0.72 0.2 25);
+    --mockup-titlebar-min: oklch(0.86 0.15 95);
+    --mockup-titlebar-max: oklch(0.72 0.18 145);
+    --mockup-bar: oklch(0.88 0.008 95);
+    --mockup-bar-muted: oklch(0.82 0.01 95);
 
-  --sidebar: oklch(0.14 0.028 258);
-  --sidebar-foreground: var(--ink);
-  --sidebar-accent: oklch(0.22 0.035 258);
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(1 0 0 / 18%);
+    /* Fixed light / dark preview pairs (system theme toggle illustration) */
+    --mockup-light-chrome: oklch(0.93 0.01 95);
+    --mockup-light-pane: oklch(0.97 0.015 95);
+    --mockup-light-sidebar: oklch(0.94 0.02 95);
+    --mockup-light-bar: oklch(0.88 0.008 95);
+    --mockup-light-bar-muted: oklch(0.82 0.01 95);
+    --mockup-dark-chrome: oklch(0.26 0.006 285);
+    --mockup-dark-pane: oklch(0.2 0.005 285);
+    --mockup-dark-sidebar: oklch(0.24 0.006 285);
+    --mockup-dark-bar: oklch(0.35 0.02 285);
+    --mockup-dark-bar-muted: oklch(0.45 0.02 285);
 
-  --surface-raised: oklch(0.22 0.03 258);
-  --surface-overlay: oklch(0.24 0.032 258);
+    --scrollbar-thumb: oklch(0 0 0 / 10%);
+    --scrollbar-thumb-hover: oklch(0 0 0 / 20%);
+    --scrollbar-track: transparent;
 
-  --surface-1: var(--background);
-  --surface-2: color-mix(in oklab, var(--background) 88%, var(--card) 12%);
-  --surface-3: color-mix(in oklab, var(--background) 76%, var(--card) 24%);
-  --surface-4: color-mix(in oklab, var(--background) 64%, var(--card) 36%);
-  --surface-5: color-mix(in oklab, var(--background) 52%, var(--card) 48%);
-  --surface-6: color-mix(in oklab, var(--background) 40%, var(--card) 60%);
-  --surface-7: color-mix(in oklab, var(--background) 28%, var(--popover) 72%);
-  --surface-8: var(--popover);
+    /* Shadows — airy light-mode drops */
+    --fx-shadow-xs: 0 1px 2px oklch(0 0 0 / 4%);
+    --fx-shadow-sm: 0 1px 3px oklch(0 0 0 / 6%), 0 1px 2px oklch(0 0 0 / 3%);
+    --fx-shadow-md: 0 4px 12px oklch(0 0 0 / 6%), 0 2px 4px oklch(0 0 0 / 4%);
+    --fx-shadow-lg: 0 8px 24px oklch(0 0 0 / 8%), 0 4px 8px oklch(0 0 0 / 4%);
+    --fx-shadow-xl:
+        0 16px 40px oklch(0 0 0 / 10%), 0 6px 16px oklch(0 0 0 / 6%);
+    --fx-shadow-float:
+        0 16px 48px oklch(0 0 0 / 12%), 0 4px 16px oklch(0 0 0 / 6%);
+    --fx-shadow-panel:
+        0 4px 20px oklch(0 0 0 / 8%), 0 1px 3px oklch(0 0 0 / 4%);
+    --fx-shadow-card: 0 4px 16px oklch(0 0 0 / 6%), 0 1px 4px oklch(0 0 0 / 3%);
+    --fx-shadow-raised:
+        0 8px 32px oklch(0 0 0 / 8%), 0 2px 6px oklch(0 0 0 / 4%);
 
-  --success: oklch(0.68 0.12 155);
-  --success-bg: oklch(0.22 0.05 155);
-  --warn: oklch(0.78 0.12 85);
-  --warn-bg: oklch(0.24 0.05 85);
-  --danger: var(--coral);
-  --danger-bg: oklch(0.22 0.06 25);
+    /* FF surface shadow ladder (light) */
+    --shadow-color: oklch(0 0 0 / 6%);
+    --shadow-1: 0 0 0 1px var(--shadow-color);
+    --shadow-2:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color);
+    --shadow-3:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+        0 3px 3px -1.5px var(--shadow-color);
+    --shadow-4:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+        0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color);
+    --shadow-5:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+        0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+        0 12px 12px -6px var(--shadow-color);
+    --shadow-6:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+        0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+        0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color);
+    --shadow-7:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+        0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+        0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color),
+        0 48px 48px -24px var(--shadow-color);
+    --shadow-8:
+        0 0 0 1px var(--shadow-color), 0 1px 1px -0.5px var(--shadow-color),
+        0 3px 3px -1.5px var(--shadow-color), 0 6px 6px -3px var(--shadow-color),
+        0 12px 12px -6px var(--shadow-color), 0 24px 24px -12px var(--shadow-color),
+        0 48px 48px -24px var(--shadow-color), 0 96px 96px -48px var(--shadow-color);
 
-  --shadow-color: oklch(0 0 0 / 35%);
-  --dm-hi-base: oklch(1 0 0 / 4%);
-  --dm-hi-mid: oklch(1 0 0 / 6%);
-  --dm-ring-base: oklch(1 0 0 / 6%);
-  --dm-drop: oklch(0 0 0 / 22%);
-  --shadow-1: inset 0 0 0 1px var(--dm-ring-base);
-  --shadow-2:
-    inset 0 1px 0 0 var(--dm-hi-base), inset 0 0 0 1px var(--dm-ring-base),
-    0 2px 4px var(--dm-drop);
-  --shadow-3:
-    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
-    0 4px 8px var(--dm-drop);
-  --shadow-4:
-    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
-    0 6px 14px var(--dm-drop);
-  --shadow-5:
-    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
-    0 10px 22px var(--dm-drop);
-  --shadow-6:
-    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
-    0 14px 28px var(--dm-drop);
-  --shadow-7:
-    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
-    0 20px 40px var(--dm-drop);
-  --shadow-8:
-    inset 0 1px 0 0 var(--dm-hi-mid), inset 0 0 0 1px var(--dm-ring-base),
-    0 28px 56px var(--dm-drop);
+    /* Overlay scrim — modal/lightbox backdrop */
+    --overlay-scrim: oklch(0 0 0 / 45%);
 
-  --fx-shadow-panel: 0 4px 20px oklch(0 0 0 / 50%), 0 1px 3px oklch(0 0 0 / 30%);
-  --fx-shadow-card: 0 4px 16px oklch(0 0 0 / 40%), 0 1px 4px oklch(0 0 0 / 24%);
-  --fx-shadow-sm: 0 1px 4px oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 2%);
-  --fx-shadow-float:
-    0 20px 60px oklch(0 0 0 / 70%), 0 6px 20px oklch(0 0 0 / 40%),
-    inset 0 1px 0 oklch(1 0 0 / 4%);
+    /* Motion */
+    --dur-fast: 120ms;
+    --dur-normal: 200ms;
+    --dur-slow: 320ms;
+    --ease-std: cubic-bezier(0.2, 0, 0, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out: cubic-bezier(0, 0, 0.3, 1);
 
-  --overlay-scrim: oklch(0 0 0 / 55%);
-  --scrollbar-thumb: oklch(1 0 0 / 12%);
-  --scrollbar-thumb-hover: oklch(1 0 0 / 22%);
+    /* Legacy aliases (existing components) */
+    --bg: var(--background);
+    --surface: var(--surface-3);
+    --muted-color: var(--muted);
+    --primary-color: var(--primary);
 }

@@ -4,105 +4,84 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
-import { useShapeRadius } from "../lib/shape-context";
-import { fontWeightTransition } from "../lib/font-weight";
+import { Icon } from "../icons";
 
 const buttonVariants = cva(
-  cn(
-    "group relative isolate inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm",
-    fontWeightTransition,
-    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--ring)]",
-    "active:translate-y-px disabled:pointer-events-none disabled:opacity-50",
-    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
-  ),
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow,opacity,transform] outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        primary: "text-[var(--primary-foreground)]",
-        default: "text-[var(--primary-foreground)]",
-        brand: "text-[var(--primary-foreground)]",
-        secondary: "text-[var(--foreground)]",
-        tertiary: "text-[var(--foreground)]",
-        outline: "text-[var(--foreground)]",
-        ghost: "text-[var(--foreground)]",
-        destructive: "text-white",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        brand: "bg-brand text-brand-foreground shadow-sm hover:bg-brand/90",
+        "brand-outline":
+          "border-brand/40 bg-background text-brand hover:border-brand/60 hover:bg-brand/8 hover:text-brand dark:bg-input/30 dark:hover:bg-brand/12",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        outline:
+          "border-border bg-background hover:bg-muted hover:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        ghost: "hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+        destructive:
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        sm: "h-8 px-3 text-xs [&_svg]:size-3.5",
-        default: "h-8 px-4",
-        md: "h-8 px-4",
-        lg: "h-10 px-6 text-base [&_svg]:size-5",
-        icon: "size-8 [&_svg]:size-4",
+        default: "h-8 gap-1.5 px-2.5",
+        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-xs [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-9 gap-1.5 px-3",
+        icon: "size-8",
+        "icon-sm": "size-7",
+        "icon-xs": "size-6 [&_svg:not([class*='size-'])]:size-3",
+        "icon-lg": "size-9",
       },
     },
-    defaultVariants: { variant: "primary", size: "default" },
+    compoundVariants: [{ variant: "brand-outline", class: "rounded-lg" }],
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
   },
 );
 
-const buttonBgVariants = cva(
-  "absolute inset-0 -z-10 transition-[opacity,transform,background-color] duration-[var(--dur-fast)] ease-[var(--ease-std)] motion-reduce:transition-none",
-  {
-    variants: {
-      variant: {
-        primary: "bg-[var(--primary)] group-hover:opacity-90 group-active:opacity-80",
-        default: "bg-[var(--primary)] group-hover:opacity-90 group-active:opacity-80",
-        brand: "bg-[var(--primary)] group-hover:opacity-90 group-active:opacity-80",
-        secondary:
-          "border border-[var(--border)] bg-[var(--secondary)] group-hover:opacity-90 group-active:opacity-80",
-        tertiary:
-          "border border-[var(--border)] bg-transparent group-hover:bg-[var(--surface-3)] group-active:bg-[var(--surface-4)]",
-        outline:
-          "border border-[var(--border)] bg-transparent group-hover:bg-[var(--surface-3)] group-active:bg-[var(--surface-4)]",
-        ghost:
-          "bg-transparent group-hover:bg-[var(--surface-3)] group-active:bg-[var(--surface-4)]",
-        destructive:
-          "bg-[var(--destructive)] group-hover:opacity-90 group-active:opacity-80",
-      },
-    },
-    defaultVariants: { variant: "primary" },
-  },
-);
+/** @deprecated Use `default` or `brand` — kept for call-site compatibility. */
+const legacyVariantMap = {
+  primary: "default",
+  tertiary: "outline",
+} as const;
+
+/** @deprecated Use `default` — kept for call-site compatibility. */
+const legacySizeMap = {
+  md: "default",
+} as const;
+
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 function resolveVariant(
-  variant: VariantProps<typeof buttonVariants>["variant"],
-): NonNullable<VariantProps<typeof buttonVariants>["variant"]> {
-  if (variant === "default") return "primary";
-  if (variant === "outline") return "tertiary";
-  return variant ?? "primary";
+  variant: ButtonProps["variant"],
+): ButtonVariant {
+  if (variant == null) return "default";
+  if (variant in legacyVariantMap) {
+    return legacyVariantMap[variant as LegacyButtonVariant];
+  }
+  return variant as ButtonVariant;
 }
 
-function ButtonSpinner({ className }: { className?: string }) {
-  return (
-    <svg
-      className={cn("size-4 animate-spinner-move", className)}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="3"
-      />
-      <circle
-        className="animate-spinner-dash opacity-90"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+function resolveSize(size: ButtonProps["size"]): ButtonSize {
+  if (size == null) return "default";
+  if (size in legacySizeMap) {
+    return legacySizeMap[size as LegacyButtonSize];
+  }
+  return size as ButtonSize;
 }
+
+type LegacyButtonVariant = "primary" | "tertiary";
+type LegacyButtonSize = "md";
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+    Omit<VariantProps<typeof buttonVariants>, "variant" | "size"> {
+  variant?: VariantProps<typeof buttonVariants>["variant"] | LegacyButtonVariant;
+  size?: VariantProps<typeof buttonVariants>["size"] | LegacyButtonSize;
   asChild?: boolean;
   loading?: boolean;
 }
@@ -115,59 +94,44 @@ export function Button({
   loading = false,
   disabled,
   children,
-  style,
   ...props
 }: ButtonProps) {
-  const resolved = resolveVariant(variant);
-  const radius = useShapeRadius();
+  const resolvedVariant = resolveVariant(variant);
+  const resolvedSize = resolveSize(size);
   const Comp = asChild ? Slot : "button";
-  const isDisabled = disabled || loading;
-
-  if (asChild) {
-    return (
-      <Comp
-        data-slot="button"
-        data-variant={resolved}
-        className={cn(buttonVariants({ variant: resolved, size, className }))}
-        style={{ borderRadius: radius, ...style }}
-        {...props}
-      >
-        {children}
-      </Comp>
-    );
-  }
+  const spinnerClass =
+    resolvedSize === "xs" || resolvedSize === "icon-xs"
+      ? "size-3"
+      : resolvedSize === "sm" || resolvedSize === "icon-sm"
+        ? "size-3.5"
+        : "size-4";
 
   return (
     <Comp
       data-slot="button"
-      data-variant={resolved}
-      className={cn(buttonVariants({ variant: resolved, size, className }))}
-      style={{ borderRadius: radius, ...style }}
-      disabled={isDisabled}
+      data-variant={resolvedVariant}
+      className={cn(
+        buttonVariants({ variant: resolvedVariant, size: resolvedSize, className }),
+        loading && "cursor-wait",
+      )}
+      disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...props}
     >
-      <span
-        aria-hidden
-        className={cn(buttonBgVariants({ variant: resolved }))}
-        style={{ borderRadius: radius }}
-      />
       {loading ? (
         <>
-          <ButtonSpinner />
-          <span className="sr-only">Yuklanmoqda</span>
+          <Icon name="loading" className={cn("animate-spin", spinnerClass)} aria-hidden />
+          {asChild ? null : children}
         </>
-      ) : null}
-      <span
-        className={cn(
-          "relative inline-flex items-center justify-center gap-2",
-          loading && "opacity-0",
-        )}
-      >
-        {children}
-      </span>
+      ) : (
+        children
+      )}
     </Comp>
   );
+}
+
+function ButtonSpinner({ className }: { className?: string }) {
+  return <Icon name="loading" className={cn("animate-spin", className)} aria-hidden />;
 }
 
 export { buttonVariants, ButtonSpinner };

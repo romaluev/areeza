@@ -9,6 +9,12 @@ import { useProximityHover } from "../hooks/use-proximity-hover";
 import { interactiveWeight } from "../lib/font-weight";
 import { Icon } from "../icons";
 
+const triggerClass =
+  "flex h-8 w-full items-center justify-between gap-2 rounded-lg border border-input bg-transparent px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] duration-[var(--dur-fast)] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40";
+
+const focusRing =
+  "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
+
 export const Select = SelectPrimitive.Root;
 export const SelectGroup = SelectPrimitive.Group;
 export const SelectValue = SelectPrimitive.Value;
@@ -21,14 +27,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
-      className={cn(
-        "flex h-8 w-full items-center justify-between gap-2 rounded-lg border border-[var(--input)] bg-[var(--card)] px-3 text-sm shadow-xs",
-        "transition-[color,box-shadow,border-color] duration-[var(--dur-fast)]",
-        "focus-visible:border-[var(--ring)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--ring)]/50",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        "[&>span]:line-clamp-1",
-        className,
-      )}
+      className={cn(triggerClass, "[&>span]:line-clamp-1", className)}
       {...props}
     >
       {children}
@@ -86,7 +85,7 @@ export function SelectLabel({
 }: React.ComponentProps<typeof SelectPrimitive.Label>) {
   return (
     <SelectPrimitive.Label
-      className={cn("px-2 py-1.5 text-xs text-[var(--muted-foreground)]", className)}
+      className={cn("px-2 py-1.5 text-xs text-muted-foreground", className)}
       {...props}
     />
   );
@@ -107,8 +106,9 @@ export function SelectItem({
       className={cn(
         "relative flex w-full cursor-pointer select-none items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm outline-none",
         interactiveWeight,
-        "focus:bg-[var(--surface-4)] data-[highlighted]:bg-[var(--surface-4)]",
-        "data-[proximity]:bg-[var(--surface-3)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-surface-4 data-[highlighted]:bg-surface-4",
+        "data-[proximity]:bg-surface-3 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        focusRing,
         className,
       )}
       {...props}
@@ -129,7 +129,7 @@ export function SelectSeparator({
 }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
   return (
     <SelectPrimitive.Separator
-      className={cn("-mx-1 my-1 h-px bg-[var(--border)]", className)}
+      className={cn("-mx-1 my-1 h-px bg-border", className)}
       {...props}
     />
   );

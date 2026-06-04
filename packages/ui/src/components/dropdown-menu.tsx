@@ -9,6 +9,9 @@ import { useProximityHover } from "../hooks/use-proximity-hover";
 import { interactiveWeight } from "../lib/font-weight";
 import { Icon } from "../icons";
 
+const focusRing =
+  "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
+
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
@@ -33,7 +36,7 @@ export function DropdownMenuContent({
             <Elevated
               offset={0}
               className={cn(
-                "min-w-[8rem] overflow-hidden rounded-xl p-1 text-[var(--popover-foreground)]",
+                "min-w-[8rem] overflow-hidden rounded-xl p-1 text-popover-foreground",
                 "max-w-[length:var(--layout-popover-width)]",
                 className,
               )}
@@ -68,9 +71,10 @@ export function DropdownMenuItem({
       className={cn(
         "relative flex cursor-pointer select-none items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-none",
         interactiveWeight,
-        "text-[var(--foreground)] transition-[background-color,color] duration-[var(--dur-fast)]",
-        "focus:bg-[var(--surface-4)] data-[highlighted]:bg-[var(--surface-4)]",
-        "data-[proximity]:bg-[var(--surface-3)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "text-foreground transition-[background-color,color] duration-[var(--dur-fast)]",
+        "focus:bg-surface-4 data-[highlighted]:bg-surface-4",
+        "data-[proximity]:bg-surface-3 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        focusRing,
         inset && "pl-8",
         className,
       )}
@@ -96,7 +100,8 @@ export function DropdownMenuCheckboxItem({
       className={cn(
         "relative flex cursor-pointer select-none items-center gap-2 rounded-lg py-1.5 pr-2 pl-8 text-sm outline-none",
         interactiveWeight,
-        "focus:bg-[var(--surface-4)] data-[highlighted]:bg-[var(--surface-4)] data-[proximity]:bg-[var(--surface-3)]",
+        "focus:bg-surface-4 data-[highlighted]:bg-surface-4 data-[proximity]:bg-surface-3",
+        focusRing,
         className,
       )}
       {...props}
@@ -119,7 +124,7 @@ export function DropdownMenuLabel({
   return (
     <DropdownMenuPrimitive.Label
       className={cn(
-        "px-2 py-1.5 text-xs font-medium text-[var(--muted-foreground)]",
+        "px-2 py-1.5 text-xs font-medium text-muted-foreground",
         inset && "pl-8",
         className,
       )}
@@ -134,7 +139,7 @@ export function DropdownMenuSeparator({
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Separator>) {
   return (
     <DropdownMenuPrimitive.Separator
-      className={cn("-mx-1 my-1 h-px bg-[var(--border)]", className)}
+      className={cn("-mx-1 my-1 h-px bg-border", className)}
       {...props}
     />
   );
@@ -146,7 +151,7 @@ export function DropdownMenuShortcut({
 }: React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
-      className={cn("ml-auto text-xs tracking-widest text-[var(--muted-foreground)]", className)}
+      className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
       {...props}
     />
   );

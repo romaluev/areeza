@@ -11,6 +11,7 @@ import {
   Calendar03Icon,
   CancelCircleIcon,
   CheckmarkCircle02Icon,
+  Copy01Icon,
   Download01Icon,
   File01Icon,
   FileValidationIcon,
@@ -18,6 +19,7 @@ import {
   LanguageCircleIcon,
   LeftToRightListBulletIcon,
   LinkSquare02Icon,
+  Loading01Icon,
   Menu01Icon,
   Moon02Icon,
   SidebarLeft01Icon,
@@ -26,6 +28,7 @@ import {
   Route01Icon,
   SecurityCheckIcon,
   SparklesIcon,
+  StopCircleIcon,
   Sun01Icon,
   TextBoldIcon,
   TextItalicIcon,
@@ -47,12 +50,15 @@ export const icons = {
   calendar: Calendar03Icon,
   cancel: CancelCircleIcon,
   check: CheckmarkCircle02Icon,
+  copy: Copy01Icon,
   download: Download01Icon,
   file: File01Icon,
+  fileText: File01Icon,
   fileCheck: FileValidationIcon,
   folder: FolderOpenIcon,
   languages: LanguageCircleIcon,
   list: LeftToRightListBulletIcon,
+  loading: Loading01Icon,
   externalLink: LinkSquare02Icon,
   menu: Menu01Icon,
   moon: Moon02Icon,
@@ -62,6 +68,7 @@ export const icons = {
   route: Route01Icon,
   shield: SecurityCheckIcon,
   sparkles: SparklesIcon,
+  stop: StopCircleIcon,
   sun: Sun01Icon,
   user: UserCircle02Icon,
   bold: TextBoldIcon,
@@ -113,3 +120,7 @@ export function Icon({
 }
 
 export { HugeiconsIcon, ICON_SIZES };
+
+export function PanelLeftIcon(props: Omit<IconProps, "name">) {
+  return <Icon name="sidebarExpand" {...props} />;
+}

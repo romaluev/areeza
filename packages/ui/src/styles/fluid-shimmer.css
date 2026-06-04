@@ -1,0 +1,39 @@
+/* Fluid Functionalism — shimmer text (thinking-indicator, active thinking-steps) */
+
+:root {
+    --shimmer-text-base: color-mix(in oklab, var(--muted-foreground) 85%, transparent);
+    --shimmer-text-highlight: color-mix(in oklab, var(--foreground) 55%, var(--muted-foreground));
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 0% 0;
+    }
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+@utility shimmer-text {
+    color: transparent;
+    background: linear-gradient(
+        90deg,
+        var(--shimmer-text-base) 0%,
+        var(--shimmer-text-base) 35%,
+        var(--shimmer-text-highlight) 50%,
+        var(--shimmer-text-base) 65%,
+        var(--shimmer-text-base) 100%
+    );
+    background-size: 300% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shimmer-text {
+        animation: none;
+        color: var(--muted-foreground);
+        background: none;
+    }
+}

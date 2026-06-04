@@ -2,12 +2,12 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
-const skeletonVariants = cva("rounded-lg bg-[var(--surface-4)]", {
+const skeletonVariants = cva("rounded-lg bg-surface-4", {
   variants: {
     variant: {
       pulse: "animate-pulse motion-reduce:animate-none",
       shimmer:
-        "relative overflow-hidden motion-reduce:animate-none after:absolute after:inset-0 after:translate-x-[-100%] after:animate-[shimmer_1.5s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-[color-mix(in_oklab,var(--foreground)_8%,transparent)] after:to-transparent",
+        "relative overflow-hidden motion-reduce:animate-none after:absolute after:inset-0 after:translate-x-[-100%] after:animate-[shimmer_1.5s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-foreground/8 after:to-transparent",
     },
   },
   defaultVariants: { variant: "shimmer" },

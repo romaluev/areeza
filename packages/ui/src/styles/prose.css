@@ -1,0 +1,426 @@
+/*
+ * Shared prose typography for rich-text-editor (edit + readonly).
+ * Imported by ContentEditor (views) and Markdown (ui).
+ */
+
+.rich-text-editor {
+    --editor-list-marker: 1.375rem;
+    color: var(--foreground);
+}
+
+/* Task lists / checklists */
+.rich-text-editor ul[data-type="taskList"],
+.rich-text-editor ul.contains-task-list {
+    list-style: none;
+    padding-inline-start: 0;
+    margin: 0.5rem 0;
+}
+
+.rich-text-editor ul[data-type="taskList"] li,
+.rich-text-editor ul.contains-task-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rich-text-editor ul[data-type="taskList"] li > label,
+.rich-text-editor ul.contains-task-list li > label {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.rich-text-editor ul[data-type="taskList"] li > label input[type="checkbox"],
+.rich-text-editor ul.contains-task-list li > input[type="checkbox"] {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius-sm) - 2px);
+    background: var(--background);
+    cursor: default;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.rich-text-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked,
+.rich-text-editor ul.contains-task-list li > input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.rich-text-editor ul[data-type="taskList"] li > label input[type="checkbox"]:checked::after,
+.rich-text-editor ul.contains-task-list li > input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 0.22rem;
+    top: 0.05rem;
+    width: 0.28rem;
+    height: 0.5rem;
+    border: solid var(--primary-foreground);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.rich-text-editor ul[data-type="taskList"] li[data-checked="true"] > div > p,
+.rich-text-editor ul.contains-task-list li:has(input:checked) > p {
+    color: var(--muted-foreground);
+    text-decoration: line-through;
+}
+
+/* Headings */
+.rich-text-editor h1 {
+    font-size: 1.675rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.rich-text-editor h2 {
+    font-size: 1.425rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.35;
+}
+
+.rich-text-editor h3 {
+    font-size: 1.275rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Paragraphs */
+.rich-text-editor p {
+    margin-top: 0.625rem;
+    margin-bottom: 0.625rem;
+    line-height: 1.625;
+}
+
+.rich-text-editor > *:first-child {
+    margin-top: 0;
+}
+
+.rich-text-editor > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Lists */
+.rich-text-editor ul:not([data-type="taskList"]):not(.contains-task-list) {
+    list-style-type: disc;
+    padding-inline-start: var(--editor-list-marker);
+    margin: 0.5rem 0;
+}
+
+.rich-text-editor ol {
+    list-style-type: decimal;
+    padding-inline-start: var(--editor-list-marker);
+    margin: 0.5rem 0;
+}
+
+.rich-text-editor li {
+    margin: 0.25rem 0;
+    line-height: 1.625;
+}
+
+.rich-text-editor li + li {
+    margin-top: 0.25rem;
+}
+
+.rich-text-editor li::marker {
+    color: var(--muted-foreground);
+}
+
+.rich-text-editor li > p {
+    margin: 0;
+}
+
+.rich-text-editor li > p + p {
+    margin-top: 0.25rem;
+}
+
+.rich-text-editor ul ul {
+    list-style-type: circle;
+    margin: 0.25rem 0;
+}
+
+.rich-text-editor ul ul ul {
+    list-style-type: square;
+}
+
+.rich-text-editor ol ol {
+    list-style-type: lower-alpha;
+    margin: 0.25rem 0;
+}
+
+.rich-text-editor ol ol ol {
+    list-style-type: lower-roman;
+}
+
+/* Inline code */
+.rich-text-editor code {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 1.075rem;
+    background: color-mix(in srgb, var(--foreground) 3%, transparent);
+    border: 1px solid color-mix(in srgb, var(--foreground) 5%, transparent);
+    color: color-mix(in srgb, var(--foreground) 75%, transparent);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: 2;
+}
+
+/* Code blocks */
+.rich-text-editor pre {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    background: var(--muted);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+}
+
+.rich-text-editor pre code {
+    background: none;
+    border: none;
+    color: var(--foreground);
+    padding: 0;
+    font-size: 1.025rem;
+    line-height: 1.6;
+}
+
+/* Syntax highlighting — lowlight (hljs) */
+.rich-text-editor .hljs-keyword,
+.rich-text-editor .hljs-selector-tag,
+.rich-text-editor .hljs-built_in {
+    color: oklch(0.55 0.16 255);
+}
+
+.rich-text-editor .hljs-string,
+.rich-text-editor .hljs-addition {
+    color: oklch(0.55 0.14 155);
+}
+
+.rich-text-editor .hljs-comment,
+.rich-text-editor .hljs-quote {
+    color: var(--muted-foreground);
+    font-style: italic;
+}
+
+.rich-text-editor .hljs-number,
+.rich-text-editor .hljs-literal {
+    color: oklch(0.58 0.16 30);
+}
+
+.rich-text-editor .hljs-title,
+.rich-text-editor .hljs-section,
+.rich-text-editor .hljs-title\.function_ {
+    color: oklch(0.55 0.14 280);
+}
+
+.rich-text-editor .hljs-attr,
+.rich-text-editor .hljs-attribute {
+    color: oklch(0.58 0.12 60);
+}
+
+.rich-text-editor .hljs-variable,
+.rich-text-editor .hljs-template-variable {
+    color: oklch(0.58 0.14 20);
+}
+
+.rich-text-editor .hljs-type,
+.rich-text-editor .hljs-title\.class_ {
+    color: oklch(0.55 0.14 200);
+}
+
+.rich-text-editor .hljs-deletion {
+    color: oklch(0.55 0.2 25);
+}
+
+.rich-text-editor .hljs-meta {
+    color: var(--muted-foreground);
+}
+
+.dark .rich-text-editor .hljs-keyword,
+.dark .rich-text-editor .hljs-selector-tag,
+.dark .rich-text-editor .hljs-built_in {
+    color: oklch(0.7 0.14 255);
+}
+
+.dark .rich-text-editor .hljs-string,
+.dark .rich-text-editor .hljs-addition {
+    color: oklch(0.7 0.14 155);
+}
+
+.dark .rich-text-editor .hljs-number,
+.dark .rich-text-editor .hljs-literal {
+    color: oklch(0.72 0.14 30);
+}
+
+.dark .rich-text-editor .hljs-title,
+.dark .rich-text-editor .hljs-section,
+.dark .rich-text-editor .hljs-title\.function_ {
+    color: oklch(0.72 0.12 280);
+}
+
+.dark .rich-text-editor .hljs-attr,
+.dark .rich-text-editor .hljs-attribute {
+    color: oklch(0.72 0.1 60);
+}
+
+.dark .rich-text-editor .hljs-variable,
+.dark .rich-text-editor .hljs-template-variable {
+    color: oklch(0.72 0.12 20);
+}
+
+.dark .rich-text-editor .hljs-type,
+.dark .rich-text-editor .hljs-title\.class_ {
+    color: oklch(0.72 0.12 200);
+}
+
+.dark .rich-text-editor .hljs-deletion {
+    color: oklch(0.7 0.18 25);
+}
+
+/* Tables */
+.rich-text-editor .tableWrapper {
+    overflow-x: auto;
+    margin: 1rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.rich-text-editor table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+.rich-text-editor colgroup {
+    display: none;
+}
+
+.rich-text-editor thead {
+    background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.rich-text-editor tbody tr {
+    border-top: 1px solid var(--border);
+}
+
+.rich-text-editor tr:hover td {
+    background: color-mix(in srgb, var(--muted) 30%, transparent);
+    transition: background 0.15s;
+}
+
+.rich-text-editor th,
+.rich-text-editor td {
+    text-align: left;
+    padding: 0.625rem 1rem;
+    font-size: 1.075rem;
+}
+
+.rich-text-editor th {
+    font-weight: 600;
+}
+
+.rich-text-editor th p,
+.rich-text-editor td p {
+    margin: 0;
+}
+
+/* Blockquotes */
+.rich-text-editor blockquote {
+    border-left: 3px solid
+        color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+    padding-left: 0.75rem;
+    margin: 0.625rem 0;
+    color: var(--muted-foreground);
+    font-style: italic;
+}
+
+.rich-text-editor blockquote p {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.rich-text-editor blockquote > *:first-child {
+    margin-top: 0;
+}
+
+.rich-text-editor blockquote > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Horizontal rules */
+.rich-text-editor hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1rem 0;
+}
+
+/* Links */
+.rich-text-editor a {
+    color: var(--brand);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--brand) 40%, transparent);
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.rich-text-editor a:hover {
+    text-decoration-color: var(--brand);
+}
+
+.rich-text-editor a.issue-mention {
+    color: inherit;
+    text-decoration: none;
+}
+
+.rich-text-editor .mention {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    margin: 0 0.125rem;
+}
+
+.rich-text-editor strong {
+    font-weight: 600;
+}
+
+.rich-text-editor em {
+    font-style: italic;
+}
+
+.rich-text-editor s,
+.rich-text-editor del {
+    text-decoration: line-through;
+    color: var(--muted-foreground);
+}
+
+.rich-text-editor img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    margin: 0.5rem 0;
+}
+
+/* Compact document variant (modals) */
+.editor-document-compact .rich-text-editor p {
+    margin-top: 0.375rem;
+    margin-bottom: 0.375rem;
+}
+
+.editor-document-compact .rich-text-editor h1 {
+    margin-top: 0.75rem;
+}
+
+.editor-document-compact .rich-text-editor h2,
+.editor-document-compact .rich-text-editor h3 {
+    margin-top: 0.625rem;
+}

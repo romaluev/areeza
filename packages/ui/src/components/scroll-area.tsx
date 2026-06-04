@@ -33,17 +33,16 @@ export function ScrollBar({
       orientation={orientation}
       className={cn(
         "flex touch-none p-px transition-[background-color] duration-[var(--dur-fast)] select-none",
-        orientation === "vertical" && "h-full w-[var(--scrollbar-size)] border-l border-l-transparent",
+        orientation === "vertical" && "h-full w-[length:var(--scrollbar-size)] border-l border-l-transparent",
         orientation === "horizontal" &&
-          "h-[var(--scrollbar-size)] flex-col border-t border-t-transparent",
+          "h-[length:var(--scrollbar-size)] flex-col border-t border-t-transparent",
         className,
       )}
       {...props}
     >
       <ScrollAreaPrimitive.Thumb
         className={cn(
-          "relative flex-1 rounded-full bg-[var(--scrollbar-thumb)]",
-          "hover:bg-[var(--scrollbar-thumb-hover)]",
+          "relative flex-1 rounded-full bg-[var(--scrollbar-thumb)] hover:bg-[var(--scrollbar-thumb-hover)]",
           "transition-[background-color] duration-[var(--dur-fast)]",
         )}
       />

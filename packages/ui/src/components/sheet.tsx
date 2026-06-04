@@ -7,7 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 import { Elevated, SurfaceProvider } from "../lib/surface-context";
 import { useMotionTransition } from "../hooks/use-reduced-motion";
-import { Icon } from "../icons";
+import { ModalCloseButton } from "./dialog";
 
 export const Sheet = DialogPrimitive.Root;
 export const SheetTrigger = DialogPrimitive.Trigger;
@@ -50,7 +50,7 @@ export function SheetOverlay({
         exit={{ opacity: 0 }}
         transition={transition}
         className={cn(
-          "fixed inset-0 z-50 bg-[var(--overlay-scrim)] backdrop-blur-[2px]",
+          "fixed inset-0 z-[length:var(--z-overlay)] bg-overlay-scrim supports-backdrop-filter:backdrop-blur-xs",
           className,
         )}
       />
@@ -83,14 +83,7 @@ export function SheetContent({
           <SurfaceProvider level={7}>
             <Elevated offset={0} className="relative flex h-full min-h-0 flex-col rounded-none p-6">
               {children}
-              {showClose ? (
-                <DialogPrimitive.Close
-                  className="absolute top-4 right-4 rounded-md p-1 text-[var(--muted-foreground)] opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:ring-[var(--ring)]"
-                  aria-label="Yopish"
-                >
-                  <Icon name="cancel" size="sm" />
-                </DialogPrimitive.Close>
-              ) : null}
+              {showClose ? <ModalCloseButton /> : null}
             </Elevated>
           </SurfaceProvider>
         </motion.div>
@@ -127,7 +120,7 @@ export function SheetDescription({
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-sm text-[var(--muted-foreground)]", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   );
