@@ -1,0 +1,13 @@
+# Cursor rules for Areeza
+
+The full agent brain lives in CLAUDE.md — read it before coding.
+
+Quick rules (see CLAUDE.md for the full version):
+- Build Areeza: an AI legal filing platform for Uzbekistan. A workflow that completes a filing, NOT a chatbot.
+- Ship the end-to-end loop (intake → classify → route → draft → validate → export) as vertical slices. Keep it runnable every hour.
+- Reuse UI from notiky-app (/Users/romalutfullaev/Projects/notiky/notiky-app/packages/ui and packages/views). Don't reinvent components.
+- Stack: pnpm + Turborepo · Next.js 16 (App Router) · React 19 · TS · Tailwind v4 · shadcn · Vercel AI SDK + Claude · zod · Supabase. Do NOT pull in notiky's Go backend.
+- Models: claude-sonnet-4-6 for the interactive loop, claude-opus-4-8 for heavy document generation. All structured output via zod.
+- Legal STRUCTURE is data-driven (packages/core/legal); the model only fills content slots. Never let the model invent legal procedure.
+- Generated documents must look like authentic Uzbek court documents (see docs/legal-domain.md).
+- Never position as "AI lawyer" or give "legal advice." Language: navigation, preparation, validation, reduces rejection risk, human-in-the-loop.
