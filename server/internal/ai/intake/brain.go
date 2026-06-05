@@ -119,6 +119,16 @@ func (b *Brain) RunTurn(ctx context.Context, st Store, situationID, userText str
 		// correction; the model re-collects and re-proposes sources at finalize.
 	}
 
+	// A finalized situation (issues>0) means a follow-up: answer + record facts, but
+	// never re-finalize (that would mint a duplicate). Different tools + system prompt.
+	followUp := len(s.Issues) > 0
+	tools := intakeTools
+	system := prompts.IntakeSystem
+	if followUp {
+		tools = followUpTools
+		system = prompts.FollowUpSystem
+	}
+
 	lastQuestion := lastAssistantMessage(s)
 	s.Messages = append(s.Messages, situation.Message{
 		ID:        newID("m-"),
@@ -139,7 +149,7 @@ func (b *Brain) RunTurn(ctx context.Context, st Store, situationID, userText str
 	}
 
 	for i := 0; i < maxToolIterations; i++ {
-		res, err := b.llm.StreamTurn(ctx, prompts.IntakeSystem, intakeTools, msgs, onText)
+		res, err := b.llm.StreamTurn(ctx, system, tools, msgs, onText)
 		if err != nil {
 			return err
 		}
@@ -230,11 +240,12 @@ func loadWorking(st Store, id string) *situation.Situation {
 	if raw, ok := st.Get(id); ok {
 		var s situation.Situation
 		if json.Unmarshal(raw, &s) == nil && s.ID != "" {
-			// Already finalized aggregates shouldn't be reused as a draft.
-			if len(s.Issues) == 0 {
-				ensureSlices(&s)
-				return &s
-			}
+			// Return the existing situation whether or not it's finalized — a finalized
+			// aggregate (issues>0) means the user came back to the chat step for a
+			// follow-up, and we must NOT overwrite it with an empty draft. RunTurn
+			// switches to follow-up mode (no re-finalize) when issues are present.
+			ensureSlices(&s)
+			return &s
 		}
 	}
 	return situation.New(id, "uz", "UZS", nowRFC())
