@@ -27,19 +27,25 @@ Warm cream light / neutral gray-violet dark. **Forest-green brand** (`--brand` /
 
 **App bridge:** `apps/web/app/globals.css` imports all token files + `@theme inline` bridge (`--color-danger`, `--color-warn`, surfaces). Utilities: `shellPanel`, `elevatedCard`, `raisedSurface`, `floatingSurface`, `bg-overlay-scrim`, `bg-legal-paper`.
 
+**Radius (single source of truth):** the full `--radius-*` ladder (`xs/sm/md/lg/xl/2xl/3xl/pill`) lives in a **non-inline `@theme`** block in `tokens.css`, so the custom properties are emitted to `:root` (needed by `var(--radius-*)` utilities — `raisedSurface`, `shellPanel`, `floatingSurface`, FF `shape-context`) **and** the `rounded-*` utilities are generated. ⚠️ Never re-declare `--radius-*` inside an app-level `@theme inline` — a self-referential `--radius-2xl: var(--radius-2xl)` (or an `inline` radius block) collapses every radius to **0px** (the whole UI goes square). Container language is unified at **`radius-2xl` (20px)**: pane, cards (`card.tsx`), `elevatedCard`/`shellPanel`/`floatingSurface`/`raisedSurface`, and the FF `shape.container`/`bg`. Chips/toggles stay `pill`. Do not introduce one-off `rounded-[Npx]` literals.
+
+**Shape preset (FF):** `lib/ff/shape-context.tsx` exposes an element-keyed `useShape()` (`pill` | `rounded`) consumed by the vendored FF components. `app-shell.tsx` wraps the tree in `FfShapeProvider shape={shape === "pill" ? "pill" : "rounded"}`, driven by the persisted `shape` pref (`use-app-store.ts`, default **`pill`** — matches Notiky's app root). This is distinct from `lib/shape-context.tsx` (`{ preset, density }`), which remains for surface-aware radius.
+
 **Raw `[var(--…)]` policy:** primitives use semantic Tailwind (`border-input`, `bg-card`, `text-muted-foreground`, etc.). Residual raw vars in `@areeza/ui` are mostly layout `length:` tokens (progress, table, sonner). **`apps/web/components` should use semantic classes only** — verified zero `[var(--…)]` in app components after visual QA detox pass.
 
 ## 3. Primitives (`@areeza/ui`)
 
 | Export | Notes |
 |---|---|
-| `components/button` | `variant="brand"` / `brand-outline` for sole primary CTA; `aria-invalid` + `xs`/`icon-lg`; unified `focus-visible:ring-3` |
+| `components/button` | `variant="brand"` / `brand-outline` for sole primary CTA; `aria-invalid` + `xs`/`icon-lg`; unified `focus-visible:ring-3`. FF Button API parity: accepts FF `primary\|secondary\|tertiary\|ghost` (via legacy map) + `leadingIcon`/`trailingIcon` |
 | `components/card` | `rounded-xl border bg-card shadow-sm`; optional `elevated` |
 | `components/sidebar` | shadcn sidebar (cookie collapse, icon mode, tooltips); **`SidebarProvider` required** |
 | `components/fluid/nav-menu-group` | `NavMenuGroup` + `NavMenuHighlight` (`layoutId` sliding pill) |
 | `hooks/use-nav-proximity` | Optional proximity emphasis for dense nav |
 | `markdown/*` | `Markdown`, `StreamingMarkdown`, `CodeBlock` (Shiki + GFM + sanitize) |
 | `components/fluid/thinking-indicator` | Morphing SVG + shimmer cycling words (single loader — do not duplicate in app) |
+| `components/fluid/*` (FF) | Vendored 1:1 from `fluidfunctionalism.com/r/*` into the isolated `lib/ff/` + `components/fluid/` namespace: `chat-message`, `ask-user-questions`, `thinking-steps`, `accordion`, `tabs`. Imports rewritten to Areeza (`cn`, `motion/springs`, `lib/ff/*`), foreign tokens mapped (`bg-hover`→`bg-muted`, `bg-active`→`bg-accent`, `#6B97FF`→`var(--ring)`), icons via the lean inline-SVG `lib/ff/icons.tsx` (no lucide dep). Radius driven by FF `useShape()`. |
+| `components/tabs` | Re-exports the FF Tabs (`Tabs`/`TabsList`/`TabItem`/`TabPanel`) — proximity-hover indicator, shape-aware pill track |
 | `layout/page-layout-primitives` | `PagePaneRoot`, `ScrollArea`, `ChatScrollArea` |
 | `components/empty-state` | `variant` `page` \| `list` \| `dashed`; neutral icon well |
 | `list-row`, `status-pill` | Row density via `--density-row-*`; `navRowTransition` |
@@ -66,8 +72,9 @@ Focus ring everywhere: `focus-visible:border-ring focus-visible:ring-3 focus-vis
 | `use-intake-store.ts` | Scoped stores per surface; `syncAllIntakeLocales` for app-wide locale |
 | `prompt-box.tsx` | `raisedSurface`, `focus-within:ring-3`, `maxLength`, `aria-label`, stop when streaming |
 | `message-list.tsx` | `ChatScrollArea` + single `ThinkingIndicator` |
-| `message-bubble.tsx` | User accent; assistant `Markdown` / `StreamingMarkdown` + copy when done |
-| `first-run-onboarding.tsx` | 2-step dialog on `/situations/new` (`localStorage` gate) |
+| `message-bubble.tsx` | Renders FF **`ChatMessage`** (`from=role`); user → right-aligned pill bubble (soft accent color-mix), assistant → flush-left plain text + hover copy action; keeps `Markdown` / `StreamingMarkdown` + streaming caret |
+| `suggested-questions.tsx` | Renders FF **`AskUserQuestions`** as a single-select option flow (example prompts + assistant `confirmOptions`); selection → `onPick`. Localized header via `showHeader`/`headerLabel` |
+| `first-run-onboarding.tsx` | single-step dialog on `/situations/new` (`localStorage` gate) |
 
 Document stream in workspace uses legal paper / section streaming — **not** chat markdown.
 
@@ -85,7 +92,7 @@ footer: Orqaga (ghost) | one brand primary CTA (export download only here — no
 |---|---|
 | Suhbat | `SituationIntakeRail` |
 | Hujjatlar | `SituationDocumentsPanel` (horizontal `ListRow` doc nav on mobile) |
-| Tekshirish | `IssuesPanel` + `review-readiness`; issue → linked doc / `ValidationPanel`; optional Tafsilotlar (`EmptyState variant="list"`) |
+| Tekshirish | `IssuesPanel` + `review-readiness`; issue → linked doc / `ValidationPanel` (checks rendered as an FF **`ThinkingSteps`** reasoning trace — each check a step with a status-colored `ThinkingStepSource` badge for the FPK article); optional Tafsilotlar (`EmptyState variant="list"`) |
 | Topshirish | `SituationExportPanel` + `situation-export-blockers.ts`; footer brand ZIP CTA |
 
 Advisories: inline callout (top 2 open). `advisory-panel.tsx` removed.
