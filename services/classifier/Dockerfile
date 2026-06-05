@@ -13,9 +13,10 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app/services/classifier
 
 COPY requirements.deploy.txt .
-RUN pip install --no-cache-dir -r requirements.deploy.txt
+RUN pip install --no-cache-dir --timeout=120 --retries=5 -r requirements.deploy.txt
 
 # Pre-download the embedding model into the image (offline at runtime).
+ENV HF_HUB_DOWNLOAD_TIMEOUT=60
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3')"
 
 COPY . .
