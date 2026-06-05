@@ -77,6 +77,13 @@ function resolveSize(size: ButtonProps["size"]): ButtonSize {
 type LegacyButtonVariant = "primary" | "tertiary";
 type LegacyButtonSize = "md";
 
+/** FF icon component shape: a leading/trailing glyph that accepts a numeric size. */
+export type ButtonIconComponent = React.ComponentType<{
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}>;
+
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     Omit<VariantProps<typeof buttonVariants>, "variant" | "size"> {
@@ -84,6 +91,17 @@ export interface ButtonProps
   size?: VariantProps<typeof buttonVariants>["size"] | LegacyButtonSize;
   asChild?: boolean;
   loading?: boolean;
+  /** FF Button API parity — icon rendered before the label. */
+  leadingIcon?: ButtonIconComponent;
+  /** FF Button API parity — icon rendered after the label. */
+  trailingIcon?: ButtonIconComponent;
+}
+
+function iconPixels(size: ButtonSize): number {
+  if (size === "xs" || size === "icon-xs") return 12;
+  if (size === "sm" || size === "icon-sm") return 14;
+  if (size === "lg" || size === "icon-lg") return 20;
+  return 16;
 }
 
 export function Button({
@@ -93,6 +111,8 @@ export function Button({
   asChild = false,
   loading = false,
   disabled,
+  leadingIcon: LeadingIcon,
+  trailingIcon: TrailingIcon,
   children,
   ...props
 }: ButtonProps) {
@@ -105,6 +125,8 @@ export function Button({
       : resolvedSize === "sm" || resolvedSize === "icon-sm"
         ? "size-3.5"
         : "size-4";
+  const iconSize = iconPixels(resolvedSize);
+  const hasFlankingIcons = !asChild && !loading && (LeadingIcon || TrailingIcon);
 
   return (
     <Comp
@@ -122,6 +144,12 @@ export function Button({
         <>
           <Icon name="loading" className={cn("animate-spin", spinnerClass)} aria-hidden />
           {asChild ? null : children}
+        </>
+      ) : hasFlankingIcons ? (
+        <>
+          {LeadingIcon ? <LeadingIcon size={iconSize} strokeWidth={2} aria-hidden /> : null}
+          {children}
+          {TrailingIcon ? <TrailingIcon size={iconSize} strokeWidth={2} aria-hidden /> : null}
         </>
       ) : (
         children
