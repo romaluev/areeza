@@ -11,12 +11,20 @@ export function TopBarSlot() {
   const fallbackTitle = resolveShellPageTitle(pathname);
 
   const merged = {
+    icon: config?.icon,
     title: config?.title ?? fallbackTitle,
     description: config?.description,
+    pill: config?.pill,
     actions: config?.actions,
   };
 
-  if (!merged.title && !merged.description && !merged.actions) {
+  if (
+    !merged.title &&
+    !merged.description &&
+    !merged.actions &&
+    !merged.icon &&
+    !merged.pill
+  ) {
     return null;
   }
 

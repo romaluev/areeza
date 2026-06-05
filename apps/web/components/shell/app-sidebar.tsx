@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Icon, type IconName } from "@areeza/ui/icons";
 import { Button } from "@areeza/ui/components/button";
+import { Kbd } from "@areeza/ui/components/kbd";
 import {
   NavMenuGroup,
   NavMenuHighlight,
@@ -23,7 +24,6 @@ import {
   SidebarMenuItem,
 } from "@areeza/ui/components/sidebar";
 import { navLabelWeight } from "@areeza/ui/lib/nav-motion";
-import { cn } from "@areeza/ui/lib/utils";
 import { uiCopy } from "@/lib/copy";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { useAppStore } from "@/lib/use-app-store";
@@ -37,8 +37,8 @@ type NavItem = {
   match?: (pathname: string) => boolean;
 };
 
-function buildNav(copy: ReturnType<typeof uiCopy>) {
-  const mainNav: NavItem[] = [
+function buildNav(copy: ReturnType<typeof uiCopy>): NavItem[] {
+  return [
     {
       id: "situations",
       href: "/situations",
@@ -49,28 +49,16 @@ function buildNav(copy: ReturnType<typeof uiCopy>) {
         (p.startsWith("/situations/") && !p.startsWith("/situations/new")),
     },
   ];
-
-  const newCaseNav: NavItem = {
-    id: "new-case",
-    href: "/situations/new",
-    label: copy.newSituation,
-    icon: "add",
-    match: (p) => p === "/situations/new" || p === "/cases/new",
-  };
-
-  return { mainNav, newCaseNav };
 }
 
 function NavRow({
   item,
   active,
   onNavigate,
-  buttonVariant = "nav",
 }: {
   item: NavItem;
   active: boolean;
   onNavigate?: () => void;
-  buttonVariant?: "nav" | "default";
 }) {
   return (
     <SidebarMenuItem
@@ -78,12 +66,7 @@ function NavRow({
       {...(active ? { "data-active": "" } : {})}
     >
       <NavMenuHighlight id={item.id} />
-      <SidebarMenuButton
-        asChild
-        isActive={active}
-        variant={buttonVariant}
-        tooltip={item.label}
-      >
+      <SidebarMenuButton asChild isActive={active} variant="nav" tooltip={item.label}>
         <Link
           href={item.href}
           onClick={onNavigate}
@@ -105,6 +88,7 @@ export function AppSidebar({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { locale } = useAppLocale();
   const copy = uiCopy(locale);
   const { resolvedTheme, setTheme } = useTheme();
@@ -121,31 +105,82 @@ export function AppSidebar({
     setTheme(next);
   };
 
+  // Global "N" shortcut → new situation (matches notiky's New Conversation hint).
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key !== "n" && e.key !== "N") return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      ) {
+        return;
+      }
+      e.preventDefault();
+      router.push("/situations/new");
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [router]);
+
   const isDark = themeMounted && resolvedTheme === "dark";
   const themeLabel = isDark ? "Yorug' rejim" : "Qorong'u rejim";
   const themeIcon = !themeMounted ? "moon" : isDark ? "sun" : "moon";
 
-  const { mainNav, newCaseNav } = buildNav(copy);
-  const isNewCaseActive =
-    newCaseNav.match?.(pathname) ?? pathname.startsWith(newCaseNav.href);
+  const mainNav = buildNav(copy);
 
   return (
     <Sidebar collapsible={mobile ? "none" : "icon"} variant="inset">
-      <SidebarHeader className="border-b border-sidebar-border">
-        <Link
-          href="/situations"
-          className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={onNavigate}
-          aria-label="Bosh sahifa — Holatlarim"
-        >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-sm">
-            <Icon name="scale" size="sm" />
-          </span>
-          <span className="min-w-0 truncate group-data-[collapsible=icon]:hidden">
-            <span className="block text-sm font-semibold tracking-tight">Areeza</span>
-            <span className="block text-[10px] text-muted-foreground">Sud hujjatlari</span>
-          </span>
-        </Link>
+      <SidebarHeader className="gap-1.5 py-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild size="lg" tooltip="Areeza">
+              <Link
+                href="/situations"
+                onClick={onNavigate}
+                aria-label="Bosh sahifa — Holatlarim"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-sm">
+                  <Icon name="scale" size="sm" />
+                </span>
+                <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate text-sm font-semibold tracking-tight">
+                    Areeza
+                  </span>
+                  <span className="truncate text-[11px] text-muted-foreground">
+                    Sud hujjatlari
+                  </span>
+                </span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <Button
+              asChild
+              variant="brand"
+              size="lg"
+              className="w-full justify-start gap-2 px-2 font-medium group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+            >
+              <Link href="/situations/new" onClick={onNavigate}>
+                <Icon name="add" size="sm" />
+                <span className="group-data-[collapsible=icon]:hidden">
+                  {copy.newSituation}
+                </span>
+                <Kbd
+                  variant="hint"
+                  className="ml-auto group-data-[collapsible=icon]:hidden"
+                >
+                  N
+                </Kbd>
+              </Link>
+            </Button>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent>
@@ -155,7 +190,8 @@ export function AppSidebar({
             <NavMenuGroup layoutId="sidebar-main">
               <SidebarMenu>
                 {mainNav.map((item) => {
-                const active = item.match?.(pathname) ?? pathname.startsWith(item.href);
+                  const active =
+                    item.match?.(pathname) ?? pathname.startsWith(item.href);
                   return (
                     <NavRow
                       key={item.id}
@@ -169,43 +205,29 @@ export function AppSidebar({
             </NavMenuGroup>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>{copy.newSituation}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <NavMenuGroup layoutId="sidebar-new-case">
-              <SidebarMenu>
-                <NavRow
-                  item={newCaseNav}
-                  active={isNewCaseActive}
-                  onNavigate={onNavigate}
-                  buttonVariant="default"
-                />
-              </SidebarMenu>
-            </NavMenuGroup>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
-        <LocaleToggle className="mb-2 w-full group-data-[collapsible=icon]:hidden" />
-        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/60 px-2 py-2 group-data-[collapsible=icon]:justify-center">
+      <SidebarFooter className="gap-2 border-t border-sidebar-border">
+        <LocaleToggle className="w-full group-data-[collapsible=icon]:hidden" />
+        <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent/60 px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <span
             className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand/15 text-xs font-semibold text-brand"
             aria-hidden
           >
             FL
           </span>
-          <span className="min-w-0 flex-1 truncate group-data-[collapsible=icon]:hidden">
-            <span className="block text-sm font-medium">Foydalanuvchi</span>
-            <span className="block text-[11px] text-muted-foreground">Demo rejim</span>
+          <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="truncate text-sm font-medium">Foydalanuvchi</span>
+            <span className="truncate text-[11px] text-muted-foreground">
+              Demo rejim
+            </span>
           </span>
         </div>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="mt-2 w-full justify-start gap-2 text-muted-foreground group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
+          className="w-full justify-start gap-2 text-muted-foreground group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
           onClick={toggleTheme}
           disabled={!themeMounted}
           aria-label={themeMounted ? themeLabel : "Mavzuni almashtirish"}

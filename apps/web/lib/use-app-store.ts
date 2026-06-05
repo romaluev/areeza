@@ -27,7 +27,7 @@ export const useAppStore = create<AppPrefsState>()(
     (set) => ({
       theme: "system",
       density: "comfortable",
-      shape: "default",
+      shape: "pill",
       locale: "uz",
       _hasHydrated: false,
       setTheme: (theme) => set({ theme }),

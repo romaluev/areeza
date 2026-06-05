@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ShapeProvider } from "@areeza/ui/lib/shape-context";
+import { FfShapeProvider } from "@areeza/ui/lib/ff/shape-context";
 import { SurfaceProvider } from "@areeza/ui/lib/surface-context";
 import { Button } from "@areeza/ui/components/button";
 import {
@@ -16,7 +17,6 @@ import { uiCopy } from "@/lib/copy";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { useAppStore } from "@/lib/use-app-store";
 import { AppSidebar } from "./app-sidebar";
-import { TopBarSlot } from "./top-bar-slot";
 import { useShellPageTitle } from "./use-shell-page-title";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -30,6 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SurfaceProvider level={1}>
       <ShapeProvider density={density === "compact" ? "tight" : "default"} preset={shape}>
+       <FfShapeProvider shape={shape === "pill" ? "pill" : "rounded"}>
         <SidebarProvider
           defaultOpen
           style={
@@ -69,8 +70,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Button>
               </header>
 
-              <TopBarSlot />
-
               <main
                 id="app-main"
                 aria-label={copy.situationsHomeTitle}
@@ -88,6 +87,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
         </SidebarProvider>
+       </FfShapeProvider>
       </ShapeProvider>
     </SurfaceProvider>
   );

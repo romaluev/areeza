@@ -4,8 +4,10 @@ import { create } from "zustand";
 import type { ReactNode } from "react";
 
 export interface TopBarConfig {
+  icon?: ReactNode;
   title?: ReactNode;
   description?: string;
+  pill?: ReactNode;
   actions?: ReactNode;
 }
 
