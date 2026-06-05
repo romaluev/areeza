@@ -28,9 +28,9 @@ function formatUpdated(iso: string, locale: "uz" | "ru"): string {
 
 function SituationsListSkeleton() {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Skeleton key={i} className="h-[4.5rem] w-full rounded-xl" />
+        <Skeleton key={i} className="h-[3.25rem] w-full rounded-xl" />
       ))}
     </div>
   );
@@ -67,17 +67,12 @@ export function SituationsHome() {
   const items = situations ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-8">
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            {copy.situationsHomeTitle}
-          </h1>
-          <p className="text-sm text-muted-foreground">{copy.situationsHomeSubtitle}</p>
-        </div>
-        <Button asChild variant="brand">
-          <Link href="/situations/new">{copy.newSituation}</Link>
-        </Button>
+    <div className="mx-auto w-full max-w-3xl px-6 py-6">
+      <div className="mb-6 space-y-1">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          {copy.situationsHomeTitle}
+        </h1>
+        <p className="text-sm text-muted-foreground">{copy.situationsHomeSubtitle}</p>
       </div>
 
       {isLoading ? (
@@ -105,7 +100,7 @@ export function SituationsHome() {
           }
         />
       ) : (
-        <ListRowGroup className="divide-y divide-border rounded-xl border border-border bg-card">
+        <ListRowGroup>
           {items.map((s) => {
             const updated = formatUpdated(s.updatedAt, locale);
             const ariaLabel = `${copy.openSituation(s.title)}. ${copy.documentsReady(
@@ -116,7 +111,7 @@ export function SituationsHome() {
               <Link
                 key={s.id}
                 href={`/situations/${s.id}`}
-                className="block"
+                className="block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={ariaLabel}
               >
                 <ListRow
