@@ -36,16 +36,6 @@
     --text-3xs: 0.5625rem;
     --text-3xs--line-height: 0.75rem;
 
-    /* ── Radius — explicit rem, not calc() ─────────────────────────────────── */
-    --radius-xs: 0.25rem; /* 4px */
-    --radius-sm: 0.375rem; /* 6px */
-    --radius-md: 0.5rem; /* 8px — default */
-    --radius-lg: 0.625rem; /* 10px */
-    --radius-xl: 0.875rem; /* 14px */
-    --radius-2xl: 1.25rem; /* 20px */
-    --radius-3xl: 2.25rem; /* 36px — marketing hero panels only */
-    --radius-pill: 9999px; /* FF pill chips / mode toggles */
-
     /* ── Shadow — single size scale, values tuned per mode below ───────────── */
     --shadow-xs: var(--fx-shadow-xs);
     --shadow-sm: var(--fx-shadow-sm);
@@ -150,6 +140,23 @@
     --color-sage: var(--accent-sage);
     --color-blush: var(--accent-blush);
 
+}
+
+/*
+ * Radius — NON-inline `@theme` so the `--radius-*` custom properties are emitted
+ * to :root (needed by `var(--radius-*)` utilities: raisedSurface, shellPanel,
+ * FF shape-context) AND the `rounded-*` Tailwind utilities are generated. Do not
+ * re-declare these in an app-level `@theme inline` — that breaks them to 0.
+ */
+@theme {
+    --radius-xs: 0.25rem; /* 4px */
+    --radius-sm: 0.375rem; /* 6px */
+    --radius-md: 0.5rem; /* 8px — default */
+    --radius-lg: 0.625rem; /* 10px */
+    --radius-xl: 0.875rem; /* 14px */
+    --radius-2xl: 1.25rem; /* 20px */
+    --radius-3xl: 2.25rem; /* 36px — marketing hero panels only */
+    --radius-pill: 9999px; /* FF pill chips / mode toggles */
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

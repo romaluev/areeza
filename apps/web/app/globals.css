@@ -55,9 +55,6 @@
   --font-sans: var(--font-inter);
   --font-serif: var(--font-legal);
   --font-mono: var(--font-mono);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-pill: var(--radius-pill);
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -103,7 +100,7 @@ html[data-density="compact"] {
 
 @utility shellPanel {
   background-color: var(--sidebar);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   box-shadow: var(--fx-shadow-panel);
   border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
@@ -111,7 +108,7 @@ html[data-density="compact"] {
 
 @utility elevatedCard {
   background-color: var(--card);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   box-shadow: var(--fx-shadow-card);
   border: 1px solid color-mix(in oklab, var(--border) 50%, transparent);
@@ -128,7 +125,7 @@ html[data-density="compact"] {
   background-color: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--fx-shadow-float);
 }
 
@@ -281,7 +278,6 @@ html[data-density="compact"] {
 }
 
 .legal-paper .ProseMirror {
-  min-height: 480px;
   outline: none;
   white-space: pre-wrap;
 }
@@ -311,8 +307,8 @@ html[data-density="compact"] {
   letter-spacing: 0.02em;
 }
 
-.legal-paper .legal-section-editor .ProseMirror {
-  min-height: 2rem;
+.legal-paper .ProseMirror.legal-section-editor {
+  min-height: 1.75rem;
 }
 
 @media print {

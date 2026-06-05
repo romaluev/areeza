@@ -33,7 +33,7 @@ export function Card({
       data-surface={elevated ? level : undefined}
       style={style}
       className={cn(
-        "group/card flex flex-col overflow-hidden rounded-xl text-sm text-card-foreground has-data-[slot=card-footer]:pb-0",
+        "group/card flex flex-col overflow-hidden rounded-2xl text-sm text-card-foreground has-data-[slot=card-footer]:pb-0",
         elevated
           ? surfaceClasses(level, 3)
           : "bg-card ring-1 ring-foreground/10",
@@ -51,7 +51,7 @@ export function CardHeader({ className, ...props }: React.ComponentProps<"div">)
     <div
       data-slot="card-header"
       className={cn(
-        "grid auto-rows-min items-start gap-1 rounded-t-xl px-6 group-data-[density=compact]/card:px-3",
+        "grid auto-rows-min items-start gap-1 rounded-t-2xl px-6 group-data-[density=compact]/card:px-3",
         className,
       )}
       {...props}
@@ -107,7 +107,7 @@ export function CardFooter({ className, ...props }: React.ComponentProps<"div">)
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-6 group-data-[density=compact]/card:p-3",
+        "flex items-center rounded-b-2xl border-t bg-muted/50 p-6 group-data-[density=compact]/card:p-3",
         className,
       )}
       {...props}
