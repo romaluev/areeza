@@ -7,15 +7,18 @@ import (
 
 // Classification mirrors the TS contract (keyword router; Claude swap later).
 type Classification struct {
-	CategoryCode        string  `json:"categoryCode"`
-	Label               string  `json:"label"`
-	Confidence          float64 `json:"confidence"`
-	ConfidenceLevel     string  `json:"confidenceLevel"`
-	Track               string  `json:"track"`
-	TrackLabel          string  `json:"trackLabel"`
-	TrackRationale      string  `json:"trackRationale"`
-	NeedsCategoryPick   *bool   `json:"needsCategoryPick,omitempty"`
-	ClarifyingQuestion  *string `json:"clarifyingQuestion,omitempty"`
+	CategoryCode       string  `json:"categoryCode"`
+	Label              string  `json:"label"`
+	Confidence         float64 `json:"confidence"`
+	ConfidenceLevel    string  `json:"confidenceLevel"`
+	Track              string  `json:"track"`
+	TrackLabel         string  `json:"trackLabel"`
+	TrackRationale     string  `json:"trackRationale"`
+	// Engine names which tier produced this result (tier1 | tier2 | claude | keyword),
+	// so the UI can show that the on-device model ran first.
+	Engine             string  `json:"engine,omitempty"`
+	NeedsCategoryPick  *bool   `json:"needsCategoryPick,omitempty"`
+	ClarifyingQuestion *string `json:"clarifyingQuestion,omitempty"`
 }
 
 var gibberishRE = regexp.MustCompile(`^[\s\dA-Za-z]+$`)

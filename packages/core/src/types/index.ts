@@ -66,6 +66,8 @@ export const classificationSchema = z.object({
   track: trackSchema,
   trackLabel: z.string(),
   trackRationale: z.string(),
+  /** Which tier produced this: tier1 (on-device bge-m3) | tier2 (LoRA) | claude | keyword. */
+  engine: z.string().optional(),
   needsCategoryPick: z.boolean().optional(),
   clarifyingQuestion: z.string().optional(),
 });

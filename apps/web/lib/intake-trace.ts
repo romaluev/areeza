@@ -16,6 +16,22 @@ function row(uz: string, ru: string, value: string, locale: IntakeLocale): strin
   return value ? `${prefix}: ${value}` : prefix;
 }
 
+/** Friendly name for which classifier tier ran (on-device first, Claude as backup). */
+function engineLabel(engine: string | undefined, locale: IntakeLocale): string {
+  switch (engine) {
+    case "tier1":
+      return locale === "ru" ? "на устройстве (bge-m3)" : "qurilmada (bge-m3)";
+    case "tier2":
+      return locale === "ru" ? "на устройстве (LoRA)" : "qurilmada (LoRA)";
+    case "claude":
+      return locale === "ru" ? "Claude (резерв)" : "Claude (zaxira)";
+    case "keyword":
+      return locale === "ru" ? "правила" : "qoidalar";
+    default:
+      return "";
+  }
+}
+
 /**
  * Derive a trace-panel row from a streamed intake event. Returns `null` for
  * events that are not surfaced as trace rows (assistant text, questions,
@@ -35,17 +51,16 @@ export function traceRowFromEvent(
         icon: "file",
         label: row("Ma'lumot yozildi", "Записан факт", event.fact.label, locale),
       };
-    case "classified":
+    case "classified": {
+      const engine = engineLabel(event.classification.engine, locale);
       return {
         id: "trace-classified",
         icon: "sparkles",
-        label: row(
-          "Yo'nalish aniqlandi",
-          "Классификация",
-          event.classification.label,
-          locale,
-        ),
+        label:
+          row("Yo'nalish aniqlandi", "Классификация", event.classification.label, locale) +
+          (engine ? ` · ${engine}` : ""),
       };
+    }
     case "sources_proposed":
       return {
         id: "trace-sources",

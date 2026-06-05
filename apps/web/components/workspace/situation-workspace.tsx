@@ -109,10 +109,11 @@ function WorkspaceStepBody({
   onGoToReview: () => void;
 }) {
   if (step === "chat") {
+    // Composer stays available so the user can always return here and keep chatting;
+    // the backend runs a safe follow-up turn (no re-finalize) on a finalized situation.
     return (
       <SituationIntakeRail
         situationId={situationId}
-        readOnly={situation.messages.length > 0}
         initialMessages={situation.messages}
       />
     );

@@ -36,6 +36,7 @@ func (c *Classifier) Classify(ctx context.Context, text string) Classification {
 	}
 
 	if r, ok := classifyAt(ctx, c.Tier1URL, text); ok {
+		r.Engine = "tier1"
 		if r.Confidence >= tier1AcceptConfidence && r.CategoryCode != "other" {
 			return withLevel(r)
 		}
@@ -44,6 +45,7 @@ func (c *Classifier) Classify(ctx context.Context, text string) Classification {
 
 	if c.Tier2URL != "" {
 		if r, ok := classifyAt(ctx, c.Tier2URL, text); ok {
+			r.Engine = "tier2"
 			if r.Confidence >= tier2AcceptConfidence && r.CategoryCode != "other" {
 				return withLevel(r)
 			}
@@ -53,6 +55,7 @@ func (c *Classifier) Classify(ctx context.Context, text string) Classification {
 
 	if c.Backup != nil {
 		if r, ok := c.Backup(ctx, text); ok && r.CategoryCode != "other" {
+			r.Engine = "claude"
 			return withLevel(r)
 		}
 	}
@@ -60,6 +63,7 @@ func (c *Classifier) Classify(ctx context.Context, text string) Classification {
 	// Deterministic floor. Prefer a confident sub-threshold tier hit over a keyword
 	// "other" (the on-device model saw signal the keyword router missed).
 	kw := ClassifyText(text)
+	kw.Engine = "keyword"
 	if haveBest && kw.CategoryCode == "other" && best.CategoryCode != "other" {
 		return withLevel(best)
 	}

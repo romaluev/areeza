@@ -93,6 +93,10 @@ var intakeTools = []llm.Tool{
 	},
 }
 
+// followUpTools is the post-finalize tool set: record_fact + ask_followup only (no
+// finalize — the case is already prepared, so we never re-mint it).
+var followUpTools = intakeTools[:2]
+
 // RunTurn processes one user message for situationId, streaming IntakeEvents via emit.
 // It returns after either asking a follow-up (no "done") or finalizing (emits "done").
 func (b *Brain) RunTurn(ctx context.Context, st Store, situationID, userText string, emit func(Event)) error {
