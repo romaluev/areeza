@@ -68,6 +68,7 @@ export function SituationDocumentsPanel({
         <DocumentPanel
           caseId={situationId}
           documents={situation.documents}
+          activeId={active.id}
           legacyDocument={active}
           hasRoute={situation.issues.some((i) => i.route)}
           onUpdated={() => {

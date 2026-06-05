@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@areeza/ui/components/
 import { Icon } from "@areeza/ui/icons";
 import { DocumentEditor } from "./document-editor";
 import { DocumentStreamingPaper } from "./document-streaming-paper";
-import { DocumentSwitcher, DocumentSwitcherHint } from "./document-switcher";
 import { RegenerateSectionOverlay } from "./regenerate-section-overlay";
 import {
   documentWithSections,
@@ -31,6 +30,7 @@ export function DocumentPanel({
   caseId,
   documents: documentsProp,
   legacyDocument,
+  activeId,
   hasRoute,
   onUpdated,
   onGenerateStart,
@@ -38,6 +38,8 @@ export function DocumentPanel({
   caseId: string;
   documents?: GeneratedDocument[];
   legacyDocument?: GeneratedDocument;
+  /** Document selected by the parent's nav. Single source of truth for which doc is shown. */
+  activeId?: string;
   hasRoute: boolean;
   onUpdated: () => void;
   onGenerateStart?: () => void;
@@ -52,11 +54,11 @@ export function DocumentPanel({
     [documentList, caseId],
   );
 
-  const [pickedDocId, setPickedDocId] = useState<string | null>(null);
   const activeDocId = useMemo(() => {
-    const preferred = pickedDocId ?? documentList[0]?.id ?? `${caseId}-davo`;
-    return documentList.some((d) => d.id === preferred) ? preferred : defaultDocId;
-  }, [pickedDocId, documentList, defaultDocId, caseId]);
+    if (activeId && documentList.some((d) => d.id === activeId)) return activeId;
+    const fallback = documentList[0]?.id ?? `${caseId}-davo`;
+    return documentList.some((d) => d.id === fallback) ? fallback : defaultDocId;
+  }, [activeId, documentList, defaultDocId, caseId]);
   const baseDoc = useMemo(
     () =>
       documentList.find((d) => d.id === activeDocId) ??
@@ -76,7 +78,6 @@ export function DocumentPanel({
       hasRoute={hasRoute}
       onUpdated={onUpdated}
       onGenerateStart={onGenerateStart}
-      onSelectDoc={setPickedDocId}
     />
   );
 }
@@ -89,7 +90,6 @@ function DocumentPanelBody({
   hasRoute,
   onUpdated,
   onGenerateStart,
-  onSelectDoc,
 }: {
   caseId: string;
   activeDocId: string;
@@ -98,7 +98,6 @@ function DocumentPanelBody({
   hasRoute: boolean;
   onUpdated: () => void;
   onGenerateStart?: () => void;
-  onSelectDoc: (id: string) => void;
 }) {
   const docDraftKey = documentDraftKey(caseId, activeDocId);
   const initialDoc = useMemo(() => {
@@ -310,29 +309,12 @@ function DocumentPanelBody({
     localDoc?.sections.find((s) => s.editable) ??
     null;
 
-  const switcherDocs: GeneratedDocument[] =
-    documentList.length > 0 ? documentList : localDoc ? [localDoc] : [];
-
   return (
     <Card>
-      <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1 space-y-2">
-          <CardTitle className="text-base">
-            {localDoc?.title ?? "Sud hujjati"}
-          </CardTitle>
-          {localDoc ? <DocumentSwitcherHint doc={localDoc} /> : null}
-          <DocumentSwitcher
-            documents={switcherDocs}
-            activeId={activeDocId}
-            onSelect={(id) => {
-              if (stream.streaming) {
-                stream.cancel();
-              }
-              onSelectDoc(id);
-            }}
-            disabled={stream.streaming}
-          />
-        </div>
+      <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+        <CardTitle className="min-w-0 flex-1 truncate text-base">
+          {localDoc?.title ?? "Sud hujjati"}
+        </CardTitle>
         {localDoc?.claimAmount ? (
           <Badge variant="secondary" className="shrink-0">
             {localDoc.claimAmount}
