@@ -33,7 +33,7 @@ export function Card({
       data-surface={elevated ? level : undefined}
       style={style}
       className={cn(
-        "group/card flex flex-col overflow-hidden rounded-xl text-sm text-card-foreground shadow-sm has-data-[slot=card-footer]:pb-0",
+        "group/card flex flex-col overflow-hidden rounded-xl text-sm text-card-foreground has-data-[slot=card-footer]:pb-0",
         elevated
           ? surfaceClasses(level, 3)
           : "bg-card ring-1 ring-foreground/10",

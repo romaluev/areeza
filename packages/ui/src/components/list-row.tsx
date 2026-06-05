@@ -61,7 +61,7 @@ export function ListRow({
       aria-selected={interactive ? selected : undefined}
       className={cn(
         "flex items-center gap-3 rounded-xl border border-transparent",
-        "h-[length:var(--density-row-h-default)] px-[length:var(--density-row-px)]",
+        "min-h-[3.25rem] px-[length:var(--density-row-px)] py-2.5",
         navRowTransition,
         interactive && "cursor-pointer hover:bg-accent/40",
         selected && "bg-accent",
@@ -69,7 +69,7 @@ export function ListRow({
       )}
       {...props}
     >
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-0.5">
         <p className="truncate text-sm font-medium text-foreground">{title}</p>
         {subtitle ? (
           <p className="truncate text-xs text-muted-foreground">{subtitle}</p>

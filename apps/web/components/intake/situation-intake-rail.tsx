@@ -195,9 +195,11 @@ export function SituationIntakeRail({
           onStop={stopStreaming}
         />
       ) : null}
-      <div className="border-t border-border">
-        <FactsPanel facts={facts} />
-      </div>
+      {facts.length > 0 ? (
+        <div className="border-t border-border">
+          <FactsPanel facts={facts} />
+        </div>
+      ) : null}
     </div>
   );
 }

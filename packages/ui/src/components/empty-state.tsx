@@ -44,21 +44,17 @@ export function EmptyState({
       className={cn(emptyStateVariants({ variant }), className)}
       {...props}
     >
-      <div
+      <Icon
+        name={icon}
+        size={iconSize}
         className={cn(
-          "flex items-center justify-center rounded-xl bg-muted text-muted-foreground",
-          variant === "page" ? "mb-4 size-12" : "mb-3 size-10",
+          "text-muted-foreground/60",
+          variant === "page" ? "mb-3 size-8" : "mb-2.5 size-6",
         )}
-      >
-        <Icon
-          name={icon}
-          size={iconSize}
-          className={cn(variant === "page" && "size-5")}
-        />
-      </div>
-      <h3 className="text-sm font-medium text-foreground">{title}</h3>
+      />
+      <h3 className="mt-1 text-sm font-medium text-foreground">{title}</h3>
       {description ? (
-        <p className="mt-2 max-w-sm text-sm text-muted-foreground">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
       ) : null}
       {action ? <div className="mt-4">{action}</div> : null}
     </div>

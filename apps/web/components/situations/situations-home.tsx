@@ -67,10 +67,12 @@ export function SituationsHome() {
   const items = situations ?? [];
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <div className="mb-8 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">{copy.situationsHomeTitle}</h1>
+    <div className="mx-auto w-full max-w-4xl px-6 py-8">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            {copy.situationsHomeTitle}
+          </h1>
           <p className="text-sm text-muted-foreground">{copy.situationsHomeSubtitle}</p>
         </div>
         <Button asChild variant="brand">
