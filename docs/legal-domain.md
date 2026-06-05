@@ -35,15 +35,21 @@ Classify → route from this data → fill a **fixed template** with collected f
 
 ## 3. Case category schema (classifier enum + routes)
 
+The full enum lives in [`packages/core/src/legal/index.ts`](../packages/core/src/legal/index.ts) (TS) and [`server/internal/legal/classify.go`](../server/internal/legal/classify.go) (Go). Trained classifier covers the original 6; the keyword router + multi-issue routes (§6b) extend coverage for the platform demo.
+
 | `categoryCode` | Plain trigger | Route summary |
 |---|---|---|
-| `labor.wage_recovery` | "salary not paid" | **Branch:** accrued & undisputed → **court order** (CPC 173–174); disputed → **claim** (CPC 188–191). Civil court. **Fee-exempt.** |
+| `labor.wage_recovery` | "salary not paid" | **Branch:** accrued & undisputed → **court order** (FPK 173–174); disputed → **claim** (FPK 188–191). Civil court. **Fee-exempt.** |
 | `labor.reinstatement` | "fired unfairly" | Statement of claim, civil court. **1-month** limit. Fee-exempt. |
-| `debt.recovery` | "lent money, not repaid" / utility arrears | Accrued & undisputed → **court order** (CPC 173–174); contested → claim. Civil court at debtor location. |
+| `labor.harassment` | "harassed at work" | Prosecutor complaint + (often) admin labor-inspectorate complaint. |
+| `debt.recovery` | "lent money, not repaid" / utility arrears | Accrued & undisputed → **court order** (FPK 173–174); contested → claim. Civil court at debtor location. |
 | `consumer.dispute` | "bought defective goods/service" | Complaint to **raqobat.gov.uz** and/or **claim** to civil court; venue = defendant or harm location (plaintiff's choice); moral-damage recoverable. |
-| `family.child_support` | "ex won't pay aliment" | No paternity dispute → **court order** (CPC 173–174); contested → claim. |
+| `family.child_support` | "ex won't pay aliment" | No paternity dispute → **court order** (FPK 173–174); contested → claim. |
+| `family.injunction` | "spouse is about to sell our property" | Urgent injunction petition, civil court. |
+| `fraud.investment` | "I was scammed / lost my investment" | Civil debt-recovery **plus** prosecutor's fraud complaint (often co-filed). |
+| `other` | none of the above | Clarifying question + manual pick. |
 
-> Start the classifier with these 5 + an `other` fallback. The **wage_recovery undisputed-vs-disputed branch** is the flagship "depth" feature.
+> The trained classifier covers the original 6 codes; the **multi-issue platform demo** uses the extended enum (see §6b — fraud, harassment, family, admin variants). The Go API keyword router + Claude+enum fallback handle the extended enum so the contract never breaks.
 
 ## 4. DEMO CASE — unpaid salary (`labor.wage_recovery`)
 

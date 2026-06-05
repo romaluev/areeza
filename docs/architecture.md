@@ -1,7 +1,7 @@
 # Areeza — Architecture
 
-> Areeza's system design. **Backend: Go. Web: Next.js.** The web adapts notiky-app's chat/editor/workspace UI; the backend is Areeza's own — a legal-filing pipeline. Where a proven pattern exists in notiky-app (the LLM provider + streaming layer), **study it and reimplement for our domain** — don't copy blindly.
-> Read with [CLAUDE.md](../CLAUDE.md), [prd.md](prd.md), [legal-domain.md](legal-domain.md) (the legal IP), [model-plan.md](model-plan.md) (classifier + data).
+> Areeza's system design. **Backend: Go. Web: Next.js.** Areeza's own pipeline — multi-issue Situation workspace, deterministic legal engine, Claude only where generation is required, local on-device classifier + RAG for routing and grounding.
+> Read with [CLAUDE.md](../CLAUDE.md), [prd.md](prd.md), [legal-domain.md](legal-domain.md) (the legal IP), [model-plan.md](model-plan.md) (classifier + data), [deploy.md](deploy.md) (Coolify).
 
 ## 1. Principles
 
@@ -14,12 +14,13 @@
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Backend | **Go** — chi router · pgx + sqlc · Postgres 17 + **pgvector** · WebSocket (streaming) | Areeza's own services |
-| LLM | **Anthropic Go SDK** behind a small provider interface (prompt caching, tool use, structured output, streaming) | the *shape* to learn from notiky-app's `server/pkg/llm`; reimplement lean |
-| Classifier | small model served over HTTP behind `/classify` | see [model-plan.md](model-plan.md) |
-| Web | Next.js 16 · React 19 · TS · Tailwind v4 · shadcn · TipTap | chat/editor/workspace **adapted from notiky-app** |
+| Backend | **Go** — chi router · gorilla/websocket · in-memory store today, Postgres 17 + **pgvector** provisioned | Areeza's own services |
+| LLM | **Anthropic Go SDK** behind `server/pkg/llm.Provider` (caching, tools, structured output, streaming) | sonnet for intake/validate, opus for the document, haiku for cheap extraction |
+| Classifier | **`services/classifier`** — bge-m3 + LR (tier-1, live) + LoRA Qwen2.5-1.5B on MLX (tier-2). Go keyword router + Claude+enum as fallbacks. | see [model-plan.md](model-plan.md) |
+| RAG | **`services/rag`** — curated lex.uz corpus + bge-m3 NumPy index | cites real article numbers and lex.uz URLs |
+| Web | Next.js 16 · React 19 · TS strict · Tailwind v4 · shadcn (Radix) · TipTap 3 | Areeza's own UI |
 | PDF | server-side render (HTML → PDF) of the court document | print-correct layout |
-| Deploy | Go on Railway/Fly · Postgres managed · web on Vercel | |
+| Deploy | **Docker Compose on Coolify** (web · api · classifier · rag · pgvector) — [areeza.uz](https://areeza.uz) | see [deploy.md](deploy.md) |
 
 ## 2b. Situation aggregate (multi-issue)
 
@@ -30,7 +31,13 @@ The workspace unit is a **`Situation`** JSON aggregate (in-memory demo; Postgres
 - `parties[]`, `evidence[]`, `timeline[]`, `advisories[]` — linked via `issueIds[]`
 - Shared `messages[]` intake thread
 
-**AI brain interface:** `server/pkg/ai.Brain` + `server/internal/ai/scripted` (demo). Tools map 1:1 to WebSocket events (`issue_identified`, `document_proposed`, `advisory`, …). Swap scripted → Anthropic without UI changes.
+**AI brain:** `server/pkg/ai.Brain` interface + Claude implementation in `server/internal/ai/intake` (live) and `server/internal/ai/scripted` (deterministic demo fallback). Tools map 1:1 to WebSocket events the web client renders.
+
+**Streaming event vocabulary:**
+- `WS /ws/intake` (`brain.go`, `finalize.go`): `assistant_delta`, `fact`, `question` (+ optional `options`), `sources_proposed` (RAG articles + grounding prompt), `awaiting_confirmation`, `classified`, `issue_identified`, `route_proposed`, `active_issue`, `party_added`, `evidence_logged`, `timeline_event`, `advisory`, `document_proposed`, `next_action`, `done`, `error`.
+- `WS /ws/draft` (`ws.go`): `section_start`, `chunk`, `section_done`, `done`, `error`.
+
+Swap scripted → Anthropic without UI changes — the event shapes are the contract.
 
 ## 3. System overview
 
@@ -85,19 +92,28 @@ haiku/sonnet for cheap extraction and validation; **opus only for the final docu
 - **Draft** = deterministic **template** (the CPC Art-189 skeleton from [legal-domain.md](legal-domain.md) §4) + **slot-fill**: the model writes only the narrative and computed fields. The legal structure is never model-generated → no hallucinated procedure.
 - **Validate** = run the §6 rejection-ground rules in Go first (instant, free). Only genuinely ambiguous items ("is this evidence sufficient?") escalate to **one** Claude soft-pass. Most filings never hit the model here.
 
-## 7. Data model (Postgres + pgvector)
+## 7. Data model
 
-```sql
-profiles(id → auth, full_name, locale default 'uz')
-cases(id, user_id, title, status, category_code, route_id, claim_amount, currency, created_at, updated_at)
-case_messages(id, case_id, role, content, created_at)          -- chat transcript (UI only)
-case_facts(id, case_id, key, value jsonb, source)              -- the model's real context
-documents(id, case_id, type, title, content_md, pdf_url, status, version)
-validations(id, case_id, document_id, checks jsonb, can_file bool, created_at)
-attachments(id, case_id, name, storage_path, kind)
-legal_categories(code pk, name_uz, name_ru, description)        -- + routes/templates (start as code constants)
-legal_chunks(id, source, article_ref, lang, text, embedding vector)  -- RAG over the codes
+**Shipped: in-memory `map[id]json.RawMessage`** (`server/internal/store/store.go`) seeded from `server/internal/store/seed.json`. The shape is the **`Situation` aggregate** (one JSON blob per id) defined in [`server/internal/situation/model.go`](../server/internal/situation/model.go):
+
+```go
+type Situation struct {
+    ID, Title, Status, Locale, Currency, ClaimAmount, ActiveIssueID string
+    CreatedAt, UpdatedAt string
+    Messages   []Message       // chat transcript (UI only)
+    Facts      []Fact          // the model's real context (key/value/group)
+    Issues     []Issue         // multi-issue: categoryCode, route, step, status
+    Parties    []Party         // plaintiff, defendants, witnesses, third parties
+    Evidence   []Evidence      // files, dates, status
+    Timeline   []TimelineEvent // facts + deadlines
+    Documents  []Document      // each → issueIds[], destination forum, validation
+    Advisories []Advisory      // deadline_warning / evidence_gap / strategic_recommendation / …
+    Readiness  Readiness       // documentsReady/Total · blockingAdvisoryIds · canExport
+    StatusHistory []StatusEvent
+}
 ```
+
+**Provisioned, not yet wired: Postgres 17 + pgvector** (docker-compose). The persistence wave will move the aggregate to `situations(id pk, payload jsonb, updated_at)` and add `legal_chunks(id, article_ref, lang, text, embedding vector)` for the RAG step. `DATABASE_URL` is already routed to the API.
 
 ## 8. Legal knowledge & RAG
 
@@ -108,32 +124,36 @@ legal_chunks(id, source, article_ref, lang, text, embedding vector)  -- RAG over
 ## 9. API surface (Go) + the frontend contract
 
 ```
-WS   /ws/intake            stream; tools record facts; emits case state + next question
-POST /api/classify         { caseId?, text } → { categoryCode, confidence, track }
-POST /api/route            { categoryCode, facts } → LegalRoute
-POST /api/draft            { caseId } → { document }
-POST /api/validate         { caseId, documentId } → { checks[], canFile }
-POST /api/export           { caseId } → { pdfUrl }
-GET/POST /api/cases ...     case CRUD
+GET    /api/health
+GET    /api/situations             — list summaries
+GET    /api/situations/summary     — header counts
+GET    /api/situations/{id}        — full Situation aggregate
+DELETE /api/situations/{id}
+POST   /api/classify               { situationId?, text } → Classification
+POST   /api/route                  { categoryCode, facts } → LegalRoute
+POST   /api/draft                  { situationId } → { document }
+PUT    /api/documents              update sections
+POST   /api/documents/regenerate   sectionId, instruction → Document
+POST   /api/validate               { situationId, documentId } → ValidationResult
+POST   /api/export                 { situationId } → { pdfUrl }
+GET    /api/export/{id}.pdf        — rendered package
+WS     /ws/intake                  streaming tool-loop
+WS     /ws/draft                   streaming draft
 ```
 
-**Contract-first parallel still holds** (see [development-plan.md](development-plan.md)): the Go API shapes + a typed TS client are agreed first; the **web builds against a mock client** while the **Go backend implements** behind the same shapes. The contract is the boundary between the frontend and backend tracks.
+**Contract-first parallel still holds**: the Go API shapes + the typed TS client (`packages/core`) are agreed first; the **web builds against a mock client** while the **Go backend implements** behind the same shapes. The contract is the boundary between the frontend and backend tracks.
 
 ## 10. Build & deploy
 
-- **Backend:** Go modules, `make dev` (server + Postgres via docker-compose), sqlc-generated queries, migrations. Deploy to Railway/Fly.
-- **Web:** pnpm + Turborepo, `pnpm dev`, deploy to Vercel.
-- **Classifier:** [`services/classifier`](../services/classifier/) on **:8081** (`uvicorn serve:app`). Go calls `POST {CLASSIFIER_API_URL}/classify` from `server/internal/legal/remote.go`; on unset URL, timeout, or non-200, **`ClassifyText`** keyword router in `classify.go` answers (trained model knows the original 6 codes; keyword router also returns platform categories like `fraud.investment`). Mock multi-issue demo does not use this path.
-- **RAG:** [`services/rag`](../services/rag/) on **:8082** (`POST /retrieve`). `RAG_API_URL` is documented for draft grounding ([handoff-rag-contract.md](handoff-rag-contract.md)); not wired into draft yet — route-engine `LegalBasis` remains the fallback.
-- **Env:** `ANTHROPIC_API_KEY`, `DATABASE_URL`, `CLASSIFIER_API_URL` (optional), `RAG_API_URL` (optional), storage keys. See [dev-setup.md](dev-setup.md) §3b for local run commands.
+- **Backend:** Go modules, `make dev`. Currently an in-memory store (`server/internal/store`); Postgres+pgvector is provisioned in compose and `DATABASE_URL` is wired — persistence wave is the next step.
+- **Web:** pnpm + Turborepo, `pnpm dev`.
+- **Classifier:** [`services/classifier`](../services/classifier/) on **:8081**. Go calls `POST {CLASSIFIER_API_URL}/classify`; on unset URL, timeout, or non-200 → in-proc keyword router in `server/internal/legal/classify.go`; on miss again → Claude+enum.
+- **RAG:** [`services/rag`](../services/rag/) on **:8082** (`POST /retrieve`). Wired into draft for real citations.
+- **Deploy:** **Docker Compose on Coolify** — `web` (Next 16) + `api` (Go) public; `classifier` + `rag` + `postgres` (pgvector) internal. Domains: areeza.uz · api.areeza.uz. See [deploy.md](deploy.md).
+- **Env:** `ANTHROPIC_API_KEY`, `DATABASE_URL`, `CLASSIFIER_API_URL` (optional), `RAG_API_URL` (optional), `PUBLIC_API_URL`, `PUBLIC_WEB_URL`. See [dev-setup.md](dev-setup.md) §3b for local commands, [deploy.md](deploy.md) for Coolify.
 
-## 11. How to build it (sequence)
+## 11. What's shipped vs. on deck
 
-1. Stand up the Go server skeleton (chi, pgx/sqlc, Postgres+pgvector, a health route) and the Next web shell. Study notiky-app's `server/pkg/llm` + its WebSocket streaming to learn the **provider + streaming pattern**, then implement Areeza's lean version.
-2. Land the **legal engine** (categories/routes/templates/validation as typed data from [legal-domain.md](legal-domain.md)) — zero model calls, instantly testable.
-3. Ingest the codes into `legal_chunks` (scrape → embed) for RAG + real citations.
-4. Wire the pipeline stage by stage (intake → classify → route → draft → validate → export), keeping §5 discipline.
-5. Adapt the chat/editor/workspace UI from notiky-app for the case workspace.
-6. Swap the fine-tuned classifier in behind `/classify`.
+**Shipped:** the Situation aggregate, the multi-issue workspace, the full pipeline (intake → classify → route → draft → validate → export), the on-device classifier (tier-1 live, tier-2 trained), the RAG retrieval over a curated lex.uz corpus, server-rendered PDF export (via chromedp; placeholder fallback when Chrome is absent), Coolify deploy at [areeza.uz](https://areeza.uz).
 
-The legal engine, the pipeline, the validation, and the classifier are **Areeza's own**. notiky-app is where engineers learn the Go-LLM-streaming and workspace-UI patterns — not a source to clone.
+**On deck:** Postgres persistence (today the store resets on restart), tier-2 classifier swap-in once it wins on eval, expanded RAG corpus beyond the labor flagship, real e-sud submission integration (today we produce + guide). See [development-plan.md](development-plan.md) §4.

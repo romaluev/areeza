@@ -1,9 +1,8 @@
 # Handoff — `/api/classify` contract (local router → Claude fallback)
 
-This is what the **frontend/backend team** needs to wire the trained router into the app.
-The model itself lives in [`services/classifier/`](../services/classifier) and runs **locally**
-(privacy: the complaint never leaves the device). The Next.js route just proxies to it and
-**falls back to Claude+zod-enum** if the local service is unreachable — so the demo can't break.
+> **Status (post-shipment, 5 Jun 2026): live.** The wiring described below is implemented Go-side in [`server/internal/legal/classify_chain.go`](../server/internal/legal/classify_chain.go) (tier-1 → tier-2 → Claude → keyword). The Next.js TypeScript sketch later in this doc is the original handoff sketch kept for contract reference.
+
+This is what the **frontend/backend team** needed to wire the trained router into the app. The model lives in [`services/classifier/`](../services/classifier) and runs **locally** (privacy: the complaint never leaves the device). The Go API at `POST /api/classify` proxies to it and **falls back to the keyword router, then Claude+enum** so the demo can't break.
 
 ## Contract
 

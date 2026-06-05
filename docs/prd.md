@@ -21,17 +21,17 @@ The real problem isn't "people don't know the law." It's: **people can't transla
 | **P0 (demo + pitch)** | **Self-represented citizens** who can't afford a lawyer | "Help me file this correctly so it isn't rejected." |
 | P1 | **Small businesses / entrepreneurs** | Unpaid invoices, contract & supplier disputes, no in-house lawyer. |
 | P2 | **Lawyers / legal clinics** | Faster intake + document drafting; handle more cases. |
-| **Strategic (B2G)** | **Courts / Oliy Sud / legal-aid bodies** | Fewer defective filings, less manual review, better citizen experience, analytics. |
+| **Strategic (B2G)** | **Courts / legal-aid bodies** | Fewer defective filings, less manual review, better citizen experience, analytics. |
 
-Lead with **citizens + access to justice** (bigger, more important, wins the room). B2G is the moat and the money. Don't lead with lawyer-SaaS.
+Lead with **citizens + access to justice** (bigger, more important, wins the room). B2B (lawyers/firms) and B2G are the scaling levers.
 
 ## 4. Goals & non-goals (hackathon scope)
 
 **Goals**
 - A working **end-to-end demo** of one case type (unpaid salary) that produces a real-looking court-ready `da'vo arizasi` + validation + filing guide.
-- A **case workspace** that feels like a platform, not a chat.
-- A credible **routing model** story (fine-tuned UZ classifier) with a live classification step.
-- A **VC-grade pitch** with TAM/SAM/SOM, competitor table, unit economics, and the Oliy Sud advisory moat.
+- A multi-issue **`Situation` workspace** that handles many issues from one conversation (one fraud story can spawn a civil claim + a prosecutor complaint + an anti-corruption complaint).
+- Our own **on-device routing model** (bge-m3 + LR tier-1 live; LoRA Qwen 1.5B tier-2 trained) — "we trained our own model" is real, not a promise.
+- A **VC-grade pitch** with TAM/SAM/SOM, competitor table including direct UZ competitors (Tuzuk, Case Cloud), unit economics, and a $100K pre-seed close.
 
 **Non-goals (now)**
 - Real submission integration with e-sud (we *guide* + export a package; integration is roadmap upside).
@@ -49,9 +49,9 @@ Each module below is a vertical slice. Build in this order.
 - Output: a structured `case` + `case_facts`.
 
 ### 5.2 Case classification `[P0]`
-- Classify into a legal category from a fixed enum (labor dispute / wage recovery, consumer, small debt, etc.).
-- Returns `{ categoryCode, confidence, rationale }`. Live, visible step in the demo ("Areeza identified: **labor dispute — wage recovery**").
-- Backed by the fine-tuned classifier (or Claude+enum until it's trained — same interface).
+- Classify into a legal category from a fixed enum (see [legal-domain.md](legal-domain.md) §3).
+- Returns `{ categoryCode, confidence, track, engine }`. Live, visible step in the demo ("Areeza identified: **labor dispute — wage recovery**").
+- Backed by `services/classifier` (tier-1: bge-m3 + LR, live; tier-2: Qwen 1.5B LoRA, swap-in candidate). Keyword router + Claude+enum are always-on fallbacks at the Go API layer.
 
 ### 5.3 Filing route selection `[P0]`
 - Map category → **route**: which body/court, application type, required documents, fee rule (labor claims are state-fee-exempt — confirm), limitation period, procedure steps, legal basis (Labor Code + Civil Procedure Code articles).
@@ -83,10 +83,11 @@ See [demo-script.md](demo-script.md) for the exact narration. One sentence of "w
 ## 7. Differentiation / moat
 
 1. **Workflow, not wrapper** — completes a filing (route + doc + validation + guide), not Q&A.
-2. **Oliy Sud advisory** — real procedures/forms, regulatory realism; a relationship competitors can't copy and a B2G wedge.
-3. **Local legal intelligence** — fine-tuned Uzbek classifier + a structured legal route engine grounded in UZ codes.
+2. **Multi-issue platform** — one real-life situation often has 3–4 legal threads (fraud + corruption + police inaction). We're the only tool that models that.
+3. **Local legal intelligence** — our own on-device classifier (bge-m3 tier-1 + Qwen LoRA tier-2) + structured legal route engine + lex.uz RAG.
 4. **Validation engine** — encodes *why filings get rejected*; this dataset compounds into a moat over time.
 5. **Founder execution** — built live, fast, by the country's Cursor Ambassador.
+6. **Advisor: Anvarjon Abdullajonov** (Oliy Sud Dev Team Leader) — real procedural fidelity, real integration path.
 
 ## 8. Success metrics
 
@@ -97,7 +98,7 @@ See [demo-script.md](demo-script.md) for the exact narration. One sentence of "w
 
 | Risk | Mitigation |
 |---|---|
-| Unauthorized-practice-of-law / liability | Position as navigation + preparation, human-in-the-loop, "reduces rejection risk" (never guarantees). Advisors from Oliy Sud. |
+| Unauthorized-practice-of-law / liability | Position as navigation + preparation, human-in-the-loop, "reduces rejection risk" (never guarantees). Procedural fidelity reviewed with an Oliy Sud Dev Team advisor. |
 | Gov-integration dependency | Citizen-side works *without* integration (generate + guide). Integration is upside, not a blocker. |
 | "Market too small" | Frame TAM globally (every digitizing-justice market), SAM Central Asia/CIS, SOM UZ. |
 | Generated doc looks fake / wrong | Mirror real `da'vo arizasi` structure; advisor validation; deterministic templates over free-form generation. |

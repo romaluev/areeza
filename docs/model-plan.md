@@ -1,10 +1,13 @@
 # Areeza — Model & Data Plan
 
-> **Owner:** the AI/model engineer. Two distinct AI assets, two distinct data needs:
-> 1. **The router** — a small fine-tuned model that maps a plain-language complaint → `categoryCode` + `track`. The "we trained a model" beat; live behind `/classify`.
-> 2. **The legal RAG corpus** — the codes, chunked + embedded, that ground document drafting + validation (and resolve the `[VERIFY]` article numbers in [legal-domain.md](legal-domain.md)).
+> **Status: SHIPPED.** Both AI assets are live in [`services/classifier`](../services/classifier/) and [`services/rag`](../services/rag/).
+> Canonical doc per service: [classifier MODEL_CARD](../services/classifier/MODEL_CARD.md) · [rag README](../services/rag/README.md). This file is the *why* and the *data plan*.
 >
-> Claude does the heavy generation; these make us **fast, cheap, and locally accurate** where a generic model is weak (Uzbek/Russian legal routing). See the token discipline in [architecture.md](architecture.md) §5.
+> Two distinct AI assets, two distinct data needs:
+> 1. **The router** — `services/classifier`. Bge-m3 embeddings + LogisticRegression (tier-1, live, ~0.94 macro-F1 on synthetic test). LoRA fine-tune of Qwen2.5-1.5B-Instruct on MLX (tier-2, trained, swap-in when it wins on eval). The "we trained our own model" beat — and it's real.
+> 2. **The legal RAG corpus** — `services/rag`. Curated lex.uz corpus + bge-m3 + NumPy index. Serves real article numbers + URLs to draft/validate.
+>
+> Claude does the heavy generation; these make us **fast, cheap, locally accurate** on Uzbek/Russian legal routing where a generic model is weak. See token discipline in [architecture.md](architecture.md) §5.
 
 ## 1. What the router does
 
@@ -58,17 +61,29 @@ Our advisors are the **Supreme Court's dev + IT team** (they build e-sud / my.su
 ## 5. Files
 
 ```
-data/legal/         # scraped codes (article-chunked, UZ/RU) → legal_chunks
-data/decisions/     # scraped court decisions (grounding + rejection patterns)
-data/classify/      # {train,val,test}.jsonl  (synthetic + real, labeled)
-services/scraper/   # Python: lex.py, sud.py (requests/Firecrawl) → JSONL
-services/classifier/# Python: embed.py, train.py, serve.py (FastAPI), requirements.txt
+services/classifier/
+  generate.py            # synthesize training JSONL (Claude + curated)
+  build_chat_jsonl.py    # chat-format prep for tier-2 LoRA
+  lora_3b.yaml · lora_7b.yaml · lora_config.yaml
+  serve.py               # FastAPI :8081 (tier-1) / :8083 (tier-2)
+  artifacts/tier1.joblib # committed tier-1 model
+  MODEL_CARD.md          # the canonical model card
+services/rag/
+  corpus/legal_uz.jsonl  # curated lex.uz citations + summaries
+  ingest.py              # bge-m3 embed → artifacts/{rag_index.npz, meta.json}
+  engine.py · serve.py   # FastAPI :8082 (`/retrieve`)
+  README.md
 ```
 
 ## 6. Honesty & pitch line
 
 Say exactly what it is: *"a model trained on Uzbek/Russian legal-case patterns to route a plain-language story to the correct procedure,"* validated with the Supreme Court's own engineers. Not a from-scratch LLM.
 
-## 7. Timebox & cut-line
+## 7. Status & roadmap (as of 5 Jun 2026)
 
-Tier 1 (scrape codes for RAG + synthetic set + embeddings classifier) is a **few hours**. It must **not block** the end-to-end demo — `/classify` runs on the Claude+enum fallback from day one, so the trained router is a swap-in upgrade for CP2, not a dependency. If short on time: ship Tier 1, present Tier 2 as "in training," and lead with the lex.uz RAG (it visibly grounds the document in real article text).
+- ✅ **Tier-1 classifier live** — bge-m3 + LR, ~0.94 macro-F1 on synthetic test. 6 base categories. Served from `services/classifier` (FastAPI, port 8081). Go API calls it; falls back to in-proc keyword router; falls back to Claude+enum.
+- ✅ **Tier-2 classifier trained** — Qwen2.5-1.5B-Instruct LoRA on MLX (Apple Silicon). Head-to-head with tier-1 pending; tier-1 stays live unless tier-2 wins.
+- ✅ **RAG live** — curated lex.uz corpus, bge-m3 index, served from `services/rag` (port 8082). `/retrieve` returns real article numbers + lex.uz URLs.
+- 🚧 **Verbatim verification** — some corpus summaries marked `verbatim_verified:false` need the official lex.uz text; 3 articles marked `number_verified:false` (wage-frequency, dispute-limitation, fee-exemption) need advisor confirmation (see [legal-domain.md](legal-domain.md) §7).
+- 🚧 **Real anonymized filings** — once advisors share them, retrain tier-1/tier-2 on real distribution + add to RAG (this is the data moat that compounds).
+- 🚧 **Expand beyond labor flagship** — corpus + classes for fraud / consumer / family / admin once labor track is rock-solid.

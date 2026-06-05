@@ -10,7 +10,7 @@ The rubric pays for a **growth arc**, not a peak. Three consequences:
 1. **CP1 (today) is discovery, not a final.** Its weight is only 40%, and its real value is that the **three mentors who score you are your judges** — for Technical, Business, and Domain. Use CP1 to extract their objections, pre-sell the vision, and bank goodwill. Show enough to be credible; don't burn the night polishing for 40%.
 2. **CP2 (tomorrow) is where we win.** 60% weight + it explicitly rewards "how you applied mentor advice." We land the full working demo + a visible leap (the fine-tuned classifier, validation, polish) that directly answers CP1 feedback. **This is Roma's overnight-rebuild superpower, aimed at exactly the metric that rewards it.**
 3. **Cover all three lenses on purpose:**
-   - **Technical (T1–T5):** real implementation, clean GitHub, innovation, *team knowledge*, strong stack → reuse + Vercel AI SDK + the classifier.
+   - **Technical (T1–T5):** real implementation, clean GitHub, innovation, *team knowledge*, strong stack → Go + Anthropic Go SDK + the on-device classifier (bge-m3 + LR tier-1 live, Qwen LoRA tier-2 trained) + local lex.uz RAG.
    - **Business (B1–B5):** relevance, monetization, moat, sustainability, growth → TAM/SAM/SOM + unit economics + Notiky/Horyco traction proof.
    - **Domain (S1–S5):** depth + *regulatory compliance* → **lead with the Oliy Sud advisors**; show a real-looking `da'vo arizasi`.
 
@@ -36,7 +36,7 @@ The build was *not* the first priority this round — foundation + research + pi
 
 Build the real end-to-end demo. Milestones (vertical slices, each demoable):
 
-- **M0 — Scaffold:** pnpm+turbo monorepo, Next.js app, Supabase, reuse notiky UI. App runs.
+- **M0 — Scaffold:** pnpm+turbo monorepo, Next.js 16 app, Go API skeleton, Postgres+pgvector via docker-compose. App runs.
 - **M1 — Intake → Classify:** chat intake (Uzbek/Russian) → structured facts → live classification.
 - **M2 — Route → Draft:** route engine for the labor/wage case → generated court-ready `da'vo arizasi` (real structure).
 - **M3 — Validate → Export:** validation checklist (rejection-risk) → PDF filing package + filing guide.

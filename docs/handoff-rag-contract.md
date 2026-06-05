@@ -1,9 +1,8 @@
 # Handoff — RAG `/retrieve` contract (legal grounding for the draft step)
 
-The **draft step** should fetch real, cited Uzbek law articles from the local RAG service
-([`services/rag`](../services/rag)) and inject them into the document-generation context — replacing the
-hardcoded `LegalBasis` in `server/internal/legal/routes.go` and the `[VERIFY]` placeholders in
-[`legal-domain.md`](legal-domain.md). Everything runs on-device.
+> **Status (post-shipment, 5 Jun 2026): wired.** Live in [`server/internal/legal/rag.go`](../server/internal/legal/rag.go), called from the draft step (`server/internal/api/ws.go` `DraftWS`) and from the intake `sources_proposed` event (`server/internal/ai/intake/finalize.go`).
+
+The **draft step** fetches real, cited Uzbek law articles from the local RAG service ([`services/rag`](../services/rag)) and injects them into the document-generation context — replacing the hardcoded `LegalBasis` in `server/internal/legal/routes.go` and the `[VERIFY]` placeholders in [`legal-domain.md`](legal-domain.md). Everything runs on-device.
 
 ## Contract
 

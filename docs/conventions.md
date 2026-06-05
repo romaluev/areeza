@@ -8,24 +8,38 @@
 ```
 areeza/                      (repo root — git@github.com:romaluev/areeza.git)
 ├── apps/
-│   └── web/                 # Next.js 16 app (UI + API routes)
+│   └── web/                 # Next.js 16 app
 │       ├── app/
 │       │   ├── (marketing)/ # landing
-│       │   ├── (app)/       # authed product (cases, workspace)
-│       │   └── api/         # route handlers
-│       └── components/      # app-specific composition (thin)
+│       │   └── (app)/       # authed product
+│       │       └── situations/   # canonical workspace (/cases redirects here)
+│       └── components/      # intake · workspace · document · validation · export · …
 ├── packages/
-│   ├── ui/                  # @areeza/ui  — presentational components (shadcn + reused)
-│   └── core/                # @areeza/core — framework-free logic
-│       ├── ai/              #   prompts, schemas, Claude wrappers (Dev 1)
-│       ├── legal/           #   the route engine (Dev 1)
-│       ├── db/              #   supabase client + queries (Dev 1)
-│       ├── api/             #   client + mock + real + fixtures (Dev 2)
-│       └── types/           #   THE CONTRACTS — zod + inferred types (Roma)
+│   ├── ui/                  # @areeza/ui — tokens, shadcn primitives, vendored Fluid Functionalism
+│   └── core/src/            # @areeza/core
+│       ├── types/           #   THE CONTRACTS — zod + inferred types
+│       ├── api/             #   typed client (mock | real) + fixtures
+│       └── legal/           #   category labels mirror (Go engine is canonical)
+├── server/                  # Go backend
+│   ├── cmd/areeza/          # entrypoint
+│   ├── internal/
+│   │   ├── api/             #   REST + WS handlers
+│   │   ├── ai/{intake,draft,validate,classify,scripted}/
+│   │   ├── legal/           #   route engine + keyword classifier + templates
+│   │   ├── situation/       #   Situation aggregate
+│   │   ├── export/          #   PDF + filing package
+│   │   ├── pipeline/prompts/ #  named prompt constants (never inline)
+│   │   ├── store/, seed/    #   in-memory + seed
+│   └── pkg/
+│       ├── ai/              #   Brain interface
+│       └── llm/             #   Anthropic provider (caching, tools, streaming)
+├── services/
+│   ├── classifier/          # Python FastAPI · tier-1 (bge-m3+LR) + tier-2 (Qwen LoRA)
+│   └── rag/                 # Python FastAPI · curated lex.uz corpus + bge-m3
 └── docs/                    # the product brain
 ```
 
-Package names: **`@areeza/ui`**, **`@areeza/core`** (subpath exports: `@areeza/core/types`, `@areeza/core/legal`, …).
+Package names: **`@areeza/ui`**, **`@areeza/core`** (subpath exports: `@areeza/core/types`, `@areeza/core/api`, `@areeza/core/legal`).
 Import direction (never violate): `apps/web` → `@areeza/{ui,core}`; `@areeza/ui` → `@areeza/core/types` only; `@areeza/core` → never imports from `apps`. No circular deps.
 
 ## 2. Naming conventions
@@ -39,7 +53,7 @@ Import direction (never violate): `apps/web` → `@areeza/{ui,core}`; `@areeza/u
 | Types / interfaces | `PascalCase` (no `I` prefix) | `LegalRoute` |
 | Zod schemas | `XxxSchema` next to its type | `CaseSchema` → `type Case = z.infer<…>` |
 | Constants / enums | `SCREAMING_SNAKE` / `PascalCase` | `MAX_FACTS`, `CategoryCode` |
-| API routes | `app/api/<resource>/route.ts`, REST verbs | `app/api/cases/route.ts` |
+| API routes (Go) | `server/internal/api/`, REST + WS handlers | `POST /api/classify` · `WS /ws/intake` |
 | Category codes | `domain.subtype` (lowercase) | `labor.wage_recovery` |
 | Env vars | `SCREAMING_SNAKE`; client vars `NEXT_PUBLIC_` | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_API_MODE` |
 | CSS | Tailwind utilities + design tokens; no ad-hoc hex | `text-primary`, not `#0E1B33` |
@@ -74,7 +88,7 @@ Import direction (never violate): `apps/web` → `@areeza/{ui,core}`; `@areeza/u
 - **One agent per task,** scoped to that task's `paths` from the plan. Give it the task card + the relevant doc (legal-domain, ui-guide) as context.
 - **Parallel file-mutating agents → use `git worktrees`** (each agent on its own branch/worktree) so they can't clobber each other. Read-only/research agents don't need this.
 - Every agent must: target the **contracts**, run `typecheck`+`lint` before reporting done, and **not** edit files outside its task scope.
-- Keep prompts in `@areeza/core/ai/prompts/` as named exports — never inline long prompts in routes (so agents edit prompts in one place).
+- Keep prompts in `server/internal/pipeline/prompts/` as named Go constants — never inline long prompts in handlers (so agents edit prompts in one place).
 - Prefer **vertical slices** (one case path working end-to-end) over horizontal layers.
 
 ## 7. Quality gates (Definition of Done)

@@ -91,9 +91,9 @@
 ## Slide 10 — Team (Jamoa)
 
 - **Rakhmatillo Lutfullaev — Founder / CEO.** First **Cursor Ambassador** in Uzbekistan; built **Horyco** (restaurant AI OS, solo) and **Notiky** (AI product brain, paying customers in week 1).
-- **Mukhammadxoja Lutfullaev — CTO** (SWE @ Clockster · CTO @ Horyco) · **Shoxdiyor Aliyev — COO** (Manager @ Yandex Market) · **Saloxiddin Mirxafizov — SWE** (3 yrs) · **Abdulboriy Abduxalilov — SWE** (2 yrs).
-- **Advisors — Anvarjon Abdullajonov** (Supreme Court dev-team lead, 10+ yrs SWE) **+ Jasur Umarov** (Supreme Court IT): the engineers who build **e-sud / my.sud.uz** — our integration path, not just legal sign-off.
-- 🎤 *"Our advisors don't just know the law — they build the court's systems. When we say the government can adopt this, it's the people in the room who'd ship it."* (**B3 advantage, S4 compliance, S5 impact.**)
+- **Mukhammadxoja Lutfullaev — CTO** (SWE @ Clockster · ex-CTO @ Horyco · model + scraping) · **Shoxdiyor Aliyev — COO** (Manager @ Yandex Market) · **Saloxiddin Mirxafizov — Growth** (2 yrs · video / SMM) · **Abdulboriy Abduxalilov — SWE** (2 yrs · frontend).
+- **Advisor — Anvarjon Abdullajonov** (Oliy Sud Dev Team Leader, 10+ yrs SWE).
+- 🎤 *"Our advisor leads the team that builds the court's systems. When we say the government can adopt this, it's the people in the room who'd ship it."* (**B3 advantage, S4 compliance, S5 impact.**)
 
 ## Slide 11 — Close (the ask is the win)
 
