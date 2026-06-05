@@ -44,8 +44,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             {copy.skipLink}
           </a>
-          <div className="flex h-dvh overflow-hidden bg-background p-2 gap-2">
-            <div className="hidden shrink-0 md:block">
+          <div className="flex h-dvh w-full overflow-hidden bg-background p-2 gap-2">
+            <div className="hidden w-[var(--layout-app-sidebar-width)] shrink-0 md:block">
               <AppSidebar />
             </div>
 

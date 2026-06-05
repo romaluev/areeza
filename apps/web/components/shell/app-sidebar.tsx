@@ -130,11 +130,7 @@ export function AppSidebar({
     newCaseNav.match?.(pathname) ?? pathname.startsWith(newCaseNav.href);
 
   return (
-    <Sidebar
-      collapsible={mobile ? "none" : "icon"}
-      variant="inset"
-      className={cn(!mobile && "shellPanel h-full w-full border-0")}
-    >
+    <Sidebar collapsible={mobile ? "none" : "icon"} variant="inset">
       <SidebarHeader className="border-b border-sidebar-border">
         <Link
           href="/situations"

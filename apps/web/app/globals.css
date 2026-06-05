@@ -5,6 +5,16 @@
 @import "@areeza/ui/styles/prose.css";
 @import "@areeza/ui/styles/fluid-shimmer.css";
 
+/*
+ * Tailwind v4 only generates utilities it finds in scanned content. The shared
+ * UI package is symlinked under node_modules (workspace), which Tailwind skips
+ * by default — so classes used ONLY inside @areeza/ui (bg-surface-*,
+ * shadow-surface-*, rounded-pill, bg-overlay-scrim, backdrop-blur-xs,
+ * w-(--sidebar-width), …) were being purged. These @source scans restore them.
+ */
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+@source "../../../packages/core/src/**/*.{ts,tsx}";
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
