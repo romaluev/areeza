@@ -9,6 +9,7 @@ import type {
   GeneratedDocument,
   IntakeEvent,
   LegalRoute,
+  PipelineStep,
   RegenerateSectionRequest,
   RouteRequest,
   Situation,
@@ -70,17 +71,17 @@ function openWebSocket(path: string, signal?: AbortSignal): Promise<WebSocket> {
 
 export async function listSituations(): Promise<Situation[]> {
   try {
-    return fetchJSON<Situation[]>("/api/situations");
+    return await fetchJSON<Situation[]>("/api/situations");
   } catch {
-    return listCases().then(() => [] as Situation[]);
+    return [];
   }
 }
 
 export async function getSituationSummaryCounts(): Promise<SituationSummaryCounts> {
   try {
-    return fetchJSON<SituationSummaryCounts>("/api/situations/summary");
+    return await fetchJSON<SituationSummaryCounts>("/api/situations/summary");
   } catch {
-    return getCaseSummaryCounts();
+    return { total: 0, intake: 0, ready: 0, draft: 0, inProgress: 0 };
   }
 }
 
@@ -95,6 +96,21 @@ export async function getSituation(id: string): Promise<Situation | null> {
 
 export async function deleteSituation(id: string): Promise<void> {
   await fetchJSON<void>(`/api/situations/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function moveIssue(
+  situationId: string,
+  issueId: string,
+  step: PipelineStep,
+  position?: number,
+): Promise<Situation> {
+  return fetchJSON<Situation>(
+    `/api/situations/${encodeURIComponent(situationId)}/issues/${encodeURIComponent(issueId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ step, position }),
+    },
+  );
 }
 
 export async function listCases(): Promise<Case[]> {

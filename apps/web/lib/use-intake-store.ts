@@ -2,6 +2,7 @@
 
 import { create, useStore, type StoreApi } from "zustand";
 import type { CaseFact, CaseMessage, Classification } from "@areeza/core/types";
+import type { IntakeTrace } from "./intake-trace";
 
 type IntakeLocale = "uz" | "ru";
 
@@ -17,6 +18,7 @@ type IntakeState = {
   locale: IntakeLocale;
   messages: CaseMessage[];
   facts: CaseFact[];
+  traces: IntakeTrace[];
   streaming: boolean;
   assistantBuffer: string;
   classification: Classification | null;
@@ -25,6 +27,8 @@ type IntakeState = {
   appendAssistant: (delta: string) => void;
   flushAssistant: () => void;
   addFact: (fact: CaseFact) => void;
+  addTrace: (trace: IntakeTrace) => void;
+  resetTraces: () => void;
   setClassification: (c: Classification) => void;
   setStreaming: (v: boolean) => void;
   reset: () => void;
@@ -34,6 +38,7 @@ const initialSlice = {
   locale: "uz" as IntakeLocale,
   messages: [] as CaseMessage[],
   facts: [] as CaseFact[],
+  traces: [] as IntakeTrace[],
   streaming: false,
   assistantBuffer: "",
   classification: null as Classification | null,
@@ -70,6 +75,8 @@ function createIntakeStore(): StoreApi<IntakeState> {
       else facts.push(fact);
       set({ facts });
     },
+    addTrace: (trace) => set({ traces: [...get().traces, trace] }),
+    resetTraces: () => set({ traces: [] }),
     setClassification: (classification) => set({ classification }),
     setStreaming: (streaming) => set({ streaming }),
     reset: () => set({ ...initialSlice }),

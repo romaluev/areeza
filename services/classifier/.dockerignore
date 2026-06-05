@@ -1,0 +1,13 @@
+# Keep the build context small — the adapters_* LoRA dirs and the venv are multi-GB.
+.venv
+adapters
+adapters_3b
+adapters_7b
+adapters_qwen1_5b
+__pycache__
+*.pyc
+artifacts/*.png
+data
+*.md
+*.sh
+.gitignore

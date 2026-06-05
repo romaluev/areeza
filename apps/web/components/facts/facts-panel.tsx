@@ -4,18 +4,21 @@ import { Icon } from "@areeza/ui/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@areeza/ui/components/card";
 import { cn } from "@areeza/ui/lib/utils";
 import type { CaseFact } from "@areeza/core/types";
+import { uiCopy } from "@/lib/copy";
+import { useAppLocale } from "@/lib/use-app-locale";
 
 export function FactsPanel({ facts }: { facts: CaseFact[] }) {
+  const { locale } = useAppLocale();
+  const copy = uiCopy(locale);
+
   if (facts.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Yig&apos;ilgan faktlar</CardTitle>
+          <CardTitle className="text-base">{copy.factsTitle}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Suhbat davomida faktlar shu yerda paydo bo&apos;ladi.
-          </p>
+          <p className="text-sm text-muted-foreground">{copy.factsEmpty}</p>
         </CardContent>
       </Card>
     );
@@ -24,7 +27,7 @@ export function FactsPanel({ facts }: { facts: CaseFact[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Yig&apos;ilgan faktlar</CardTitle>
+        <CardTitle className="text-base">{copy.factsTitle}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {facts.map((fact) => (
@@ -45,7 +48,7 @@ export function FactsPanel({ facts }: { facts: CaseFact[] }) {
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-muted-foreground">{fact.label}</p>
-                <p className="text-foreground">{fact.value || "— ko'rsatilmagan"}</p>
+                <p className="text-foreground">{fact.value || copy.factsMissingValue}</p>
               </div>
             </div>
           </div>

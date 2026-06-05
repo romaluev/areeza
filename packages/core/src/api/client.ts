@@ -9,6 +9,7 @@ import type {
   GeneratedDocument,
   IntakeEvent,
   LegalRoute,
+  PipelineStep,
   RegenerateSectionRequest,
   RouteRequest,
   Situation,
@@ -25,14 +26,16 @@ import * as real from "./real";
 export type ApiMode = "mock" | "real";
 
 function getMode(): ApiMode {
-  if (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_MODE === "real") {
-    return "real";
+  // Explicit override (env or runtime global) wins; otherwise default to the real
+  // backend. Set NEXT_PUBLIC_API_MODE=mock to use the canned demo data.
+  if (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_MODE === "mock") {
+    return "mock";
   }
   if (typeof globalThis !== "undefined") {
     const g = globalThis as { __AREEZA_API_MODE__?: ApiMode };
     if (g.__AREEZA_API_MODE__) return g.__AREEZA_API_MODE__;
   }
-  return "mock";
+  return "real";
 }
 
 export const api = {
@@ -54,6 +57,18 @@ export const api = {
 
   deleteSituation(id: string): Promise<void> {
     return getMode() === "mock" ? mockSituation.deleteSituation(id) : real.deleteSituation(id);
+  },
+
+  /** Kanban drag: move an issue to a new pipeline step (+ optional manual order). */
+  moveIssue(
+    situationId: string,
+    issueId: string,
+    step: PipelineStep,
+    position?: number,
+  ): Promise<Situation> {
+    return getMode() === "mock"
+      ? mockSituation.moveIssue(situationId, issueId, step, position)
+      : real.moveIssue(situationId, issueId, step, position);
   },
 
   streamIntake(

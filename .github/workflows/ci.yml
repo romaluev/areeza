@@ -1,0 +1,121 @@
+name: CI
+
+# Pre-publish gate: catch build errors here so a Coolify deploy is highly likely
+# to succeed. Language checks run on every push/PR; the (heavier) image builds run
+# on PRs to main, pushes to main, and manual dispatch — "if it builds here, it
+# builds in Coolify".
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go:
+    name: Go (vet · build · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+      - run: go vet ./...
+      - run: go build ./...
+      - run: go test ./...
+
+  web:
+    name: Web (typecheck · lint · build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - name: Build (production, standalone)
+        run: pnpm --filter @areeza/web build
+        env:
+          NEXT_PUBLIC_API_MODE: real
+          NEXT_PUBLIC_API_URL: https://api.example.com
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  python:
+    name: Python services (syntax)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Byte-compile classifier + rag
+        run: |
+          python -m py_compile services/classifier/*.py
+          python -m py_compile services/rag/*.py
+
+  compose:
+    name: Compose validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose config
+        run: docker compose -f docker-compose.yml config -q
+        env:
+          PUBLIC_API_URL: https://api.example.com
+          PUBLIC_WEB_URL: https://example.com
+          POSTGRES_PASSWORD: ci
+          ANTHROPIC_API_KEY: sk-ci
+
+  docker-build:
+    name: Build image (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    needs: [go, web, python, compose]
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: ./server
+            file: ./server/Dockerfile
+          - name: web
+            context: .
+            file: ./apps/web/Dockerfile
+          - name: classifier
+            context: ./services/classifier
+            file: ./services/classifier/Dockerfile
+          - name: rag
+            context: ./services/rag
+            file: ./services/rag/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build ${{ matrix.name }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: false
+          load: false
+          build-args: |
+            NEXT_PUBLIC_API_MODE=real
+            NEXT_PUBLIC_API_URL=https://api.example.com
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max

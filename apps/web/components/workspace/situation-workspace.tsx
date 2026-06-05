@@ -20,6 +20,8 @@ import { uiCopy } from "@/lib/copy";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { showRetryToast } from "@/lib/retry-toast";
 import { useTopBar } from "@/components/shell/use-top-bar";
+import { useActiveSituationStore } from "@/lib/use-active-situation-store";
+import { useRightRailStore } from "@/lib/use-right-rail-store";
 import { EvidencePanel } from "./evidence-panel";
 import { IssuesPanel } from "./issues-panel";
 import { PartiesPanel } from "./parties-panel";
@@ -201,6 +203,16 @@ function SituationWorkspaceLoaded({
   useTopBar(topBarConfig);
   const reducedMotion = useReducedMotion();
   const [step, setStep] = useState<WorkspaceStep>("chat");
+  const toggleRail = useRightRailStore((s) => s.toggle);
+
+  // Publish the active situation + step to the shell so the assistant rail
+  // knows what to render. Clears on unmount.
+  useEffect(() => {
+    useActiveSituationStore.getState().setActive(situationId, step);
+  }, [situationId, step]);
+  useEffect(() => {
+    return () => useActiveSituationStore.getState().clear();
+  }, []);
   const [showDetails, setShowDetails] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [activeIssueId, setActiveIssueId] = useState<string | undefined>(
@@ -257,15 +269,30 @@ function SituationWorkspaceLoaded({
               {situation.issues.length} ta masala · {situation.documents.length} ta hujjat
             </p>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            aria-label={copy.deleteSituationTitle}
-            onClick={() => setDeleteOpen(true)}
-          >
-            {copy.deleteConfirm}
-          </Button>
+          <div className="flex items-center gap-1">
+            {step !== "chat" ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-1.5"
+                aria-label={copy.assistantRailToggle}
+                onClick={toggleRail}
+              >
+                <Icon name="sparkles" size="sm" />
+                {copy.assistantRailTitle}
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label={copy.deleteSituationTitle}
+              onClick={() => setDeleteOpen(true)}
+            >
+              {copy.deleteConfirm}
+            </Button>
+          </div>
         </div>
         <WorkspaceStepProgress
           steps={WORKSPACE_STEPS}

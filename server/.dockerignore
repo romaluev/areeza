@@ -1,0 +1,5 @@
+# Build context is ./server. Keep it lean — exclude local-only cruft.
+.env
+.env.*
+*.md
+areeza

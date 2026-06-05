@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 2cm 1.5cm 2cm 3cm; }
+  * { box-sizing: border-box; }
+  html, body { padding: 0; margin: 0; }
+  body {
+    font-family: "Times New Roman", "Liberation Serif", Georgia, serif;
+    font-size: 13pt; line-height: 1.6; color: #111;
+  }
+  .court, .party {
+    margin-left: 45%; text-align: left; white-space: pre-line;
+  }
+  .party { margin-top: 8px; }
+  .title {
+    text-align: center; font-weight: bold; text-transform: uppercase;
+    letter-spacing: .5px; margin: 30px 0 20px; font-size: 14pt;
+  }
+  .body { text-align: justify; white-space: pre-line; margin: 12px 0; text-indent: 1.2em; }
+  .demand { white-space: pre-line; margin: 16px 0; }
+  .attachments { white-space: pre-line; margin: 16px 0; }
+  .footer { margin-top: 40px; white-space: pre-line; }
+  .meta { margin-top: 32px; font-size: 9pt; color: #8a8a8a; border-top: 1px solid #ddd; padding-top: 8px; }
+</style>
+</head>
+<body>
+{{range .Sections}}<div class="{{.Class}}">{{.HTML}}</div>
+{{end}}<div class="meta">{{.Disclaimer}}</div>
+</body>
+</html>

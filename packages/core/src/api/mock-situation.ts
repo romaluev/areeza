@@ -1,8 +1,10 @@
 import type {
   ExportResponse,
   IntakeEvent,
+  PipelineStep,
   Situation,
   SituationDocument,
+  SituationStatus,
   SituationSummaryCounts,
   UpdateDocumentRequest,
   UploadResponse,
@@ -209,6 +211,37 @@ export function acknowledgeAdvisory(situationId: string, advisoryId: string): Pr
     a.id === advisoryId ? { ...a, status: "acknowledged" as const } : a,
   );
   return Promise.resolve(persist({ ...s, advisories }));
+}
+
+/** Kanban drag: move an issue to a new pipeline {@link PipelineStep} (+ optional order). */
+export function moveIssue(
+  situationId: string,
+  issueId: string,
+  step: PipelineStep,
+  position?: number,
+): Promise<Situation> {
+  maybeThrowMockFailure("moveIssue");
+  const s = ensureSituation(situationId);
+  const issues = s.issues.map((i) =>
+    i.id === issueId
+      ? { ...i, step, ...(position !== undefined ? { position } : {}) }
+      : i,
+  );
+  return Promise.resolve(
+    persist({ ...s, issues, updatedAt: new Date().toISOString() }),
+  );
+}
+
+/** Kanban drag: move a situation to a new {@link SituationStatus} column. */
+export function moveSituation(
+  situationId: string,
+  status: SituationStatus,
+): Promise<Situation> {
+  maybeThrowMockFailure("moveSituation");
+  const s = ensureSituation(situationId);
+  return Promise.resolve(
+    persist({ ...s, status, updatedAt: new Date().toISOString() }),
+  );
 }
 
 export { DEMO_SITUATION_ID };

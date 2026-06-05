@@ -16,12 +16,21 @@ dist
 # IDE
 .idea/
 
+# Go build output
+server/areeza
+
+# Stray local env backups
+*.real-backup
+
 # Python ML services — venvs, caches, model weights, indexes (regenerable)
 **/__pycache__/
 *.pyc
 services/classifier/.venv/
 services/classifier/adapters*/
 services/classifier/areeza-router-*/
-services/classifier/artifacts/
+# Ignore the artifacts dir contents but keep the small Tier-1 bundle committed so
+# Coolify's git-based Docker build has it (the RAG index is rebuilt at build time).
+services/classifier/artifacts/*
+!services/classifier/artifacts/tier1.joblib
 services/rag/artifacts/
 data/classify_llm/

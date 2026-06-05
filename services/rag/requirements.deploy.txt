@@ -1,0 +1,8 @@
+# Production deps for the RAG retrieval service. Mirrors the embedding stack the
+# classifier uses (bge-m3 via sentence-transformers); index is built at image-build.
+sentence-transformers
+numpy
+sentencepiece
+fastapi
+uvicorn[standard]
+pydantic

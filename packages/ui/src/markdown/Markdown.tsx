@@ -51,7 +51,7 @@ export interface MarkdownProps {
    */
   renderMention?: (props: { type: string; id: string }) => React.ReactNode
   /**
-   * CDN hostname for file card detection (e.g. "notiky-static.copilothub.ai").
+   * CDN hostname for file card detection (e.g. "static.areeza.uz").
    * When provided, enables file card preprocessing and rendering.
    */
   cdnDomain?: string

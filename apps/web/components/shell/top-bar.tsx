@@ -3,9 +3,9 @@
 import type { TopBarConfig } from "./top-bar-store";
 
 /**
- * Shared top toolbar above the rounded main canvas (desktop). Matches
- * notiky's `paneHeader` treatment so it sits flush with the sidebar and
- * main panels. Title/icon on the left, page actions on the right.
+ * Shared top toolbar above the rounded main canvas (desktop). A `paneHeader`
+ * treatment so it sits flush with the sidebar and main panels. Title/icon on
+ * the left, page actions on the right.
  */
 export function TopBar({ icon, title, description, pill, actions }: TopBarConfig) {
   if (!title && !description && !actions && !icon && !pill) return null;

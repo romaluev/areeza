@@ -1,0 +1,7 @@
+# Keep the context lean; the index is rebuilt at image-build by ingest.py.
+.venv
+__pycache__
+*.pyc
+artifacts
+*.md
+.gitignore

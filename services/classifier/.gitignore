@@ -1,8 +1,10 @@
 .venv/
 __pycache__/
 *.pyc
-# trained artifacts are large / machine-specific — regenerate with train.py + lora
+# trained artifacts are large / machine-specific — regenerate with train.py + lora.
+# Exception: the tiny Tier-1 bundle is committed so the Docker/Coolify build has it.
 artifacts/*.joblib
+!artifacts/tier1.joblib
 artifacts/*.png
 adapters/
 areeza-router-*/

@@ -1,0 +1,30 @@
+# Root .dockerignore — applies to the web image build (context = repo root).
+# The Go/classifier/rag images use their own context dirs + their own .dockerignore.
+node_modules
+**/node_modules
+.next
+**/.next
+.turbo
+**/.turbo
+dist
+**/dist
+.git
+.github
+*.log
+.DS_Store
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Other services aren't part of the web build context.
+server
+services
+docs
+pitch
+deck
+.deck
+.prototype
+.claude
+.cursor
+.idea

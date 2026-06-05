@@ -1,15 +1,89 @@
-# TODO(real): wire pgx/sqlc once BE5 persistence lands.
+# Areeza — full production stack, deployed as ONE Coolify "Docker Compose" resource.
+#
+# Public services (web, api) are exposed via Coolify's SERVICE_FQDN_* magic, which
+# provisions the domain + TLS. classifier/rag/postgres stay on the internal compose
+# network only, reachable by service name (e.g. http://classifier:8081).
+#
+# Set these in Coolify (Environment Variables) — the only manual values:
+#   ANTHROPIC_API_KEY   (secret)   — Claude for intake/draft
+#   POSTGRES_PASSWORD   (secret)
+#   PUBLIC_WEB_URL      e.g. https://areeza.uz       — used for CORS
+#   PUBLIC_API_URL      e.g. https://api.areeza.uz   — baked into the web build
+#   CLAUDE_MODEL        (optional, default claude-sonnet-4-6)
+# Then attach your real domains to the `web` and `api` services in the Coolify UI.
+#
+# Local use: `docker compose up postgres` for just the dev DB, or
+# `docker compose up --build` (with the vars above) for the whole stack.
+
 services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_MODE: real
+        NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8080}
+    environment:
+      - SERVICE_FQDN_WEB_3000           # Coolify: expose web + issue TLS (map your domain in the UI)
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_FQDN_API_8080           # Coolify: expose api + issue TLS (map api.<domain> in the UI)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-sonnet-4-6}
+      - CORS_ALLOWED_ORIGINS=${PUBLIC_WEB_URL:-http://localhost:3000}
+      - CLASSIFIER_API_URL=http://classifier:8081
+      - RAG_API_URL=http://rag:8082
+      # Exposed for when DB persistence lands — the Go server is in-memory today.
+      - DATABASE_URL=postgres://areeza:${POSTGRES_PASSWORD:-areeza}@postgres:5432/areeza?sslmode=disable
+    depends_on:
+      classifier:
+        condition: service_started
+      rag:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  classifier:
+    build:
+      context: ./services/classifier
+      dockerfile: Dockerfile
+    expose:
+      - "8081"
+    restart: unless-stopped
+
+  rag:
+    build:
+      context: ./services/rag
+      dockerfile: Dockerfile
+    expose:
+      - "8082"
+    restart: unless-stopped
+
   postgres:
     image: pgvector/pgvector:pg17
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     environment:
       POSTGRES_USER: areeza
-      POSTGRES_PASSWORD: areeza
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-areeza}
       POSTGRES_DB: areeza
     volumes:
       - areeza_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U areeza -d areeza"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
 volumes:
   areeza_pg:

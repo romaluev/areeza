@@ -5,12 +5,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api, isMockFailureError, persistIntakeSession } from "@areeza/core/api";
 import { CATEGORIES } from "@areeza/core/legal";
-import type { CategoryCode } from "@areeza/core/types";
+import type { CategoryCode, LegalArticle } from "@areeza/core/types";
 import { withConfidenceLevel } from "@areeza/core/types";
+import { Icon } from "@areeza/ui/icons";
 import { MessageList } from "./message-list";
 import { PromptBox } from "./prompt-box";
+import { QuestionBlock } from "./question-block";
+import { SourcesCard } from "./sources-card";
+import { SuggestedQuestions } from "./suggested-questions";
 import { ClassificationBanner } from "./classification-banner";
 import { FactsPanel } from "@/components/facts/facts-panel";
+import { GUIDED_PROMPTS } from "@/lib/intake-copy";
+import { traceRowFromEvent } from "@/lib/intake-trace";
 import {
   getIntakeStore,
   NEW_CASE_INTAKE_SURFACE,
@@ -37,6 +43,14 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
   const [guardHint, setGuardHint] = useState<string | null>(null);
   const [awaitingCategory, setAwaitingCategory] = useState(false);
   const [pendingCaseId, setPendingCaseId] = useState<string | null>(null);
+  const [questionOptions, setQuestionOptions] = useState<{
+    question: string;
+    options: string[];
+  } | null>(null);
+  const [sources, setSources] = useState<{
+    articles: LegalArticle[];
+    prompt: string;
+  } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const submittingRef = useRef(false);
   const lastRunTextRef = useRef<string | null>(null);
@@ -46,6 +60,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
   const {
     messages,
     facts,
+    traces,
     streaming,
     assistantBuffer,
     classification,
@@ -53,6 +68,8 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
     appendAssistant,
     flushAssistant,
     addFact,
+    addTrace,
+    resetTraces,
     setClassification,
     setStreaming,
     reset,
@@ -156,6 +173,9 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
       setGuardHint(null);
       setAwaitingCategory(false);
       setPendingCaseId(null);
+      setQuestionOptions(null);
+      setSources(null);
+      resetTraces();
       lastRunTextRef.current = text;
 
       setStreaming(true);
@@ -175,6 +195,8 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
           text,
           abortRef.current.signal,
         )) {
+          const row = traceRowFromEvent(event, locale);
+          if (row) addTrace(row);
           switch (event.type) {
             case "assistant_delta":
               appendAssistant(event.delta);
@@ -187,9 +209,28 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
                 content: event.question,
                 createdAt: new Date().toISOString(),
               });
+              if (event.options?.length) {
+                setQuestionOptions({
+                  question: event.question,
+                  options: event.options,
+                });
+              }
               break;
             case "fact":
               addFact(event.fact);
+              break;
+            case "sources_proposed":
+              flushAssistant();
+              setSources({ articles: event.articles, prompt: event.prompt });
+              break;
+            case "error":
+              flushAssistant();
+              setStreaming(false);
+              toast.error(
+                locale === "ru"
+                  ? `Ошибка: ${event.message}`
+                  : `Xato: ${event.message}`,
+              );
               break;
             case "classified":
               flushAssistant();
@@ -233,10 +274,12 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
     [
       addFact,
       addMessage,
+      addTrace,
       appendAssistant,
       flushAssistant,
       finishCase,
       locale,
+      resetTraces,
       setClassification,
       setStreaming,
     ],
@@ -312,20 +355,74 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
   const sendDisabled = !guard.ok || streaming;
   const showHero = messages.length === 0 && !streaming && !assistantBuffer;
 
+  const composer = (
+    <PromptBox
+      heroLayout={showHero}
+      value={input}
+      onChange={(v) => {
+        setInput(v);
+        if (guardHint) setGuardHint(null);
+      }}
+      onSend={handleSend}
+      disabled={streaming}
+      sendDisabled={sendDisabled}
+      locale={locale}
+      guardHint={guardHint}
+      pending={streaming}
+      onStop={stopStreaming}
+    />
+  );
+
+  // Clean, centered "blank window" start screen — a heading and the composer in the
+  // middle, with example prompts below (the new-situation first step).
+  if (showHero) {
+    return (
+      <div className="flex h-[calc(100dvh-0px)] flex-col p-4 md:p-6">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-accent/30 text-accent-foreground">
+              <Icon name="scale" size="lg" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                {locale === "ru" ? "Что произошло?" : "Nima bo'ldi?"}
+              </h1>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {locale === "ru"
+                  ? "Опишите ситуацию простыми словами — Areeza задаст один уточняющий вопрос за раз и подготовит документ для суда."
+                  : "Muammoingizni oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi va sud uchun hujjat tayyorlaydi."}
+              </p>
+            </div>
+            <div className="w-full text-left">{composer}</div>
+            <SuggestedQuestions
+              prompts={GUIDED_PROMPTS[locale]}
+              onPick={handleSuggestedPick}
+              disabled={streaming}
+              title=""
+              className="w-full max-w-lg"
+            />
+          </div>
+        </div>
+        <p className="text-center text-[11px] text-muted-foreground">
+          {COMPLIANCE_NOTE[locale]}
+        </p>
+      </div>
+    );
+  }
+
+  // Conversation layout — transcript + facts rail.
   return (
     <div className="flex h-[calc(100dvh-0px)] flex-col gap-4 p-4 md:p-6">
-      {!showHero ? (
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">
-            {locale === "ru" ? "Что произошло?" : "Nima bo'ldi?"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {locale === "ru"
-              ? "Опишите проблему простыми словами — Areeza задаёт один вопрос за раз."
-              : "Muammoingizni oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi."}
-          </p>
-        </div>
-      ) : null}
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">
+          {locale === "ru" ? "Что произошло?" : "Nima bo'ldi?"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {locale === "ru"
+            ? "Опишите проблему простыми словами — Areeza задаёт один вопрос за раз."
+            : "Muammoingizni oddiy tilda yozing — Areeza bir vaqtning o'zida bitta savol beradi."}
+        </p>
+      </div>
 
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_280px]">
         <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-col gap-3 lg:max-w-none">
@@ -334,11 +431,39 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
               messages={messages}
               streaming={streaming}
               assistantBuffer={assistantBuffer}
+              traces={traces}
               locale={locale}
               onSuggestedPick={handleSuggestedPick}
               streamDisabled={streaming}
             />
           </div>
+
+          {sources ? (
+            <SourcesCard
+              articles={sources.articles}
+              prompt={sources.prompt}
+              disabled={streaming}
+              locale={locale}
+              onConfirm={() => {
+                setSources(null);
+                void runIntake(locale === "ru" ? "Подтверждаю" : "Tasdiqlayman");
+              }}
+              onEdit={() => setSources(null)}
+            />
+          ) : null}
+
+          {questionOptions ? (
+            <QuestionBlock
+              question={questionOptions.question}
+              options={questionOptions.options}
+              onAnswer={(text) => {
+                setQuestionOptions(null);
+                void runIntake(text);
+              }}
+              disabled={streaming}
+              locale={locale}
+            />
+          ) : null}
 
           {classification && (awaitingCategory || classification.needsCategoryPick) ? (
             <ClassificationBanner
@@ -360,21 +485,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
             />
           ) : null}
 
-          <PromptBox
-            heroLayout={showHero}
-            value={input}
-            onChange={(v) => {
-              setInput(v);
-              if (guardHint) setGuardHint(null);
-            }}
-            onSend={handleSend}
-            disabled={streaming}
-            sendDisabled={sendDisabled}
-            locale={locale}
-            guardHint={guardHint}
-            pending={streaming}
-            onStop={stopStreaming}
-          />
+          {composer}
         </div>
         <FactsPanel facts={facts} />
       </div>

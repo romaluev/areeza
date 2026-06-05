@@ -32,7 +32,7 @@ function toFileCardHtml(filename: string, url: string): string {
 /**
  * Check if a URL points to our upload CDN.
  *
- * Uses exact hostname match against `cdnDomain` (e.g. "notiky-static.copilothub.ai"),
+ * Uses exact hostname match against `cdnDomain` (e.g. "static.areeza.uz"),
  * and also matches any `.amazonaws.com` subdomain as a fallback for direct S3 URLs.
  */
 export function isCdnUrl(url: string, cdnDomain: string): boolean {
@@ -63,7 +63,7 @@ export function isFileCardUrl(url: string, cdnDomain: string): boolean {
  * lines. Only standalone lines are matched — inline links are left untouched.
  *
  * @param markdown  Raw markdown string
- * @param cdnDomain CDN hostname for legacy link detection (e.g. "notiky-static.copilothub.ai")
+ * @param cdnDomain CDN hostname for legacy link detection (e.g. "static.areeza.uz")
  */
 export function preprocessFileCards(markdown: string, cdnDomain: string): string {
   return markdown

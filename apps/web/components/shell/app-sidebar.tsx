@@ -27,6 +27,7 @@ import { navLabelWeight } from "@areeza/ui/lib/nav-motion";
 import { uiCopy } from "@/lib/copy";
 import { useAppLocale } from "@/lib/use-app-locale";
 import { useAppStore } from "@/lib/use-app-store";
+import { useSettingsStore } from "@/lib/use-settings-store";
 import { LocaleToggle } from "./locale-toggle";
 
 type NavItem = {
@@ -47,6 +48,13 @@ function buildNav(copy: ReturnType<typeof uiCopy>): NavItem[] {
       match: (p) =>
         p === "/situations" ||
         (p.startsWith("/situations/") && !p.startsWith("/situations/new")),
+    },
+    {
+      id: "board",
+      href: "/board",
+      label: copy.boardLink,
+      icon: "board",
+      match: (p) => p.startsWith("/board"),
     },
   ];
 }
@@ -105,7 +113,7 @@ export function AppSidebar({
     setTheme(next);
   };
 
-  // Global "N" shortcut → new situation (matches notiky's New Conversation hint).
+  // Global "N" shortcut → new situation.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -235,6 +243,19 @@ export function AppSidebar({
           <Icon name={themeIcon} size="sm" />
           <span className="group-data-[collapsible=icon]:hidden">
             {themeMounted ? themeLabel : "Mavzu"}
+          </span>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-muted-foreground group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
+          onClick={() => useSettingsStore.getState().setOpen(true)}
+          aria-label={copy.settingsOpen}
+        >
+          <Icon name="settings" size="sm" />
+          <span className="group-data-[collapsible=icon]:hidden">
+            {copy.settingsOpen}
           </span>
         </Button>
       </SidebarFooter>

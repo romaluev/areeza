@@ -1,0 +1,12 @@
+# Production (Linux/x86) deps for the Tier-1 router only.
+# Tier-2 (mlx-lm) is Apple-Silicon only and is intentionally excluded — the Go
+# routing chain degrades Tier-1 -> Claude backup when Tier-2 is unavailable.
+# Training/eval-only deps (matplotlib, anthropic, httpx) are also dropped.
+sentence-transformers
+scikit-learn
+joblib
+numpy
+sentencepiece
+fastapi
+uvicorn[standard]
+pydantic

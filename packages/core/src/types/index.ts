@@ -202,8 +202,19 @@ export const issueSchema = z.object({
   route: legalRouteSchema.optional(),
   step: pipelineStepSchema,
   status: caseStatusSchema,
+  /** Manual board ordering (float between neighbors). Optional — defaults by severity/title. */
+  position: z.number().optional(),
 });
 export type Issue = z.infer<typeof issueSchema>;
+
+/**
+ * An {@link Issue} flattened out of its parent situation for the cross-case kanban board.
+ * Derived client-side from {@link Situation.issues}; never persisted in this shape.
+ */
+export type BoardIssue = Issue & {
+  situationId: string;
+  situationTitle: string;
+};
 
 export const partyRoleSchema = z.enum([
   "plaintiff",
@@ -382,8 +393,31 @@ export type Situation = z.infer<typeof situationSchema>;
 export const situationSummaryCountsSchema = caseSummaryCountsSchema;
 export type SituationSummaryCounts = CaseSummaryCounts;
 
+/** One retrieved legal-grounding chunk (matches server legal.Article / RAG service). */
+export const legalArticleSchema = z.object({
+  code: z.string(),
+  source: z.string(),
+  article: z.string().optional().default(""),
+  title: z.string(),
+  text: z.string(),
+  url: z.string(),
+  score: z.number(),
+  verbatim_verified: z.boolean().optional(),
+});
+export type LegalArticle = z.infer<typeof legalArticleSchema>;
+
 export const intakeEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("assistant_delta"), delta: z.string() }),
+  z.object({ type: z.literal("error"), message: z.string() }),
+  z.object({
+    type: z.literal("sources_proposed"),
+    articles: z.array(legalArticleSchema),
+    prompt: z.string(),
+  }),
+  z.object({
+    type: z.literal("awaiting_confirmation"),
+    kind: z.literal("sources"),
+  }),
   z.object({
     type: z.literal("question"),
     question: z.string(),

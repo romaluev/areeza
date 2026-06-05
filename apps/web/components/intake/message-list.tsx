@@ -6,6 +6,8 @@ import { ThinkingIndicator } from "@areeza/ui/components/fluid/thinking-indicato
 import { cn } from "@areeza/ui/lib/utils";
 import { MessageBubble } from "./message-bubble";
 import { IntakeHero } from "./intake-hero";
+import { ThinkingTrace } from "./thinking-trace";
+import type { IntakeTrace } from "@/lib/intake-trace";
 
 const THINKING_WORDS_UZ = ["Tahlil qilinmoqda", "Faktlar ajratilmoqda", "Yo'nalish aniqlanmoqda"];
 const THINKING_WORDS_RU = ["Анализ", "Извлечение фактов", "Определение маршрута"];
@@ -14,6 +16,7 @@ export function MessageList({
   messages,
   streaming,
   assistantBuffer,
+  traces,
   locale,
   onSuggestedPick,
   streamDisabled,
@@ -23,6 +26,7 @@ export function MessageList({
   messages: CaseMessage[];
   streaming?: boolean;
   assistantBuffer?: string;
+  traces?: IntakeTrace[];
   locale?: "uz" | "ru";
   onSuggestedPick?: (text: string) => void;
   streamDisabled?: boolean;
@@ -37,7 +41,7 @@ export function MessageList({
     <ChatScrollArea
       className={cn("h-full min-h-[200px] flex-1 pr-2", className)}
       innerClassName="gap-3 pb-20"
-      stickToBottom={{ deps: [messages, streaming, assistantBuffer] }}
+      stickToBottom={{ deps: [messages, streaming, assistantBuffer, traces] }}
     >
       {isEmpty && onSuggestedPick ? (
         <IntakeHero
@@ -66,6 +70,9 @@ export function MessageList({
         <ThinkingIndicator
           words={lang === "ru" ? THINKING_WORDS_RU : THINKING_WORDS_UZ}
         />
+      ) : null}
+      {traces && traces.length > 0 ? (
+        <ThinkingTrace traces={traces} streaming={streaming} locale={lang} />
       ) : null}
     </ChatScrollArea>
   );

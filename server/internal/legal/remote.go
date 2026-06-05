@@ -9,36 +9,26 @@ import (
 	"time"
 )
 
-// categoryLabels mirrors the Uzbek labels used by the local keyword router so the
-// remote (trained) classifier produces an identical Classification shape.
-var categoryLabels = map[string]string{
-	"labor.wage_recovery":  "Mehnat nizosi — ish haqini undirish",
-	"labor.reinstatement":  "Mehnat nizosi — ishga qaytarish",
-	"debt.recovery":        "Qarzni undirish",
-	"consumer.dispute":     "Iste'molchi nizosi",
-	"family.child_support": "Oila nizosi — aliment",
-	"other":                "Boshqa turdagi nizo",
-}
-
 type remoteClassifyResp struct {
 	CategoryCode string  `json:"categoryCode"`
 	Confidence   float64 `json:"confidence"`
 	Track        *string `json:"track"`
+	Rationale    string  `json:"rationale"`
+	Engine       string  `json:"engine"`
 }
 
-// ClassifyRemote calls the trained classifier service (CLASSIFIER_API_URL, e.g. the
-// on-device bge-m3 router) and maps its result into the Classification contract.
-// Returns ok=false on any error/timeout so the caller falls back to the local keyword
-// router. Non-breaking: a no-op when CLASSIFIER_API_URL is unset.
-func ClassifyRemote(text string) (Classification, bool) {
-	base := os.Getenv("CLASSIFIER_API_URL")
-	if base == "" {
+// classifyAt calls one classifier service tier at baseURL (e.g. the on-device bge-m3
+// router on :8081 or the Qwen-LoRA tier on :8083) and maps its result into the shared
+// Classification contract via Compose. Returns ok=false on any error/timeout so the
+// chain can escalate to the next tier. Does NOT set ConfidenceLevel — the chain does.
+func classifyAt(ctx context.Context, baseURL, text string) (Classification, bool) {
+	if baseURL == "" {
 		return Classification{}, false
 	}
 	body, _ := json.Marshal(map[string]string{"text": text})
-	ctx, cancel := context.WithTimeout(context.Background(), 2500*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/classify", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+"/classify", bytes.NewReader(body))
 	if err != nil {
 		return Classification{}, false
 	}
@@ -56,32 +46,19 @@ func ClassifyRemote(text string) (Classification, bool) {
 		return Classification{}, false
 	}
 
-	// Trained classifier covers the original 6 codes; platform keyword router handles more.
-	categoryCode := rc.CategoryCode
-	label := categoryLabels[categoryCode]
-	if label == "" {
-		label = categoryLabels["other"]
-		categoryCode = "other"
-	}
-	track, trackLabel := "claim", "Da'vo tartibi"
-	rationale := "Tasniflagich (bge-m3) natijasi."
+	track := ""
 	if rc.Track != nil {
-		switch *rc.Track {
-		case "order":
-			track, trackLabel = "court_order", "Sud buyrug'i tartibi (nizosiz)"
-			rationale = "Hisoblangan va nizosiz qarz — sud buyrug'i tartibida (FPK 170–178) yuritiladi."
-		case "claim":
-			track, trackLabel = "claim", "Da'vo tartibi (nizoli)"
-			rationale = "Summa yoki holatlar nizoli — to'liq da'vo tartibida (FPK 189–191) yuritiladi."
-		}
+		track = *rc.Track
 	}
+	return Compose(rc.CategoryCode, rc.Confidence, track, rc.Rationale), true
+}
 
-	return withLevel(Classification{
-		CategoryCode:   categoryCode,
-		Label:          label,
-		Confidence:     rc.Confidence,
-		Track:          track,
-		TrackLabel:     trackLabel,
-		TrackRationale: rationale,
-	}), true
+// ClassifyRemote is the legacy single-tier helper (reads CLASSIFIER_API_URL). Kept as
+// a thin back-compat wrapper; the live path uses Classifier.Classify (classify_chain.go).
+func ClassifyRemote(text string) (Classification, bool) {
+	c, ok := classifyAt(context.Background(), os.Getenv("CLASSIFIER_API_URL"), text)
+	if !ok {
+		return Classification{}, false
+	}
+	return withLevel(c), true
 }

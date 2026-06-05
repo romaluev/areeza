@@ -103,9 +103,11 @@ export function SituationsHome() {
         <ListRowGroup>
           {items.map((s) => {
             const updated = formatUpdated(s.updatedAt, locale);
+            const docsReady = s.readiness?.documentsReady ?? 0;
+            const docsTotal = s.readiness?.documentsTotal ?? 0;
             const ariaLabel = `${copy.openSituation(s.title)}. ${copy.documentsReady(
-              s.readiness.documentsReady,
-              s.readiness.documentsTotal,
+              docsReady,
+              docsTotal,
             )}. ${copy.updatedAt(updated)}`;
             return (
               <Link
@@ -117,8 +119,8 @@ export function SituationsHome() {
                 <ListRow
                   title={s.title}
                   subtitle={`${copy.documentsReady(
-                    s.readiness.documentsReady,
-                    s.readiness.documentsTotal,
+                    docsReady,
+                    docsTotal,
                   )} · ${copy.updatedAt(updated)}`}
                   trailing={
                     <StatusPill tone={s.status === "ready" ? "success" : "primary"}>

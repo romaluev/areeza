@@ -1,6 +1,6 @@
-# Areeza — UI Guide (notiky-ported design system)
+# Areeza — UI Guide (design system)
 
-> Product UI is ported from **notiky-app** presentational layers into `@areeza/ui` + `apps/web`, wired to `@areeza/core` types only. Legal documents still use **EB Garamond** (`--font-legal` / `--font-serif`).
+> Product UI is ported from a proven reference app's presentational layers into `@areeza/ui` + `apps/web`, wired to `@areeza/core` types only. Legal documents still use **EB Garamond** (`--font-legal` / `--font-serif`).
 
 ## 1. Product feel
 
@@ -29,7 +29,7 @@ Warm cream light / neutral gray-violet dark. **Forest-green brand** (`--brand` /
 
 **Radius (single source of truth):** the full `--radius-*` ladder (`xs/sm/md/lg/xl/2xl/3xl/pill`) lives in a **non-inline `@theme`** block in `tokens.css`, so the custom properties are emitted to `:root` (needed by `var(--radius-*)` utilities — `raisedSurface`, `shellPanel`, `floatingSurface`, FF `shape-context`) **and** the `rounded-*` utilities are generated. ⚠️ Never re-declare `--radius-*` inside an app-level `@theme inline` — a self-referential `--radius-2xl: var(--radius-2xl)` (or an `inline` radius block) collapses every radius to **0px** (the whole UI goes square). Container language is unified at **`radius-2xl` (20px)**: pane, cards (`card.tsx`), `elevatedCard`/`shellPanel`/`floatingSurface`/`raisedSurface`, and the FF `shape.container`/`bg`. Chips/toggles stay `pill`. Do not introduce one-off `rounded-[Npx]` literals.
 
-**Shape preset (FF):** `lib/ff/shape-context.tsx` exposes an element-keyed `useShape()` (`pill` | `rounded`) consumed by the vendored FF components. `app-shell.tsx` wraps the tree in `FfShapeProvider shape={shape === "pill" ? "pill" : "rounded"}`, driven by the persisted `shape` pref (`use-app-store.ts`, default **`pill`** — matches Notiky's app root). This is distinct from `lib/shape-context.tsx` (`{ preset, density }`), which remains for surface-aware radius.
+**Shape preset (FF):** `lib/ff/shape-context.tsx` exposes an element-keyed `useShape()` (`pill` | `rounded`) consumed by the vendored FF components. `app-shell.tsx` wraps the tree in `FfShapeProvider shape={shape === "pill" ? "pill" : "rounded"}`, driven by the persisted `shape` pref (`use-app-store.ts`, default **`pill`**). This is distinct from `lib/shape-context.tsx` (`{ preset, density }`), which remains for surface-aware radius.
 
 **Raw `[var(--…)]` policy:** primitives use semantic Tailwind (`border-input`, `bg-card`, `text-muted-foreground`, etc.). Residual raw vars in `@areeza/ui` are mostly layout `length:` tokens (progress, table, sonner). **`apps/web/components` should use semantic classes only** — verified zero `[var(--…)]` in app components after visual QA detox pass.
 
