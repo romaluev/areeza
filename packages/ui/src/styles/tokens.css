@@ -177,8 +177,8 @@
     --popover: oklch(0.985 0.014 96);
     --popover-foreground: var(--ink);
 
-    /* Primary = brand green in light (CTAs, links, selection chrome) */
-    --brand: oklch(0.438 0.0802 171.03);
+    /* Primary = justice navy in light (CTAs, links, selection chrome) — pitch deck #0e1b33 */
+    --brand: oklch(0.2246 0.0505 261.69);
     --brand-foreground: var(--cream);
     --primary: var(--brand);
     --primary-foreground: var(--brand-foreground);
@@ -224,17 +224,17 @@
     --surface-7: color-mix(in oklab, var(--background) 28%, var(--popover) 72%);
     --surface-8: var(--popover);
 
-    --brand-gold: oklch(0.8195 0.151 89.17);
-    /* Solid deep teal for hero / CTA cards (richer than color-mix on cream canvas) */
-    --brand-deep: oklch(0.3 0.06 165);
+    --brand-gold: oklch(0.7969 0.1432 90.32);
+    /* Solid deep navy for hero / CTA cards (pitch deck #0a1426) */
+    --brand-deep: oklch(0.1925 0.0396 261.40);
 
-    /* Semantic */
-    --success: oklch(0.5 0.1 171);
-    --success-bg: oklch(0.95 0.04 171);
+    /* Semantic — green success, coral danger (pitch deck #57b894 / #d9614a) */
+    --success: oklch(0.58 0.11 166.57);
+    --success-bg: oklch(0.95 0.04 166);
     --warn: var(--brand-gold);
     --warn-bg: oklch(0.97 0.04 85);
-    --danger: oklch(0.577 0.245 27);
-    --danger-bg: oklch(0.96 0.04 25);
+    --danger: oklch(0.57 0.16 32.56);
+    --danger-bg: oklch(0.96 0.05 32);
     --warning: var(--brand-gold);
     --info: oklch(0.58 0.18 250);
     --priority: oklch(0.65 0.18 50);
