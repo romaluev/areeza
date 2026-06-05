@@ -18,9 +18,11 @@ export function SituationIntakePage({ seedText }: { seedText?: string }) {
   return (
     <div className="flex h-[calc(100vh-var(--header-h,0px))] min-h-0 flex-col lg:h-full">
       <FirstRunOnboarding onPickPrompt={setOnboardingSeed} />
-      <header className="shrink-0 border-b border-border px-4 py-3 lg:px-6">
-        <h1 className="text-lg font-semibold text-foreground">{copy.newSituationPageTitle}</h1>
-        <p className="text-xs text-muted-foreground">{copy.newSituationPageSubtitle}</p>
+      <header className="shrink-0 border-b border-border/60 px-6 py-4">
+        <div className="mx-auto w-full max-w-3xl">
+          <h1 className="text-lg font-semibold text-foreground">{copy.newSituationPageTitle}</h1>
+          <p className="text-xs text-muted-foreground">{copy.newSituationPageSubtitle}</p>
+        </div>
       </header>
       <div className="min-h-0 flex-1">
         <SituationIntakeRail

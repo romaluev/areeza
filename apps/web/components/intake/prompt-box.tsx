@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Icon } from "@areeza/ui/icons";
-import { Segmented } from "@areeza/ui/components/segmented";
 import { cn } from "@areeza/ui/lib/utils";
 import { INTAKE_MAX_CHARS } from "@/lib/intake-guards";
 import { ComposerIconButton } from "./composer-icon-button";
@@ -14,9 +13,7 @@ type Props = {
   disabled?: boolean;
   sendDisabled?: boolean;
   locale: "uz" | "ru";
-  onLocaleChange: (l: "uz" | "ru") => void;
   guardHint?: string | null;
-  charCount?: number;
   heroLayout?: boolean;
   pending?: boolean;
   onStop?: () => void;
@@ -29,9 +26,7 @@ export function PromptBox({
   disabled,
   sendDisabled,
   locale,
-  onLocaleChange,
   guardHint,
-  charCount,
   heroLayout,
   pending,
   onStop,
@@ -39,8 +34,7 @@ export function PromptBox({
   const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [compact, setCompact] = useState(false);
-  const count = charCount ?? value.length;
-  const overMax = count > INTAKE_MAX_CHARS;
+  const overMax = value.length > INTAKE_MAX_CHARS;
   const hasContent = value.trim().length > 0;
 
   useEffect(() => {
@@ -87,7 +81,7 @@ export function PromptBox({
       className={cn(
         "raisedSurface flex w-full flex-col border transition-colors duration-200",
         "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 motion-reduce:transition-none",
-        heroLayout ? "p-3" : compact ? "p-2" : "p-2.5",
+        compact ? "p-2" : "p-2.5",
       )}
     >
       <textarea
@@ -96,7 +90,7 @@ export function PromptBox({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        rows={heroLayout ? 2 : 1}
+        rows={1}
         disabled={disabled || pending}
         maxLength={INTAKE_MAX_CHARS}
         aria-label={textareaLabel}
@@ -114,25 +108,9 @@ export function PromptBox({
           </p>
         ) : null}
         <div className="flex items-center justify-between gap-2">
-        <div className={cn("flex items-center", compact ? "gap-1" : "gap-2")}>
-          <Segmented
-            value={locale}
-            onValueChange={(v) => onLocaleChange(v as "uz" | "ru")}
-            layoutId="intake-locale"
-            aria-label={locale === "ru" ? "Язык" : "Til"}
-            options={[
-              { value: "uz", label: "UZ" },
-              { value: "ru", label: "RU" },
-            ]}
-          />
-          <Icon name="languages" size={14} className="text-muted-foreground" />
-          <span
-            className={cn(
-              "text-[11px] tabular-nums text-muted-foreground",
-              overMax && "text-destructive",
-            )}
-          >
-            {count}/{INTAKE_MAX_CHARS}
+        <div className="flex min-w-0 items-center">
+          <span className="truncate px-1.5 text-[11px] text-muted-foreground">
+            {locale === "ru" ? "Enter — отправить" : "Enter — yuborish"}
           </span>
         </div>
         <div className={cn("ml-auto flex shrink-0 items-center", compact ? "gap-0.5" : "gap-1")}>

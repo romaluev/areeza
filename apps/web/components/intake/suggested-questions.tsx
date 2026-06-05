@@ -1,7 +1,11 @@
 "use client";
 
-import { Icon } from "@areeza/ui/icons";
+import { useCallback, useRef } from "react";
 import { cn } from "@areeza/ui/lib/utils";
+import {
+  AskUserQuestions,
+  type AskUserAnswer,
+} from "@areeza/ui/components/fluid/ask-user-questions";
 
 type Prompt = { id: string; text: string };
 
@@ -11,7 +15,12 @@ type Props = {
   disabled?: boolean;
   className?: string;
   layout?: "grid" | "stack";
+  /** Question title shown above the options. */
+  title?: string;
+  locale?: "uz" | "ru";
 };
+
+const QUESTION_ID = "suggested";
 
 export function SuggestedQuestions({
   prompts,
@@ -19,35 +28,50 @@ export function SuggestedQuestions({
   disabled,
   className,
   layout = "grid",
+  title,
+  locale = "uz",
 }: Props) {
+  const pickedRef = useRef(false);
+
+  const resolvedTitle =
+    title ?? (locale === "ru" ? "Выберите вариант" : "Variantni tanlang");
+
+  const handleAnswers = useCallback(
+    (answers: Record<string, AskUserAnswer>) => {
+      if (pickedRef.current) return;
+      const answer = answers[QUESTION_ID];
+      const selectedId = answer?.selectedIds?.[0];
+      const other = answer?.otherText?.trim();
+      if (selectedId) {
+        const prompt = prompts.find((p) => p.id === selectedId);
+        if (prompt) {
+          pickedRef.current = true;
+          onPick(prompt.text);
+        }
+      } else if (other) {
+        pickedRef.current = true;
+        onPick(other);
+      }
+    },
+    [onPick, prompts],
+  );
+
   return (
-    <div
-      className={cn(
-        layout === "grid" ? "grid gap-2 sm:grid-cols-2" : "flex flex-col gap-2",
-        className,
-      )}
-    >
-      {prompts.map((p) => (
-        <button
-          key={p.id}
-          type="button"
-          disabled={disabled}
-          onClick={() => onPick(p.text)}
-          className={cn(
-            "group flex items-start gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-left text-sm text-foreground",
-            "transition-colors hover:border-primary/30 hover:bg-muted/50",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            "disabled:pointer-events-none disabled:opacity-50",
-          )}
-        >
-          <Icon
-            name="sparkles"
-            size="sm"
-            className="mt-0.5 shrink-0 text-accent-foreground opacity-70 group-hover:opacity-100"
-          />
-          <span className="leading-snug">{p.text}</span>
-        </button>
-      ))}
+    <div className={cn(disabled && "pointer-events-none opacity-60", className)}>
+      <AskUserQuestions
+        className="max-w-full"
+        showHeader={false}
+        questions={[
+          {
+            id: QUESTION_ID,
+            title: resolvedTitle,
+            skippable: false,
+            layout: layout === "stack" ? "stacked" : "inline",
+            options: prompts.map((p) => ({ id: p.id, title: p.text })),
+          },
+        ]}
+        onAnswersChange={handleAnswers}
+      />
     </div>
   );
 }

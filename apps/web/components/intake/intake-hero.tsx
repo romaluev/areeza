@@ -50,6 +50,7 @@ export function IntakeHero({ locale, onPick, disabled, variant = "full" }: Props
         prompts={prompts}
         onPick={onPick}
         disabled={disabled}
+        title=""
         className="w-full max-w-lg"
       />
     </div>

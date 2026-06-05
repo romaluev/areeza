@@ -17,6 +17,7 @@ import {
   useIntakeStore,
 } from "@/lib/use-intake-store";
 import { COMPLIANCE_NOTE } from "@/lib/copy";
+import { useAppLocale } from "@/lib/use-app-locale";
 import {
   guardMessage,
   validateIntakeInput,
@@ -41,14 +42,13 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
   const lastRunTextRef = useRef<string | null>(null);
   const draftRestoredRef = useRef(false);
 
+  const { locale } = useAppLocale();
   const {
-    locale,
     messages,
     facts,
     streaming,
     assistantBuffer,
     classification,
-    setLocale,
     addMessage,
     appendAssistant,
     flushAssistant,
@@ -371,9 +371,7 @@ export function IntakeFlow({ seedText }: { seedText?: string }) {
             disabled={streaming}
             sendDisabled={sendDisabled}
             locale={locale}
-            onLocaleChange={setLocale}
             guardHint={guardHint}
-            charCount={input.length}
             pending={streaming}
             onStop={stopStreaming}
           />

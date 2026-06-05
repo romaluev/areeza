@@ -14,6 +14,7 @@ import {
   situationIntakeSurface,
   useIntakeStore,
 } from "@/lib/use-intake-store";
+import { useAppLocale } from "@/lib/use-app-locale";
 import { validateIntakeInput } from "@/lib/intake-guards";
 import { showRetryToast } from "@/lib/retry-toast";
 
@@ -34,6 +35,7 @@ export function SituationIntakeRail({
   const seeded = useRef(false);
   const lastRunTextRef = useRef<string | null>(null);
   const [input, setInput] = useState("");
+  const { locale } = useAppLocale();
   const {
     messages,
     facts,
@@ -44,8 +46,6 @@ export function SituationIntakeRail({
     flushAssistant,
     streaming,
     setStreaming,
-    locale,
-    setLocale,
     reset,
   } = useIntakeStore(surface);
 
@@ -151,18 +151,20 @@ export function SituationIntakeRail({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="min-h-0 flex-1 overflow-hidden">
-        <MessageList
-          messages={displayMessages}
-          locale={locale}
-          streaming={streaming}
-          assistantBuffer={assistantBuffer}
-          onSuggestedPick={showEmptyHero ? handleSuggestedPick : undefined}
-          streamDisabled={streaming}
-          heroVariant="chips-only"
-        />
+        <div className="mx-auto h-full w-full max-w-3xl px-4 lg:px-6">
+          <MessageList
+            messages={displayMessages}
+            locale={locale}
+            streaming={streaming}
+            assistantBuffer={assistantBuffer}
+            onSuggestedPick={showEmptyHero ? handleSuggestedPick : undefined}
+            streamDisabled={streaming}
+            heroVariant="chips-only"
+          />
+        </div>
       </div>
       {confirmOptions ? (
-        <div className="border-t border-border p-3">
+        <div className="mx-auto w-full max-w-3xl px-4 pb-2 lg:px-6">
           <SuggestedQuestions
             prompts={confirmOptions.map((text, i) => ({
               id: `confirm-${i}`,
@@ -178,22 +180,23 @@ export function SituationIntakeRail({
         </div>
       ) : null}
       {!readOnly ? (
-        <PromptBox
-          value={input}
-          onChange={setInput}
-          onSend={() => {
-            const guard = validateIntakeInput(input);
-            if (!guard.ok || streaming) return;
-            setInput("");
-            void runIntake(guard.trimmed);
-          }}
-          disabled={streaming}
-          sendDisabled={streaming || !input.trim()}
-          locale={locale}
-          onLocaleChange={setLocale}
-          pending={streaming}
-          onStop={stopStreaming}
-        />
+        <div className="mx-auto w-full max-w-3xl px-4 pb-4 lg:px-6">
+          <PromptBox
+            value={input}
+            onChange={setInput}
+            onSend={() => {
+              const guard = validateIntakeInput(input);
+              if (!guard.ok || streaming) return;
+              setInput("");
+              void runIntake(guard.trimmed);
+            }}
+            disabled={streaming}
+            sendDisabled={streaming || !input.trim()}
+            locale={locale}
+            pending={streaming}
+            onStop={stopStreaming}
+          />
+        </div>
       ) : null}
       {facts.length > 0 ? (
         <div className="border-t border-border">
